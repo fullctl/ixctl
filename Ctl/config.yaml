@@ -1,0 +1,34 @@
+
+ctl:
+  plugins:
+    - type: changelog
+      name: changelog
+
+  permissions:
+    - namespace: "ctl"
+      permission: "crud"
+
+  log:
+    version: 1
+    formatters:
+      simple:
+        format: '[%(asctime)s] %(message)s'
+    handlers:
+      console:
+        class: logging.StreamHandler
+        level: DEBUG
+        formatter: simple
+        stream: ext://sys.stdout
+    loggers:
+      ctl:
+        handlers: [console]
+        level: DEBUG
+        propagate: no
+      ctl.plugins.git:
+        handlers: [console]
+        level: DEBUG
+        propagate: no
+      usage:
+        handlers: [console]
+        level: INFO
+        propagate: no

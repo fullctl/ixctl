@@ -1,0 +1,35 @@
+INSTALLED_APPS += (
+    'xbahn',
+    )
+
+SERIALIZATION_MODULES = {
+    "json" : "wadofstuff.django.serializers.json"
+  }
+
+XBAHN = {
+  "instances" : {
+    "main" : {
+      "host" : "localhost",
+      "port" : 5672,
+      "user" : "",
+      "pass" : "",
+      "log" : "debug",
+      "exchange" : "twentyc.xbahn"
+    }
+  },
+  "replication" : {
+    "debug" : True,
+    "interval" : 0.5,
+    "main" : {
+      "namespace" : "ixctl.replication"
+    }
+  },
+  "bridge" : {
+    "main" : {
+      "exposed" : [
+      ],
+      "namespace" : "ixctl.bridge"
+    }
+  }
+}
+

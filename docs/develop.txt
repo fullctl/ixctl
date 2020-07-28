@@ -1,0 +1,16 @@
+
+### Installtion and setup
+
+1. setup database user and db in mysql
+    create database ${USER}_django_ixctl;
+    grant all on ${USER}_django_ixctl.* to '${USER}_django_ixctl'@'localhost' identified by '$(uuidgen)';
+    flush privileges;
+
+2. cp ixctl/settings.d/01-local.conf.dist ixctl/settings.d/01-local.conf
+3. edit ixctl/settings.d/01-local.conf and setup db
+4. install requirements
+    pip install -r requirements.txt
+
+5. init database
+    1. ./manage.py syncdb
+
