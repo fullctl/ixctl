@@ -1,5 +1,5 @@
 from django.http import Http404
-from django_ixctl.models import Organization, User
+from django_ixctl.models import Organization, OrganizationUser
 from django_ixctl.auth import Permissions
 
 
