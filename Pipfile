@@ -1,0 +1,14 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django-handleref = ">=0.5"
+djangorestframework = ">=3.11,<4"
+Django = ">=2.2"
+
+[requires]
+python_version = "3.7"
