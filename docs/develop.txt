@@ -8,9 +8,8 @@
 
 2. cp ixctl/settings.d/01-local.conf.dist ixctl/settings.d/01-local.conf
 3. edit ixctl/settings.d/01-local.conf and setup db
-4. install requirements
-    pip install -r requirements.txt
-
-5. init database
-    1. ./manage.py syncdb
-
+4. pip install pipenv
+5. pipenv shell
+6. cd ixctl
+7. python manage.py migrate
+8. python manage.py runserver
