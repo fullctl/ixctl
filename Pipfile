@@ -9,6 +9,7 @@ verify_ssl = true
 django-handleref = ">=0.5"
 djangorestframework = ">=3.11,<4"
 Django = ">=2.2"
+ixctl = {path = "."}
 
 [requires]
 python_version = "3.7"
