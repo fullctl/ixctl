@@ -1,5 +1,8 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+RELEASE_ENV = "dev"
+PACKAGE_VERSION = "0.1.0" #TODO get real version
+
 
 # DATABASES = {
 #     'default': {
@@ -19,6 +22,7 @@ DATABASES = {
     }
 }
 
+ORGANIZATION_PROVIDED_BY_OAUTH = False
 
 #INSTALLED_APPS += (
 #    'debug_toolbar',

@@ -1,25 +1,12 @@
 
-from django.urls import path
+from django.urls import path, include
+from django.contrib import admin
 
-import django_ixctl.views as views
-
-# from django.contrib import admin
-
-#from rest_framework import routers
-#from django_ixctl import views
-
-# admin.autodiscover()
-
+import django_ixctl.urls
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path("admin/", admin.site.urls),
+    path("", include("social_django.urls", namespace="social")),
+    path('', include("django_ixctl.urls")),
 ]
-# urlpatterns = patterns('',
-#     # Uncomment the admin/doc line below to enable admin documentation:
-#     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-# #    (r'^grappelli/', include('grappelli.urls')),
-# #    (r'^admin/',  include(admin.site.urls)),
-# )
-
 

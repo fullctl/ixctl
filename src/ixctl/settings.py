@@ -3,6 +3,8 @@ import os
 ADMINS = ()
 MANAGERS = ADMINS
 
+ALLOWED_HOSTS = ["*"]
+
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 

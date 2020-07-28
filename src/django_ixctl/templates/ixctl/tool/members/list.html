@@ -1,0 +1,67 @@
+{% load static i18n %}
+<table
+  class="table"
+  data-api-base="{% url "ixctl_api:ix-detail" org_tag=request.org.slug pk="0" %}"
+  data-api-action="members"
+  data-template="list">
+  <thead>
+    <tr>
+      <th>{% trans "ASN" %}</th>
+      <th>{% trans "Name" %}</th>
+      <th>{% trans "IPv4" %}</th>
+      <th>{% trans "IPv6" %}</th>
+      <th>{% trans "Speed" %}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody class="list-body">
+  </tbody>
+  <tbody class="templates">
+    <tr data-template="row">
+      <td data-field="asn"></td>
+      <td data-field="display_name" class="highlight"></td>
+      <td data-field="ipaddr4"></td>
+      <td data-field="ipaddr6"></td>
+      <td data-field="speed"></td>
+      <td data-field="controls" class="right">
+        <div class="row">
+          <div class="col-xs-12 col-lg-6">
+            <a data-action="edit_member"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
+          </div>
+          <div class="col-xs-12 col-lg-6">
+        <a
+          data-api-action="delete_member"
+          data-api-callback="remove"
+          data-confirm="Remove member?"
+          data-api-method="DELETE"><span class="icon ixctl icon-delete"></span><span class="ixctl label">{% trans "Delete" %}</span></a>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr data-template="row" class="secondary">
+      <td class="indent"></td>
+      <td class="property" colspan="5">
+        <div class="row">
+          <div class="col-12 col-sm-4 col-lg-3 col-xl-2 field">
+            {% trans "State" %}:
+            <span class="highlight" data-field="ixf_state"></span>
+          </div>
+          <div class="col-12 col-sm-4 col-lg-3 col-xl-2 field">
+            {% trans "Type" %}:
+            <span class="highlight" data-field="ixf_member_type"></span>
+          </div>
+          <div class="col-12 col-sm-4 col-lg-3 col-xl-2 field">
+            {% trans "Routeserver" %}:
+            <span data-field="is_rs_peer" data-toggle="checked">
+              <img data-false src="{% static "common/icons/Indicator/X-Ind/X.svg" %}" class="icon filled">
+              <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
+            </span>
+          </div>
+          <div class="col-12 col-sm-12 col-lg-3 col-xl-6"></div>
+        </div>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+

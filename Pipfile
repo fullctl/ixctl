@@ -9,9 +9,13 @@ verify_ssl = true
 django-handleref = ">=0.5"
 djangorestframework = ">=3.11,<4"
 Django = ">=2.2,<3"
-ixctl = {path = "."}
 django-peeringdb = "*"
 peeringdb = "*"
+django-reversion = "<4"
+django-inet = "*"
+django-autocomplete-light = ">=3,<=4"
+social-auth-app-django = "<4"
+django-grainy = {file = "https://github.com/20c/django-grainy/archive/master.zip"}
 
 [requires]
 python_version = "3.7"

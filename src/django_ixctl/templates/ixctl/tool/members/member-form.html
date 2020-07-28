@@ -1,0 +1,64 @@
+{% load static i18n %}
+<form data-template="form_member"
+  data-api-base="{% url "ixctl_api:ix-detail" org_tag=request.org.slug pk=0 %}"
+  data-api-action="add_member"
+  >
+  <div class="row form-group">
+    <div class="col-12" data-api-submit="yes">
+      <label for="member-asn">{% trans "ASN" %}</label>
+      <input type="text" class="form-control" id="member-asn" name="asn" />
+    </div>
+  </div>
+  <div class="row form-group">
+    <div class="col-12" data-api-submit="yes">
+      <label for="member-name">{% trans "Name" %}</label>
+      <input type="text" class="form-control" id="member-name" name="name" />
+    </div>
+  </div>
+  <div class="row form-group">
+    <div class="col-12" data-api-submit="yes">
+      <label for="member-state">{% trans "State" %}</label>
+      <input type="text" class="form-control" id="member-state" name="ixf_state" />
+    </div>
+  </div>
+  <div class="row form-group">
+    <div class="col-12" data-api-submit="yes">
+      <label for="member-type">{% trans "Member Type" %}</label>
+      <span class="modal-control">
+      <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+      <select class="form-control" id="member-type" name="ixf_member_type">
+        <option value="peering">{% trans "Peering" %}</option>
+        <option value="ixp">{% trans "IXP" %}</option>
+        <option value="routeserver">{% trans "Routeserver" %}</option>
+        <option value="probono">{% trans "Probono" %}</option>
+      <select>
+      </span>
+    </div>
+  </div>
+  <div class="row form-group">
+    <div class="col-12" data-api-submit="yes">
+      <label for="member-ipaddr4">{% trans "IPv4 Address" %}</label>
+      <input type="text" class="form-control" id="member-ipaddr4" name="ipaddr4" />
+    </div>
+  </div>
+  <div class="row form-group">
+    <div class="col-12" data-api-submit="yes">
+      <label for="member-ipaddr6">{% trans "IPv6 Address" %}</label>
+      <input type="text" class="form-control" id="member-ipaddr6" name="ipaddr6" />
+    </div>
+  </div>
+  <div class="row form-check">
+    <div class="col-12" data-api-submit="yes">
+      <input type="checkbox" class="form-check-input" id="member-is-rs-peer" name="is_rs_peer" />
+      <label for="member-is-rs-peer" class="form-check-label">{% trans "Route Server" %}</label>
+    </div>
+  </div>
+  <div class="row form-group">
+    <div class="col-12" data-api-submit="yes">
+      <label for="member-speed">{% trans "Speed" %}</label>
+      <input type="text" class="form-control" id="member-speed" name="speed" />
+    </div>
+  </div>
+</form>
+
+

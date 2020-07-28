@@ -1,0 +1,27 @@
+{% load static i18n %}
+<form
+  data-template="form_import"
+  data-api-base="{% url "ixctl_api:ix-import-peeringdb" org_tag=request.org.slug %}"
+  data-api-method="POST">
+
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-info first-import" style="display:none">
+      {% blocktrans trimmed %}
+      Get started by importing your exchange from PeeringDB
+      {% endblocktrans %}
+      </div>
+      <div class="form-group" data-api-submit="yes">
+        <label for="pdb_ix_id">{% trans "PeeringDB Exchange" %}:</label>
+        <select
+          class="form-control"
+          id="pdb_ix_id"
+          name="pdb_ix_id"
+          data-autocomplete-light-language="en-US"
+          data-autocomplete-light-function="select2"
+          data-autocomplete-light-url="/autocomplete/pdb/ix">
+        </select>
+      </div>
+    </div>
+  </div>
+</form>
