@@ -8,8 +8,10 @@ verify_ssl = true
 [packages]
 django-handleref = ">=0.5"
 djangorestframework = ">=3.11,<4"
-Django = ">=2.2"
+Django = ">=2.2,<3"
 ixctl = {path = "."}
+django-peeringdb = "*"
+peeringdb = "*"
 
 [requires]
 python_version = "3.7"
