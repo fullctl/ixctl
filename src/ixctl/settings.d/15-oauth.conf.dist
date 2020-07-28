@@ -7,7 +7,7 @@ SOCIAL_AUTH_TWENTYC_KEY="SET ME"
 SOCIAL_AUTH_TWENTYC_SECRET="SET ME"
 
 AUTHENTICATION_BACKENDS = [
-    "account.social.backends.twentyc.TwentycOAuth2",
+    "django_ixctl.social.backends.twentyc.TwentycOAuth2",
 ] + AUTHENTICATION_BACKENDS
 
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True

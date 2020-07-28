@@ -23,9 +23,6 @@ def sync_api_keys(backend, details, response, uid, user, *args, **kwargs):
             if api_key.key not in api_keys:
                 # delete old keys
                 api_key.delete()
-            else:
-                # exiting key, update permissions
-                _sync_api_key_permissions(api_key, api_keys.get(api_key.key))
 
         # create new keys
 

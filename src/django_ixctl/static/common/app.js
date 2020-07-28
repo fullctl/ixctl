@@ -166,7 +166,7 @@ fullctl.application.Header = $tc.extend(
           } else {
             row.find('.manage').hide();
             row.click(() => {
-              window.location.href = "/"+data.slug+"/"+header.app_slug+"/";
+              window.location.href = "/"+data.slug+"/";
             })
           }
         });

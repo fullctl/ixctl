@@ -163,7 +163,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 import os.path
 import glob
-conffiles = glob.glob(os.path.join(os.path.dirname(__file__), 'settings.d', '*.conf*'))
+conffiles = glob.glob(os.path.join(os.path.dirname(__file__), 'settings.d', '*.conf'))
 conffiles.sort()
 for f in conffiles:
     with open(os.path.abspath(f), "rb") as source_file:
