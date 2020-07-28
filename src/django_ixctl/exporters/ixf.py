@@ -15,7 +15,7 @@ def export(ix, pretty=False):
 
     for ix in [ix]:
         asns = []
-        for member in ix.portinfo_set.all():
+        for member in ix.member_set.all():
             if member.asn in asns:
                 continue
             connection_list = []
@@ -26,7 +26,7 @@ def export(ix, pretty=False):
             }
             member_list.append(member_dict)
             asns.append(member.asn)
-            for _member in ix.portinfo_set.filter(asn=member.asn):
+            for _member in ix.member_set.filter(asn=member.asn):
                 vlan_list = [{}]
                 connection = {
                     "ixp_id": _member.ix.id,
