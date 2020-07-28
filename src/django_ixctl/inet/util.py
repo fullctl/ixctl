@@ -1,4 +1,4 @@
-from common.inet.exceptions import PdbNotFoundError
+from django_ixctl.inet.exceptions import PdbNotFoundError
 
 
 def pdb_lookup(cls, **filters):
