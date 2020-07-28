@@ -2,6 +2,8 @@ from django.http import Http404
 from django_ixctl.models import Organization, OrganizationUser
 from django_ixctl.auth import Permissions
 
+from django.conf import settings
+
 
 class RequestAugmentation:
     def __init__(self, get_response):
