@@ -8,8 +8,8 @@
 
 2. cp ixctl/settings.d/01-local.conf.dist ixctl/settings.d/01-local.conf
 3. edit ixctl/settings.d/01-local.conf and setup db
-4. pip install pipenv
+4. pipenv install --dev
 5. pipenv shell
-6. cd ixctl
+6. cd project
 7. python manage.py migrate
 8. python manage.py runserver
