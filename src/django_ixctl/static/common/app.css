@@ -807,3 +807,19 @@ img.login-google {
 div.app-footer {
   text-align: center;
 }
+
+
+/**
+ * login
+ */
+
+div.login button {
+  color: #0099ff;
+  background-color: #000;
+}
+
+div.login input {
+  background-color: #3C4650;
+  color: #fff;
+}
+
