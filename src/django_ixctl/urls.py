@@ -26,8 +26,8 @@ urlpatterns = [
         django_ixctl.autocomplete.views.peeringdb_org.as_view(),
         name="pdb org autocomplete",
     ),
-    path("export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
     path('login/', auth_views.LoginView.as_view(template_name='ixctl/auth/login.html'), name="login"),
+    path("<str:org_tag>/export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
     path('<str:org_tag>/', views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),
 ]
