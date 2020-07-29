@@ -57,7 +57,7 @@
                         <td>{{ form.password }}</td>
                     </tr>
                     </table>
-                    <button class="btn" type="submit" value="login">Login</button>
+                    <button class="btn" type="submit" value="login">{% trans "Login" %}</button>
                     <input type="hidden" name="next" value="{{ next }}">
                     </form>
                 </div>
@@ -72,7 +72,7 @@
                 {% endif %}
                 <div class="col" style="vertical-align:top">
                     {% if backends.backends %}
-                    <h3>Authenticate</h3>
+                    <h3>{% trans "Authenticate" %}</h3>
                     <!-- OAUTH -->
                     {% include "ixctl/auth/oauth.html" %}
                     {% endif %}
