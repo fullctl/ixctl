@@ -103,7 +103,6 @@ class Organization(HandleRefModel):
     Describes an organization
     """
 
-    id = models.PositiveIntegerField(primary_key=True)
     name = models.CharField(max_length=255)
     slug = models.CharField(max_length=64, unique=True)
     personal = models.BooleanField(default=False)
