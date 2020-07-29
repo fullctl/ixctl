@@ -120,7 +120,7 @@ fullctl.permissions = {{ permissions|safe }}
           <h4>{{ request.user.first_name }} {{ request.user.last_name }}</h4>
           <span class="email">{{ request.user.email }}</span>
           <div class="horizontal-line"></div>
-          <a class="dropdown-item" href="/auth/logout/">
+          <a class="dropdown-item" href="/logout/">
             <span class="icon icon-logout"></span>{% trans "Logout" %}</a>
         </div>
         <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
