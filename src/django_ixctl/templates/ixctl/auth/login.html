@@ -1,0 +1,57 @@
+{% extends "common/app/base.html" %}
+{% load static i18n %}
+
+{% block "content" %}
+
+    {% block "css" %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "ixctl/ixctl.css" %}" />
+    {% endblock %}
+
+    {% block "header_middle" %}
+    <div class="container-fluid header-outer">
+        <img src="{% static "common/icons/ixctl-logo-darkbg.svg" %}" alt="ixctl">
+    </div>
+    {% endblock %}
+
+    {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+        <p>Your account doesn't have access to this page. To proceed,
+        please login with an account that has access.</p>
+        {% else %}
+        <p>Please login to see this page.</p>
+        {% endif %}
+    {% endif %}
+    <div class="container-fluid vh-100">
+        <div class="row align-items-center h-75">
+            <div class="col"></div>
+            <div class="col">
+                <h3> Login </h3>
+                <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <table>
+                <tr>
+                    <td>{{ form.username.label_tag }}</td>
+                    <td>{{ form.username }}</td>
+                </tr>
+                <tr>
+                    <td>{{ form.password.label_tag }}</td>
+                    <td>{{ form.password }}</td>
+                </tr>
+                </table>
+
+                <input type="submit" value="login">
+                <input type="hidden" name="next" value="{{ next }}">
+                </form>
+            </div>
+            <div class="col"></div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

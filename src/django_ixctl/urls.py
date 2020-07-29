@@ -4,6 +4,8 @@ from django.urls import path,include
 import django_ixctl.views as views
 import django_ixctl.autocomplete.views
 
+from django.contrib.auth import views as auth_views
+
 urlpatterns = [
     path(
         'api/<str:org_tag>/account/',
@@ -25,7 +27,7 @@ urlpatterns = [
         name="pdb org autocomplete",
     ),
     path("export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
-
+    path('login/', auth_views.LoginView.as_view(template_name='ixctl/auth/login.html'), name="login"),
     path('<str:org_tag>/', views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),
 ]

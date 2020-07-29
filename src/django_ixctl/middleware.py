@@ -2,6 +2,7 @@ from django.http import Http404
 from django_ixctl.models import Organization, OrganizationUser
 from django_ixctl.auth import Permissions
 
+from django.contrib.auth import get_user_model
 from django.conf import settings
 
 
@@ -17,11 +18,21 @@ class RequestAugmentation:
         kwargs = request.resolver_match.kwargs
 
         request.perms = Permissions(request.user)
-
+        print("process view")
         if not hasattr(request.user, "org_set") and "org_tag" not in kwargs:
 
             if not settings.ORGANIZATION_PROVIDED_BY_OAUTH:
-                request.org = Organization.objects.create(
+                if request.user.id:
+                    user = get_user_model().objects.filter(id=request.user.id).first()
+                else:
+                    user, _ = get_user_model().objects.get_or_create(
+                        username="host"
+                    )
+                    user.set_password("test")
+                    user.save()
+
+
+                request.org, _ = Organization.objects.get_or_create(
                     name = f"{request.user.username} personal org",
                     slug = request.user.username,
                     personal = True
@@ -29,7 +40,7 @@ class RequestAugmentation:
 
                 OrganizationUser.objects.create(
                     org = request.org,
-                    user = request.user,
+                    user = user,
                 )
 
                 request.orgs = [request.org]
@@ -54,4 +65,5 @@ class RequestAugmentation:
 
         if not getattr(request, "org", None):
             request.org = Organization(name="Guest")
+            
             return
