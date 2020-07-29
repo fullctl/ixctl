@@ -29,7 +29,9 @@
     <div class="container-fluid vh-100">
         <div class="row align-items-center h-75">
             <div class="col"></div>
+            {% if not oauth_manages_org %}
             <div class="col">
+                <!-- MANUAL LOGIN -->
                 <h3> Login </h3>
                 <form method="post" action="{% url 'login' %}">
                 {% csrf_token %}
@@ -46,12 +48,28 @@
 
                 <input type="submit" value="login">
                 <input type="hidden" name="next" value="{{ next }}">
+
                 </form>
             </div>
+            {% else %}
+            <div class="col">
+            {% blocktrans %}
+            The authentication service(s) to the right
+            are in control of the users and organizations for this
+            ixctl instance.
+            {% endblocktrans %}
+            </div>
+            {% endif %}
+            <div class="col" style="vertical-align:top">
+                {% if backends.backends %}
+                <h3>Authenticate</h3>
+                <!-- OAUTH -->
+                {% include "ixctl/auth/oauth.html" %}
+                {% endif %}
+            </div>
+
             <div class="col"></div>
-
         </div>
-
     </div>
 
 {% endblock %}

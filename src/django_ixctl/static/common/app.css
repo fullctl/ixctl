@@ -774,6 +774,31 @@ div.modal span.modal-control > img.caret {
   line-height: 25px !important;
 }
 
+/*
+ * oauth
+ */
+
+.btn-oauth {
+  width: 210px;
+}
+
+div.oauth-backend.twentyc > a.btn {
+  background-color: #191919;
+  border-color: #0f1419;
+}
+
+img.login-twentyc,
+img.login-peeringdb {
+  height: 40px;
+}
+
+img.login-google {
+  width: 40px;
+}
+
+
+
+
 
 /**
  * footer

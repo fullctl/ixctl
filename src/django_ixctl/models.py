@@ -107,6 +107,14 @@ class Organization(HandleRefModel):
     slug = models.CharField(max_length=64, unique=True)
     personal = models.BooleanField(default=False)
 
+    backend = models.CharField(max_length=255, null=True, blank=True, help_text=_("Authentication service that created this org"))
+    remote_id = models.PositiveIntegerField(
+        null = True,
+        blank = True,
+        unique = True,
+        help_text = _("If the authentication service is in control of the organizations this field will hold a reference to the id at the auth service")
+    )
+
     permission_namespaces = [
       "management",
       "ixctl",
@@ -116,23 +124,23 @@ class Organization(HandleRefModel):
         tag = "org"
 
     @classmethod
-    def sync(cls, orgs, user):
+    def sync(cls, orgs, user, backend):
         synced = []
         with reversion.create_revision():
             reversion.set_user(user)
             for org_data in orgs:
-                org = cls.sync_single(org_data, user)
+                org = cls.sync_single(org_data, user, backend)
                 synced.append(org)
 
-            for org in user.org_set.exclude(org_id__in=[o["id"] for o in orgs]):
+            for org in user.org_set.exclude(org__remote_id__in=[o["id"] for o in orgs]):
                 org.delete()
         return synced
 
     @classmethod
-    def sync_single(cls, data, user):
+    def sync_single(cls, data, user, backend):
         try:
             changed = False
-            org = cls.objects.get(id=data["id"])
+            org = cls.objects.get(remote_id=data["id"], backend=backend)
             if data["slug"] != org.slug:
                 org.slug = data["slug"]
                 changed = True
@@ -146,7 +154,8 @@ class Organization(HandleRefModel):
                 org.save()
         except cls.DoesNotExist:
             org = cls.objects.create(
-                id=data["id"],
+                remote_id=data["id"],
+                backend=backend,
                 name=data["name"],
                 slug=data["slug"],
                 personal=data["personal"],

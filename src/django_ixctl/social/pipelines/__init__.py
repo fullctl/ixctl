@@ -1,4 +1,5 @@
 from django_grainy.helpers import int_flags
+from django.conf import settings
 
 from django_ixctl.models import (
     Organization,
@@ -34,6 +35,6 @@ def sync_organizations(backend, details, response, uid, user, *args, **kwargs):
     social = kwargs.get("social") or backend.strategy.storage.user.get_social_auth(
         backend.name, uid
     )
-    if social:
+    if social and settings.ORGANIZATION_PROVIDED_BY_OAUTH:
         organizations = social.extra_data.get("organizations", [])
-        Organization.sync(organizations, user)
+        Organization.sync(organizations, user, backend.name)

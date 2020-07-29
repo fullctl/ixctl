@@ -3,17 +3,18 @@ import django.http
 import rest_framework
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.conf import settings
 
 
 class require_auth:
     def __call__(self, fn):
         def wrapped(request, *args, **kwargs):
             if not request.user.is_authenticated:
+
                 # return redirect(
                 #     reverse("social:begin", args=("twentyc",))
                 #     + f"?next={request.get_full_path()}"
                 # )
-                print("redirecting to login")
                 return redirect(
                     reverse("login")
                     + f"?next={request.get_full_path()}"

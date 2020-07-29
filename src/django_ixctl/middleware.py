@@ -21,30 +21,32 @@ class RequestAugmentation:
 
             if not settings.ORGANIZATION_PROVIDED_BY_OAUTH:
 
-                if request.user.id:
-                    user = get_user_model().objects.filter(id=request.user.id).first()
-                else:
-                    user, _ = get_user_model().objects.get_or_create(
-                        username="host"
+                # organizations are not managed by oauth
+                # so for now we just ensure that each user
+                # has a personal org
+
+                if request.user.is_authenticated:
+
+                    request.org, _ = Organization.objects.get_or_create(
+                        name = f"{request.user.username} personal org",
+                        slug = request.user.username,
+                        personal = True
                     )
-                    user.set_password("test")
-                    user.save()
+
+                    OrganizationUser.objects.create(
+                        org = request.org,
+                        user = request.user,
+                    )
+
+                    request.orgs = [request.org]
+                    return
 
 
-                request.org, _ = Organization.objects.get_or_create(
-                    name = f"{request.user.username} personal org",
-                    slug = request.user.username,
-                    personal = True
-                )
+            if not request.user.is_authenticated:
 
-                OrganizationUser.objects.create(
-                    org = request.org,
-                    user = user,
-                )
+                # user is not authenticated, return
+                # Guest org
 
-                request.orgs = [request.org]
-                return
-            else:
                 request.org = Organization(name="Guest")
                 return
 
@@ -64,5 +66,5 @@ class RequestAugmentation:
 
         if not getattr(request, "org", None):
             request.org = Organization(name="Guest")
-            
+
             return
