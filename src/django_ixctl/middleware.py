@@ -16,12 +16,11 @@ class RequestAugmentation:
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         kwargs = request.resolver_match.kwargs
-
         request.perms = Permissions(request.user)
-        print("process view")
-        if not hasattr(request.user, "org_set") and "org_tag" not in kwargs:
+        if (not hasattr(request.user, "org_set") or not request.user.org_set.exists()) and "org_tag" not in kwargs:
 
             if not settings.ORGANIZATION_PROVIDED_BY_OAUTH:
+
                 if request.user.id:
                     user = get_user_model().objects.filter(id=request.user.id).first()
                 else:
