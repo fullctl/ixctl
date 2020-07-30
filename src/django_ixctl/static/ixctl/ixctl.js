@@ -22,6 +22,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       });
 
+      console.log(this.$c.toolbar)
       $(this.$c.toolbar.$w.select_ix).one("load:after", () => {
         this.sync();
       });
@@ -36,6 +37,10 @@ $ctl.application.Ixctl = $tc.extend(
 
       $(this.$c.toolbar.$e.button_import).click(() => {
         this.prompt_import();
+      });
+
+      $(this.$c.toolbar.$e.button_create_ix).click(() => {
+        this.prompt_create_exchange();
       });
 
       this.$t.members.activate();
@@ -69,7 +74,12 @@ $ctl.application.Ixctl = $tc.extend(
 
     prompt_add_member : function() {
       return new $ctl.application.Ixctl.AddMemberImport(this.ix());
+    },
+
+    prompt_create_exchange : function() {
+      return new $ctl.application.Ixctl.ModalCreateIX();
     }
+
   },
   $ctl.application.Application
 );
@@ -101,6 +111,38 @@ $ctl.application.Ixctl.ModalImport = $tc.extend(
   },
   $ctl.application.Modal
 );
+
+
+
+
+$ctl.application.Ixctl.ModalCreateIX = $tc.extend(
+  "ModalCreateIX",
+  {
+    ModalCreateIX : function() {
+      console.log($ctl.template("form_create_ix"));
+      var form = this.form = new twentyc.rest.Form(
+        $ctl.template("form_create_ix")
+      );
+
+      console.log(form);
+      var modal = this;
+
+      $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
+        console.log(response.content.data)
+        $ctl.ixctl.refresh().then(
+          () => { $ctl.ixctl.select_ix(response.content.data[0].id) }
+        );
+        modal.hide();
+      });
+      this.Modal("continue", "Create new exchange", form.element);
+      // remove dupe
+      // form.element.find("span.select2").last().detach()
+      form.wire_submit(this.$e.button_submit);
+    }
+  },
+  $ctl.application.Modal
+);
+
 
 $ctl.application.Ixctl.ModalMember = $tc.extend(
   "ModalMember",

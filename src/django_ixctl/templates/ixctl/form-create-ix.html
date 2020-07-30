@@ -1,0 +1,20 @@
+{% load static i18n %}
+<form
+  data-template="form_create_ix"
+  data-api-base="{% url "ixctl_api:ix-add-exchange" org_tag=request.org.slug %}"
+  data-api-method="POST">
+
+  <div class="row">
+    <div class="col-12">
+      <div class="form-group" data-api-submit="yes">
+        <label for="new_ix_name">{% trans "New Exchange" %}:</label>
+        <input 
+          type="text"
+          class="form-control"
+          name="name"
+          id="new_ix_name">
+        </input>
+      </div>
+    </div>
+  </div>
+</form>
