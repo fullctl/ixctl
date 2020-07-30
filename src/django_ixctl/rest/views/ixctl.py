@@ -52,11 +52,12 @@ class InternetExchange(viewsets.ViewSet):
     def add_exchange(self, request, org, instance, *args, **kwargs):
         data = request.data
         data["pdb_id"] = None
-        serializer = Serializers.ix(data=data, instance=instance)
+        serializer = Serializers.ix(data=data)
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
         ix = serializer.save()
-        
+        ix.instance = instance
+        ix.save()
         return Response(Serializers.ix(instance=ix).data)
 
     @action(detail=True, methods=["GET"])
