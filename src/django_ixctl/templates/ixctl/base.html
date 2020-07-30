@@ -9,7 +9,6 @@
 
 {% block "css" %}
 {{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static "ixctl/ixctl.css" %}" />
 {% endblock %}
 
 {% block "header_middle" %}
@@ -25,7 +24,7 @@
 
 {% block "app_content_toolbar" %}
 <div class="row">
-  <div class="col-9">
+  <div class="col-6 col-md-8">
     <span class="inline-label">{% trans "Exchange:" %}</span>
     <span class="toolbar-control">
       <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
@@ -35,10 +34,15 @@
       data-element="select_ix"></select>
     </span>
   </div>
-  <div class="col-3 right">
-    <button type="button" class="button" data-element="button_import">
-    <span class="icon ixctl icon-add"></span>
-    {% trans "Import" %}</button>
+  <div class="col-3 col-md-2">
+      <button type="button" class="button" data-element="button_create_ix">
+      <span class="icon ixctl icon-add"></span>
+      {% trans "Create Exchange" %}</button>
+  </div>
+  <div class="col-3 col-md-2">
+      <button type="button" class="button" data-element="button_import">
+      <span class="icon ixctl icon-add"></span>
+      {% trans "Import" %}</button>
   </div>
 </div>
 {% endblock %}
@@ -54,4 +58,6 @@
 {% block "templates" %}
 {{ block.super }}
 {% include "ixctl/form-import.html" %}
+{% include "ixctl/form-create-ix.html" %}
+
 {% endblock %}

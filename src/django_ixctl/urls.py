@@ -27,6 +27,7 @@ urlpatterns = [
         name="pdb org autocomplete",
     ),
     path('login/', auth_views.LoginView.as_view(template_name='ixctl/auth/login.html'), name="login"),
+    path('logout/', auth_views.LogoutView.as_view(next_page="/login"), name="logout"),
     path("<str:org_tag>/export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
     path('<str:org_tag>/', views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),

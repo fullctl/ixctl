@@ -30,6 +30,7 @@ class InternetExchange(viewsets.ViewSet):
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
 
+
     @grainy_endpoint()
     def list(self, request, org, instance, *args, **kwargs):
         serializer = Serializers.ix(
@@ -45,6 +46,19 @@ class InternetExchange(viewsets.ViewSet):
             many=False,
         )
         return Response(serializer.data)
+
+    @action(detail=False, methods=["POST"])
+    @grainy_endpoint()
+    def add_exchange(self, request, org, instance, *args, **kwargs):
+        data = request.data
+        data["pdb_id"] = None
+        serializer = Serializers.ix(data=data)
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+        ix = serializer.save()
+        ix.instance = instance
+        ix.save()
+        return Response(Serializers.ix(instance=ix).data)
 
     @action(detail=True, methods=["GET"])
     @grainy_endpoint()
@@ -80,6 +94,7 @@ class InternetExchange(viewsets.ViewSet):
         member = serializer.save()
 
         return Response(Serializers.member(instance=member).data)
+
 
     @action(detail=True, methods=["PUT"])
     @grainy_endpoint()
