@@ -186,9 +186,7 @@ class InternetExchangeMember(serializers.ModelSerializer):
 @register
 class Routeserver(serializers.ModelSerializer):
 
-    router_id = IPAddressField(
-        version=4,
-    )
+    router_id = IPAddressField(version=4,)
 
     class Meta:
         model = models.Routeserver
@@ -218,7 +216,6 @@ class Routeserver(serializers.ModelSerializer):
 
 @register
 class Routeserver(serializers.ModelSerializer):
-
     class Meta:
         model = models.RouteserverConfig
         fields = [

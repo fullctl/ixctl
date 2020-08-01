@@ -5,6 +5,7 @@ from rest_framework import permissions
 from django_ixctl.models import APIKey
 from django_ixctl.auth import Permissions
 
+
 class APIKeyAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         key = request.GET.get("key")

@@ -6,12 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_ixctl', '0011_auto_20200801_1434'),
+        ("django_ixctl", "0011_auto_20200801_1434"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='routeserver',
-            unique_together={('ix', 'router_id')},
+            name="routeserver", unique_together={("ix", "router_id")},
         ),
     ]

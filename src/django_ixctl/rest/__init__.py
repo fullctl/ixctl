@@ -48,8 +48,6 @@ def exception_handler(exc, context):
     return response
 
 
-
-
 """
 class ScopedUserRateThrottle(UserRateThrottle):
     scope = None

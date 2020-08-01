@@ -36,9 +36,9 @@ from django_ixctl.validators import validate_ip_v4, validate_ip_v6
 
 import django_ixctl.enum
 
+
 def generate_secret():
     return token_urlsafe()
-
 
 
 class HandleRefModel(SoftDeleteHandleRefModel):
@@ -84,6 +84,7 @@ class PdbRefModel(HandleRefModel):
 
     class PdbRef:
         """ defines which peeringdb model is referenced """
+
         model = NetworkIXLan
         fields = {"pk": "pdb_id"}
 
@@ -115,9 +116,6 @@ class PdbRefModel(HandleRefModel):
         return self._pdb
 
 
-
-
-
 @reversion.register()
 class Organization(HandleRefModel):
 
@@ -129,17 +127,24 @@ class Organization(HandleRefModel):
     slug = models.CharField(max_length=64, unique=True)
     personal = models.BooleanField(default=False)
 
-    backend = models.CharField(max_length=255, null=True, blank=True, help_text=_("Authentication service that created this org"))
+    backend = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=_("Authentication service that created this org"),
+    )
     remote_id = models.PositiveIntegerField(
-        null = True,
-        blank = True,
-        unique = True,
-        help_text = _("If the authentication service is in control of the organizations this field will hold a reference to the id at the auth service")
+        null=True,
+        blank=True,
+        unique=True,
+        help_text=_(
+            "If the authentication service is in control of the organizations this field will hold a reference to the id at the auth service"
+        ),
     )
 
     permission_namespaces = [
-      "management",
-      "ixctl",
+        "management",
+        "ixctl",
     ]
 
     class HandleRef:
@@ -198,9 +203,9 @@ class Organization(HandleRefModel):
             return _("Personal")
         return self.name
 
-
     def __str__(self):
         return f"{self.name} ({self.slug})"
+
 
 class Instance(HandleRefModel):
 
@@ -236,7 +241,6 @@ class Instance(HandleRefModel):
         except cls.DoesNotExist:
             instance = cls.objects.create(org=org, status="ok")
         return instance
-
 
 
 @reversion.register()
@@ -311,7 +315,6 @@ class InternetExchange(PdbRefModel):
         verbose_name_plural = _("Internet Exchanges")
         verbose_name = _("Internet Exchange")
 
-
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
 
@@ -338,10 +341,7 @@ class InternetExchange(PdbRefModel):
     @property
     def ixf_export_url(self):
         return reverse(
-            "django_ixctl:ixf export", args=(
-                ix.instance.org.slug,
-                ix.secret,
-            )
+            "django_ixctl:ixf export", args=(ix.instance.org.slug, ix.secret,)
         )
 
 
@@ -349,7 +349,11 @@ class InternetExchange(PdbRefModel):
 class InternetExchangeMember(PdbRefModel):
 
     ix = models.ForeignKey(
-        InternetExchange, help_text=_("Members at this Exchange"), related_name="member_set", on_delete=models.CASCADE)
+        InternetExchange,
+        help_text=_("Members at this Exchange"),
+        related_name="member_set",
+        on_delete=models.CASCADE,
+    )
     ipaddr4 = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_ip_v4]
     )
@@ -378,9 +382,7 @@ class InternetExchangeMember(PdbRefModel):
     @classmethod
     def create_from_pdb(cls, pdb_object, ix, save=True, **fields):
 
-        member = super().create_from_pdb(
-            pdb_object, ix=ix, save=False, **fields
-        )
+        member = super().create_from_pdb(pdb_object, ix=ix, save=False, **fields)
 
         member.ipaddr4 = pdb_object.ipaddr4
         member.ipaddr6 = pdb_object.ipaddr6
@@ -398,42 +400,30 @@ class InternetExchangeMember(PdbRefModel):
     def display_name(self):
         return self.name or f"AS{self.asn}"
 
+
 @reversion.register
 class Routeserver(HandleRefModel):
 
     ix = models.ForeignKey(
-        InternetExchange,
-        on_delete=models.CASCADE,
-        related_name="rs_set",
+        InternetExchange, on_delete=models.CASCADE, related_name="rs_set",
     )
 
     # RS Config
 
-    name = models.CharField(
-        max_length=255,
-        help_text=_("Routeserver name"),
-    )
+    name = models.CharField(max_length=255, help_text=_("Routeserver name"),)
 
-    asn = ASNField(
-        help_text=_("ASN")
-    )
+    asn = ASNField(help_text=_("ASN"))
 
-    router_id = IPAddressField(
-        version=4,
-        help_text=_("Router Id"),
-    )
+    router_id = IPAddressField(version=4, help_text=_("Router Id"),)
 
     # ARS Config
 
     ars_type = models.CharField(
-        max_length=32,
-        choices=django_ixctl.enum.ARS_TYPES,
-        default="bird",
+        max_length=32, choices=django_ixctl.enum.ARS_TYPES, default="bird",
     )
 
     max_as_path_length = models.IntegerField(
-        default=32,
-        help_text=_("Max length of AS_PATH attribute."),
+        default=32, help_text=_("Max length of AS_PATH attribute."),
     )
 
     no_export_action = models.CharField(
@@ -444,16 +434,12 @@ class Routeserver(HandleRefModel):
     )
 
     graceful_shutdown = models.BooleanField(
-        default=False,
-        help_text=_("Graceful BGP session shutdown"),
+        default=False, help_text=_("Graceful BGP session shutdown"),
     )
 
     extra_config = models.TextField(
-        null=True,
-        blank=True,
-        help_text=_("Extra arouteserver config")
+        null=True, blank=True, help_text=_("Extra arouteserver config")
     )
-
 
     class Meta:
         db_table = "ixctl_rs"
@@ -469,27 +455,19 @@ class Routeserver(HandleRefModel):
     @property
     def rsconf(self):
         if not hasattr(self, "_rsconf"):
-            rsconf, created = RouteserverConfig.objects.get_or_create(
-                rs=self
-            )
+            rsconf, created = RouteserverConfig.objects.get_or_create(rs=self)
             self._rsconf = rsconf
         return self._rsconf
 
     @property
     def ars_general(self):
         ars_general = {
-            "cfg" : {
+            "cfg": {
                 "rs_as": self.asn,
                 "router_id": f"{self.router_id}",
-                "filtering": {
-                    "max_as_path_len": self.max_as_path_length,
-                },
-                "rfc1997_wellknown_communities": {
-                    "policy": self.no_export_action,
-                },
-                "graceful_shutdown": {
-                    "enabled": self.graceful_shutdown
-                }
+                "filtering": {"max_as_path_len": self.max_as_path_length,},
+                "rfc1997_wellknown_communities": {"policy": self.no_export_action,},
+                "graceful_shutdown": {"enabled": self.graceful_shutdown},
             }
         }
 
@@ -508,7 +486,6 @@ class Routeserver(HandleRefModel):
 
         return ars_general
 
-
     @property
     def ars_clients(self):
         asns = {}
@@ -523,15 +500,12 @@ class Routeserver(HandleRefModel):
             if asn not in asns:
                 continue
                 if member.pdb_id:
-                    asns[asn] = {"as_sets":[member.pdb.net.irr_as_set]}
+                    asns[asn] = {"as_sets": [member.pdb.net.irr_as_set]}
                 else:
-                    asns[asn] = {"as_sets":[]}
+                    asns[asn] = {"as_sets": []}
 
             if member.asn not in clients:
-                clients[member.asn] = {
-                    "asn": member.asn,
-                    "ip": []
-                }
+                clients[member.asn] = {"asn": member.asn, "ip": []}
 
             if member.ipaddr4:
                 clients[member.asn]["ip"].append(f"{member.ipaddr4}")
@@ -541,24 +515,19 @@ class Routeserver(HandleRefModel):
 
         return {"asns": asns, "clients": list(clients.values())}
 
-
     def __str__(self):
         return f"Routeserver {self.name} AS{self.asn}"
+
 
 @reversion.register
 class RouteserverConfig(HandleRefModel):
 
     rs = models.OneToOneField(
-        Routeserver,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
+        Routeserver, on_delete=models.CASCADE, null=True, blank=True,
     )
 
     generated = models.DateTimeField(
-        auto_now=True,
-        blank=True,
-        help_text=_("Time of generation")
+        auto_now=True, blank=True, help_text=_("Time of generation")
     )
 
     # TODO: rename to `config` ?
@@ -568,8 +537,12 @@ class RouteserverConfig(HandleRefModel):
 
     body = models.TextField(help_text=_("Config content"))
 
-    ars_general = models.TextField(help_text=("ARouteserver general config"), null=True, blank=True)
-    ars_clients = models.TextField(help_text=("ARouteserver clients config"), null=True, blank=True)
+    ars_general = models.TextField(
+        help_text=("ARouteserver general config"), null=True, blank=True
+    )
+    ars_clients = models.TextField(
+        help_text=("ARouteserver clients config"), null=True, blank=True
+    )
 
     class HandleRef:
         tag = "rsconf"
@@ -623,7 +596,7 @@ class RouteserverConfig(HandleRefModel):
             "--clients",
             clients_config_file,
             "-o",
-            outfile
+            outfile,
         ]
 
         # TODO: bird v1 needs to generate
@@ -639,11 +612,7 @@ class RouteserverConfig(HandleRefModel):
         process = subprocess.Popen(cmd)
         process.wait(10)
 
-        with open(outfile,"r") as fh:
+        with open(outfile, "r") as fh:
             self.body = fh.read()
 
         self.save()
-
-
-
-

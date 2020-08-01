@@ -10,12 +10,13 @@ from django_ixctl.models import Organization, APIKey
 
 from django_ixctl.auth import Permissions
 
-class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
 
+class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
     def apply_perms(self, request, response, view_function, view):
         return response
         response.data = self._apply_perms(request, response.data, view_function, view)
         return response
+
 
 class grainy_endpoint(object):
     def __init__(
@@ -34,7 +35,7 @@ class grainy_endpoint(object):
             namespace_instance=decorator.namespace,
             explicit=decorator.explicit,
             ignore_grant_all=True,
-            permissions_cls = Permissions
+            permissions_cls=Permissions,
         )
         def wrapped(self, request, *args, **kwargs):
 
@@ -60,6 +61,7 @@ class grainy_endpoint(object):
 
         return wrapped
 
+
 def serializer_registry():
     class Serializers(object):
         pass
@@ -72,7 +74,6 @@ def serializer_registry():
         return cls
 
     return (Serializers, register)
-
 
 
 def set_org(fn):

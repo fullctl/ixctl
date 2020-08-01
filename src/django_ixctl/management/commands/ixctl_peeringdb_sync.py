@@ -11,14 +11,12 @@ class Command(BaseCommand):
     Pull peeringdb updates
     """
 
-
     def add_arguments(self, parser):
         parser.add_argument("--pdburl", default="https://www.peeringdb.com/api")
 
     def handle(self, *args, **kwargs):
         self.pdburl = kwargs.get("pdburl")
         self.sync()
-
 
     def sync(self):
         config = {
@@ -43,4 +41,3 @@ class Command(BaseCommand):
         client = Client(config, **config)
         print("Syncing from", config["sync"]["url"])
         client.update_all(resource.all_resources())
-

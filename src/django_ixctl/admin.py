@@ -17,6 +17,8 @@ class BaseAdmin(VersionAdmin):
 
 class BaseTabularAdmin(admin.TabularInline):
     readonly_fields = ("version",)
+
+
 @admin.register(APIKey)
 class APIKeyAdmin(BaseAdmin):
     list_display = ("id", "user", "key")
@@ -32,6 +34,7 @@ class OrganizationUserInline(admin.TabularInline):
 class OrganizationAdmin(BaseAdmin):
     list_display = ("id", "name", "slug")
     inlines = (OrganizationUserInline,)
+
 
 class InternetExchangeMemberInline(BaseTabularAdmin):
     model = InternetExchangeMember

@@ -19,133 +19,319 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Instance',
+            name="Instance",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('created', django_handleref.models.CreatedDateTimeField(auto_now_add=True, verbose_name='Created')),
-                ('updated', django_handleref.models.UpdatedDateTimeField(auto_now=True, verbose_name='Updated')),
-                ('version', models.IntegerField(default=0)),
-                ('status', models.CharField(choices=[('ok', 'Ok'), ('pending', 'Pending'), ('deactivated', 'Deactivated'), ('failed', 'Failed'), ('expired', 'Expired')], default='ok', max_length=12)),
-                ('secret', models.CharField(default=django_ixctl.models.generate_secret, max_length=255)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "created",
+                    django_handleref.models.CreatedDateTimeField(
+                        auto_now_add=True, verbose_name="Created"
+                    ),
+                ),
+                (
+                    "updated",
+                    django_handleref.models.UpdatedDateTimeField(
+                        auto_now=True, verbose_name="Updated"
+                    ),
+                ),
+                ("version", models.IntegerField(default=0)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ok", "Ok"),
+                            ("pending", "Pending"),
+                            ("deactivated", "Deactivated"),
+                            ("failed", "Failed"),
+                            ("expired", "Expired"),
+                        ],
+                        default="ok",
+                        max_length=12,
+                    ),
+                ),
+                (
+                    "secret",
+                    models.CharField(
+                        default=django_ixctl.models.generate_secret, max_length=255
+                    ),
+                ),
             ],
-            options={
-                'db_table': 'ixctl_instance',
-            },
-            managers=[
-                ('handleref', django.db.models.manager.Manager()),
-            ],
+            options={"db_table": "ixctl_instance",},
+            managers=[("handleref", django.db.models.manager.Manager()),],
         ),
         migrations.CreateModel(
-            name='InternetExchange',
+            name="InternetExchange",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('version', models.IntegerField(default=0)),
-                ('status', models.CharField(choices=[('ok', 'Ok'), ('pending', 'Pending'), ('deactivated', 'Deactivated'), ('failed', 'Failed'), ('expired', 'Expired')], default='ok', max_length=12)),
-                ('name', models.CharField(max_length=255)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('updated', models.DateTimeField(auto_now=True)),
-                ('instance', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='ix_set', to='django_ixctl.Instance')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("version", models.IntegerField(default=0)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ok", "Ok"),
+                            ("pending", "Pending"),
+                            ("deactivated", "Deactivated"),
+                            ("failed", "Failed"),
+                            ("expired", "Expired"),
+                        ],
+                        default="ok",
+                        max_length=12,
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("updated", models.DateTimeField(auto_now=True)),
+                (
+                    "instance",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="ix_set",
+                        to="django_ixctl.Instance",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Internet Exchange',
-                'verbose_name_plural': 'Internet Exchanges',
-                'db_table': 'django_ixctl_ix',
+                "verbose_name": "Internet Exchange",
+                "verbose_name_plural": "Internet Exchanges",
+                "db_table": "django_ixctl_ix",
             },
-            managers=[
-                ('handleref', django.db.models.manager.Manager()),
-            ],
+            managers=[("handleref", django.db.models.manager.Manager()),],
         ),
         migrations.CreateModel(
-            name='Organization',
+            name="Organization",
             fields=[
-                ('created', django_handleref.models.CreatedDateTimeField(auto_now_add=True, verbose_name='Created')),
-                ('updated', django_handleref.models.UpdatedDateTimeField(auto_now=True, verbose_name='Updated')),
-                ('version', models.IntegerField(default=0)),
-                ('status', models.CharField(choices=[('ok', 'Ok'), ('pending', 'Pending'), ('deactivated', 'Deactivated'), ('failed', 'Failed'), ('expired', 'Expired')], default='ok', max_length=12)),
-                ('id', models.PositiveIntegerField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=255)),
-                ('slug', models.CharField(max_length=64, unique=True)),
-                ('personal', models.BooleanField(default=False)),
+                (
+                    "created",
+                    django_handleref.models.CreatedDateTimeField(
+                        auto_now_add=True, verbose_name="Created"
+                    ),
+                ),
+                (
+                    "updated",
+                    django_handleref.models.UpdatedDateTimeField(
+                        auto_now=True, verbose_name="Updated"
+                    ),
+                ),
+                ("version", models.IntegerField(default=0)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ok", "Ok"),
+                            ("pending", "Pending"),
+                            ("deactivated", "Deactivated"),
+                            ("failed", "Failed"),
+                            ("expired", "Expired"),
+                        ],
+                        default="ok",
+                        max_length=12,
+                    ),
+                ),
+                ("id", models.PositiveIntegerField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=255)),
+                ("slug", models.CharField(max_length=64, unique=True)),
+                ("personal", models.BooleanField(default=False)),
             ],
-            options={
-                'abstract': False,
-            },
-            managers=[
-                ('handleref', django.db.models.manager.Manager()),
-            ],
+            options={"abstract": False,},
+            managers=[("handleref", django.db.models.manager.Manager()),],
         ),
         migrations.CreateModel(
-            name='OrganizationUser',
+            name="OrganizationUser",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('created', django_handleref.models.CreatedDateTimeField(auto_now_add=True, verbose_name='Created')),
-                ('updated', django_handleref.models.UpdatedDateTimeField(auto_now=True, verbose_name='Updated')),
-                ('version', models.IntegerField(default=0)),
-                ('status', models.CharField(choices=[('ok', 'Ok'), ('pending', 'Pending'), ('deactivated', 'Deactivated'), ('failed', 'Failed'), ('expired', 'Expired')], default='ok', max_length=12)),
-                ('org', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_set', to='django_ixctl.Organization')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='org_set', to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "created",
+                    django_handleref.models.CreatedDateTimeField(
+                        auto_now_add=True, verbose_name="Created"
+                    ),
+                ),
+                (
+                    "updated",
+                    django_handleref.models.UpdatedDateTimeField(
+                        auto_now=True, verbose_name="Updated"
+                    ),
+                ),
+                ("version", models.IntegerField(default=0)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ok", "Ok"),
+                            ("pending", "Pending"),
+                            ("deactivated", "Deactivated"),
+                            ("failed", "Failed"),
+                            ("expired", "Expired"),
+                        ],
+                        default="ok",
+                        max_length=12,
+                    ),
+                ),
+                (
+                    "org",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_set",
+                        to="django_ixctl.Organization",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="org_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Organization Users',
-                'db_table': 'account_org_user',
+                "verbose_name": "Organization Users",
+                "db_table": "account_org_user",
             },
-            managers=[
-                ('handleref', django.db.models.manager.Manager()),
-            ],
+            managers=[("handleref", django.db.models.manager.Manager()),],
         ),
         migrations.AddField(
-            model_name='instance',
-            name='org',
-            field=models.ForeignKey(help_text='owned by org', on_delete=django.db.models.deletion.CASCADE, to='django_ixctl.Organization'),
+            model_name="instance",
+            name="org",
+            field=models.ForeignKey(
+                help_text="owned by org",
+                on_delete=django.db.models.deletion.CASCADE,
+                to="django_ixctl.Organization",
+            ),
         ),
         migrations.CreateModel(
-            name='APIKey',
+            name="APIKey",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('created', django_handleref.models.CreatedDateTimeField(auto_now_add=True, verbose_name='Created')),
-                ('updated', django_handleref.models.UpdatedDateTimeField(auto_now=True, verbose_name='Updated')),
-                ('version', models.IntegerField(default=0)),
-                ('status', models.CharField(choices=[('ok', 'Ok'), ('pending', 'Pending'), ('deactivated', 'Deactivated'), ('failed', 'Failed'), ('expired', 'Expired')], default='ok', max_length=12)),
-                ('key', models.CharField(max_length=255, unique=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='key_set', to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "created",
+                    django_handleref.models.CreatedDateTimeField(
+                        auto_now_add=True, verbose_name="Created"
+                    ),
+                ),
+                (
+                    "updated",
+                    django_handleref.models.UpdatedDateTimeField(
+                        auto_now=True, verbose_name="Updated"
+                    ),
+                ),
+                ("version", models.IntegerField(default=0)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ok", "Ok"),
+                            ("pending", "Pending"),
+                            ("deactivated", "Deactivated"),
+                            ("failed", "Failed"),
+                            ("expired", "Expired"),
+                        ],
+                        default="ok",
+                        max_length=12,
+                    ),
+                ),
+                ("key", models.CharField(max_length=255, unique=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="key_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'API Key',
-                'verbose_name_plural': 'API Keys',
-                'db_table': 'account_api_key',
+                "verbose_name": "API Key",
+                "verbose_name_plural": "API Keys",
+                "db_table": "account_api_key",
             },
-            managers=[
-                ('handleref', django.db.models.manager.Manager()),
-            ],
+            managers=[("handleref", django.db.models.manager.Manager()),],
         ),
         migrations.CreateModel(
-            name='InternetExchangeMember',
+            name="InternetExchangeMember",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('created', django_handleref.models.CreatedDateTimeField(auto_now_add=True, verbose_name='Created')),
-                ('updated', django_handleref.models.UpdatedDateTimeField(auto_now=True, verbose_name='Updated')),
-                ('version', models.IntegerField(default=0)),
-                ('status', models.CharField(choices=[('ok', 'Ok'), ('pending', 'Pending'), ('deactivated', 'Deactivated'), ('failed', 'Failed'), ('expired', 'Expired')], default='ok', max_length=12)),
-                ('pdb_id', models.PositiveIntegerField(blank=True, null=True)),
-                ('pdb_version', models.PositiveIntegerField(blank=True, null=True)),
-                ('ipaddr4', models.CharField(blank=True, max_length=255, null=True, validators=[django_ixctl.validators.validate_ip_v4])),
-                ('ipaddr6', models.CharField(blank=True, max_length=255, null=True, validators=[django_ixctl.validators.validate_ip_v6])),
-                ('is_rs_peer', models.BooleanField(default=False)),
-                ('speed', models.PositiveIntegerField()),
-                ('asn', models.PositiveIntegerField()),
-                ('name', models.CharField(blank=True, max_length=255, null=True)),
-                ('state', models.CharField(default='active', max_length=255)),
-                ('type', models.CharField(choices=[('peering', 'peering'), ('ixp', 'ixp'), ('routeserver', 'routeserver'), ('probono', 'probono')], default='peering', max_length=255)),
-                ('ix', models.ForeignKey(help_text='InternetExchanges', on_delete=django.db.models.deletion.CASCADE, related_name='member_set', to='django_ixctl.InternetExchange')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "created",
+                    django_handleref.models.CreatedDateTimeField(
+                        auto_now_add=True, verbose_name="Created"
+                    ),
+                ),
+                (
+                    "updated",
+                    django_handleref.models.UpdatedDateTimeField(
+                        auto_now=True, verbose_name="Updated"
+                    ),
+                ),
+                ("version", models.IntegerField(default=0)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ok", "Ok"),
+                            ("pending", "Pending"),
+                            ("deactivated", "Deactivated"),
+                            ("failed", "Failed"),
+                            ("expired", "Expired"),
+                        ],
+                        default="ok",
+                        max_length=12,
+                    ),
+                ),
+                ("pdb_id", models.PositiveIntegerField(blank=True, null=True)),
+                ("pdb_version", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "ipaddr4",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        validators=[django_ixctl.validators.validate_ip_v4],
+                    ),
+                ),
+                (
+                    "ipaddr6",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        validators=[django_ixctl.validators.validate_ip_v6],
+                    ),
+                ),
+                ("is_rs_peer", models.BooleanField(default=False)),
+                ("speed", models.PositiveIntegerField()),
+                ("asn", models.PositiveIntegerField()),
+                ("name", models.CharField(blank=True, max_length=255, null=True)),
+                ("state", models.CharField(default="active", max_length=255)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("peering", "peering"),
+                            ("ixp", "ixp"),
+                            ("routeserver", "routeserver"),
+                            ("probono", "probono"),
+                        ],
+                        default="peering",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "ix",
+                    models.ForeignKey(
+                        help_text="InternetExchanges",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="member_set",
+                        to="django_ixctl.InternetExchange",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Internet Exchange Member',
-                'verbose_name_plural': 'Internet Exchange Members',
-                'db_table': 'django_ixctl_ixmember',
-                'unique_together': {('ipaddr4', 'ix'), ('ipaddr6', 'ix')},
+                "verbose_name": "Internet Exchange Member",
+                "verbose_name_plural": "Internet Exchange Members",
+                "db_table": "django_ixctl_ixmember",
+                "unique_together": {("ipaddr4", "ix"), ("ipaddr6", "ix")},
             },
-            managers=[
-                ('handleref', django.db.models.manager.Manager()),
-            ],
+            managers=[("handleref", django.db.models.manager.Manager()),],
         ),
     ]

@@ -3,6 +3,7 @@ from django.db import connection, IntegrityError
 from rest_framework import status, renderers
 from rest_framework.utils import encoders
 
+
 class JSONEncoder(encoders.JSONEncoder):
     """
     Custom json encoder that can handle
@@ -61,5 +62,3 @@ class JSONRenderer(renderers.JSONRenderer):
             if "pretty" in request.GET:
                 indent = 2
         return json.dumps(data, cls=JSONEncoder, indent=indent)
-
-

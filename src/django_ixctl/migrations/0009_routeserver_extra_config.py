@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_ixctl', '0008_auto_20200801_1154'),
+        ("django_ixctl", "0008_auto_20200801_1154"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='routeserver',
-            name='extra_config',
-            field=models.TextField(blank=True, help_text='Extra arouteserver config', null=True),
+            model_name="routeserver",
+            name="extra_config",
+            field=models.TextField(
+                blank=True, help_text="Extra arouteserver config", null=True
+            ),
         ),
     ]

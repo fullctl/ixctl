@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_ixctl', '0006_organization_remote_id'),
+        ("django_ixctl", "0006_organization_remote_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='backend',
-            field=models.CharField(blank=True, help_text='Authentication service that created this org', max_length=255, null=True),
+            model_name="organization",
+            name="backend",
+            field=models.CharField(
+                blank=True,
+                help_text="Authentication service that created this org",
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

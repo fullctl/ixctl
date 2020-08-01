@@ -24,17 +24,12 @@ class Organization(viewsets.ViewSet):
         )
         return Response(serializer.data)
 
-
     @action(detail=False, methods=["GET"])
     @grainy_endpoint()
     def users(self, request, org, *args, **kwargs):
         serializer = Serializers.orguser(
             org.user_set.all(),
             many=True,
-            context={
-                "user": request.user,
-                "perms": request.perms,
-            },
+            context={"user": request.user, "perms": request.perms,},
         )
         return Response(serializer.data)
-

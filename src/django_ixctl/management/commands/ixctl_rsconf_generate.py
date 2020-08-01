@@ -7,14 +7,14 @@ from django_ixctl.models import (
     RouteserverConfig,
 )
 
+
 class Command(BaseCommand):
 
     """
     Regenerate updates routeserver configs
     """
 
-
-    #def add_arguments(self, parser):
+    # def add_arguments(self, parser):
     #    parser.add_argument("--pdburl", default="https://www.peeringdb.com/api")
 
     def handle(self, *args, **kwargs):

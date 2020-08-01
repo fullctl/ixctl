@@ -1,7 +1,7 @@
 from django_grainy.util import Permissions as GrainyPermissions
 
-class Permissions(GrainyPermissions):
 
+class Permissions(GrainyPermissions):
     def check(self, *args, **kwargs):
         return True
 

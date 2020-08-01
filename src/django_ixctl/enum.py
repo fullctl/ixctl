@@ -17,5 +17,3 @@ ARS_NO_EXPORT_ACTIONS = (
     ("pass", _("Pass (Treat as transitive)")),
     ("strip", _("Strip (Treat as non-transitive)")),
 )
-
-

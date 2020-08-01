@@ -17,7 +17,9 @@ class RequestAugmentation:
     def process_view(self, request, view_func, view_args, view_kwargs):
         kwargs = request.resolver_match.kwargs
         request.perms = Permissions(request.user)
-        if (not hasattr(request.user, "org_set") or not request.user.org_set.exists()) and "org_tag" not in kwargs:
+        if (
+            not hasattr(request.user, "org_set") or not request.user.org_set.exists()
+        ) and "org_tag" not in kwargs:
 
             if not settings.ORGANIZATION_PROVIDED_BY_OAUTH:
 
@@ -28,19 +30,17 @@ class RequestAugmentation:
                 if request.user.is_authenticated:
 
                     request.org, _ = Organization.objects.get_or_create(
-                        name = f"{request.user.username} personal org",
-                        slug = request.user.username,
-                        personal = True
+                        name=f"{request.user.username} personal org",
+                        slug=request.user.username,
+                        personal=True,
                     )
 
                     OrganizationUser.objects.create(
-                        org = request.org,
-                        user = request.user,
+                        org=request.org, user=request.user,
                     )
 
                     request.orgs = [request.org]
                     return
-
 
             if not request.user.is_authenticated:
 

@@ -6,18 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_ixctl', '0003_internetexchange_urlkey'),
+        ("django_ixctl", "0003_internetexchange_urlkey"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='internetexchangemember',
-            old_name='type',
-            new_name='ixf_member_type',
+            model_name="internetexchangemember",
+            old_name="type",
+            new_name="ixf_member_type",
         ),
         migrations.RenameField(
-            model_name='internetexchangemember',
-            old_name='state',
-            new_name='ixf_state',
+            model_name="internetexchangemember", old_name="state", new_name="ixf_state",
         ),
     ]

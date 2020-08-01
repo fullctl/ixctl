@@ -12,6 +12,7 @@ from django_ixctl.rest.serializers.ixctl import Serializers
 from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint
 from django_ixctl.peeringdb import import_org
 
+
 class grainy_endpoint(_grainy_endpoint):
     def __init__(self, *args, **kwargs):
         super().__init__(
@@ -29,7 +30,6 @@ class InternetExchange(viewsets.ViewSet):
     serializer_class = Serializers.ix
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
-
 
     @grainy_endpoint()
     def list(self, request, org, instance, *args, **kwargs):
@@ -74,7 +74,6 @@ class InternetExchange(viewsets.ViewSet):
 
         return Response(Serializers.ix(instance=ix).data)
 
-
     @action(detail=True, methods=["GET"])
     @grainy_endpoint()
     def members(self, request, org, instance, pk=None, *args, **kwargs):
@@ -109,7 +108,6 @@ class InternetExchange(viewsets.ViewSet):
         member = serializer.save()
 
         return Response(Serializers.member(instance=member).data)
-
 
     @action(detail=True, methods=["PUT"])
     @grainy_endpoint()
@@ -162,7 +160,6 @@ class InternetExchange(viewsets.ViewSet):
 
         return Response(Serializers.rs(instance=routeserver).data)
 
-
     @action(detail=True, methods=["PUT"])
     @grainy_endpoint()
     def edit_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
@@ -184,14 +181,14 @@ class InternetExchange(viewsets.ViewSet):
 class RouteserverConfig(viewsets.ViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
-    lookup_value_regex = '[0-9.]+'
+    lookup_value_regex = "[0-9.]+"
 
     @grainy_endpoint()
     def retrieve(self, request, org, instance, pk, *args, **kwargs):
         serializer = Serializers.rsconf(
-            instance=models.RouteserverConfig.objects.get(rs__ix__instance=instance, rs__router_id=pk),
+            instance=models.RouteserverConfig.objects.get(
+                rs__ix__instance=instance, rs__router_id=pk
+            ),
             many=False,
         )
         return Response(serializer.data)
-
-

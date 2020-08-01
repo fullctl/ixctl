@@ -10,6 +10,7 @@ import django_ixctl.models as models
 
 Serializers, register = serializer_registry()
 
+
 @register
 class Organization(serializers.ModelSerializer):
     selected = serializers.SerializerMethodField()

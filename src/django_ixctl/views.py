@@ -33,6 +33,7 @@ def view_instance(request, instance, **kwargs):
 
     return render(request, "ixctl/index.html", env)
 
+
 @require_auth()
 def org_redirect(request):
     return redirect(f"/{request.org.slug}/")
