@@ -1,0 +1,66 @@
+{% load static i18n %}
+<table
+  class="table"
+  data-api-base="{% url "ixctl_api:ix-detail" org_tag=request.org.slug pk="0" %}"
+  data-api-action="routeservers"
+  data-template="list">
+  <thead>
+    <tr>
+      <th>{% trans "ASN" %}</th>
+      <th>{% trans "Name" %}</th>
+      <th>{% trans "Router ID" %}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody class="list-body">
+  </tbody>
+  <tbody class="templates">
+    <tr data-template="row">
+      <td data-field="asn"></td>
+      <td data-field="display_name" class="highlight"></td>
+      <td data-field="router_id"></td>
+      <td data-field="controls" class="right" style="width:162px">
+        <div class="row">
+          <div class="col-xs-12 col-lg-6">
+            <a data-action="edit_routeserver"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
+          </div>
+          <div class="col-xs-12 col-lg-6">
+        <a
+          data-api-action="delete_routeserver"
+          data-api-callback="remove"
+          data-confirm="Remove routeserver?"
+          data-api-method="DELETE"><span class="icon ixctl icon-delete"></span><span class="ixctl label">{% trans "Delete" %}</span></a>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr data-template="row" class="secondary">
+      <td class="indent"></td>
+      <td class="property" colspan="4">
+        <div class="row">
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            {% trans "Type" %}:
+            <span class="highlight" data-field="ars_type"></span>
+          </div>
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            {% trans "Max. AS_PATH length" %}:
+            <span class="highlight" data-field="max_as_path_length"></span>
+          </div>
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            {% trans "No export action" %}:
+            <span class="highlight" data-field="no_export_action"></span>
+          </div>
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            {% trans "Graceful shutdown" %}:
+            <span data-field="graceful_shutdown" data-toggle="checked">
+              <img data-false src="{% static "common/icons/Indicator/X-Ind/X.svg" %}" class="icon filled">
+              <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
+            </span>
+          </div>
+        </div>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+

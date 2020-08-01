@@ -246,6 +246,7 @@ span.select2-dropdown {
 }
 
 div.controls .select2-container--default .select2-selection--single,
+div.controls textarea,
 div.controls input[type="text"],
 div.controls input[type="password"],
 div.controls select {
@@ -266,6 +267,8 @@ div.controls input[type="checkbox"]:checked:before {
   color: #FFFFFF;
 }
 
+
+div.controls textarea:focus,
 div.controls select:focus {
   background-color: #191F26;
   color: #FFFFFF;

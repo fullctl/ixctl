@@ -698,6 +698,7 @@ div.modal-header {
 div.controls .select2-container--default .select2-selection--single,
 div.controls input[type="text"],
 div.controls input[type="password"],
+div.controls textarea,
 div.controls select {
   font-family: "Archivo Narrow";
   font-size: 16px;
@@ -713,6 +714,10 @@ div.controls input[type="text"],
 div.controls input[type="password"] {
   padding: 6px 8px;
   height: auto;
+}
+
+div.controls textarea {
+  padding: 6px 8px;
 }
 
 div.controls label {

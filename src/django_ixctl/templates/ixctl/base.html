@@ -37,7 +37,7 @@
   <div class="col-3 col-md-2">
       <button type="button" class="button" data-element="button_create_ix">
       <span class="icon ixctl icon-add"></span>
-      {% trans "Create Exchange" %}</button>
+      {% trans "Create" %}</button>
   </div>
   <div class="col-3 col-md-2">
       <button type="button" class="button" data-element="button_import">
@@ -52,6 +52,7 @@
 {% endblock %}
 
 {% block "app_content_main" %}
+{% include "ixctl/tool/routeservers/main.html" %}
 {% include "ixctl/tool/members/main.html" %}
 {% endblock %}
 

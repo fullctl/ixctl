@@ -31,6 +31,11 @@ $ctl.application.Ixctl = $tc.extend(
         return new $ctl.application.Ixctl.Members();
       });
 
+      this.tool("routeservers", () => {
+        return new $ctl.application.Ixctl.Routeservers();
+      });
+
+
       $(this.$c.toolbar.$e.select_ix).on("change", () => {
         this.sync();
       });
@@ -44,6 +49,7 @@ $ctl.application.Ixctl = $tc.extend(
       });
 
       this.$t.members.activate();
+      this.$t.routeservers.activate();
 
     },
 
@@ -70,10 +76,6 @@ $ctl.application.Ixctl = $tc.extend(
 
     prompt_import : function(first_import) {
       return new $ctl.application.Ixctl.ModalImport(first_import);
-    },
-
-    prompt_add_member : function() {
-      return new $ctl.application.Ixctl.AddMemberImport(this.ix());
     },
 
     prompt_create_exchange : function() {
@@ -238,6 +240,98 @@ $ctl.application.Ixctl.Members = $tc.extend(
   },
   $ctl.application.Tool
 );
+
+$ctl.application.Ixctl.ModalRouteserver = $tc.extend(
+  "ModalRouteserver",
+  {
+    ModalRouteserver : function(ix_id, routeserver) {
+      var modal = this;
+      var title = "Add Routeserver"
+      var form = this.form = new twentyc.rest.Form(
+        $ctl.template("form_routeserver")
+      );
+
+      this.routeserver = routeserver;
+
+      form.base_url = form.base_url.replace("/0", "/"+ix_id);
+
+      if(routeserver) {
+        title = "Edit "+routeserver.display_name;
+        form.form_action = "edit_routeserver";
+        form.method = "PUT"
+        form.fill(routeserver);
+        $(this.form).on("api-write:before", (ev, e, payload) => {
+          payload["ix"] = routeserver.ix;
+          payload["id"] = routeserver.id;
+        });
+      }
+
+      $(this.form).on("api-write:success", (ev, e, payload, response) => {
+        $ctl.ixctl.$t.routeservers.$w.list.load();
+        modal.hide();
+      });
+
+      this.Modal("save_lg", title, form.element);
+      form.wire_submit(this.$e.button_submit);
+    }
+  },
+  $ctl.application.Modal
+);
+
+
+$ctl.application.Ixctl.Routeservers = $tc.extend(
+  "Routeservers",
+  {
+    Routeservers : function() {
+      this.Tool("routeservers");
+    },
+    init : function() {
+      this.widget("list", ($e) => {
+        return new twentyc.rest.List(
+          this.template("list", this.$e.body)
+        );
+      })
+
+      this.$w.list.formatters.row = (row, data) => {
+        row.find('a[data-action="edit_routeserver"]').click(() => {
+          var routeserver = row.data("apiobject");
+          new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix(), routeserver);
+        });
+      };
+
+      this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
+      this.$w.list.base
+
+      $(this.$w.list).on("api-read:before",function()  {
+        console.log(this.base_url)
+        this.base_url = this.base_url.replace(
+          /\/ix\/\d+$/,
+          "/ix/"+$ctl.ixctl.ix()
+        )
+      })
+    },
+
+    menu : function() {
+      var menu = this.Tool_menu();
+      menu.find('[data-element="button_add_routeserver"]').click(() => {
+        return new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix());
+      });
+      return menu;
+    },
+
+    sync : function() {
+      if($ctl.ixctl.ix()) {
+        this.$w.list.load();
+        this.$e.menu.find('[data-element="button_api_view"]').attr(
+          "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
+        )
+
+      }
+    }
+  },
+  $ctl.application.Tool
+);
+
 
 $(document).ready(function() {
   $ctl.ixctl = new $ctl.application.Ixctl();

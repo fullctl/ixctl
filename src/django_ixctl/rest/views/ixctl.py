@@ -60,6 +60,21 @@ class InternetExchange(viewsets.ViewSet):
         ix.save()
         return Response(Serializers.ix(instance=ix).data)
 
+    @action(detail=False, methods=["POST"])
+    @grainy_endpoint()
+    def import_peeringdb(self, request, org, instance, *args, **kwargs):
+        serializer = Serializers.impix(
+            data=request.data, context={"instance": instance},
+        )
+
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+
+        ix = serializer.save()
+
+        return Response(Serializers.ix(instance=ix).data)
+
+
     @action(detail=True, methods=["GET"])
     @grainy_endpoint()
     def members(self, request, org, instance, pk=None, *args, **kwargs):
@@ -112,16 +127,71 @@ class InternetExchange(viewsets.ViewSet):
 
         return Response(Serializers.member(instance=member).data)
 
-    @action(detail=False, methods=["POST"])
+    @action(detail=True, methods=["GET"])
     @grainy_endpoint()
-    def import_peeringdb(self, request, org, instance, *args, **kwargs):
-        serializer = Serializers.impix(
-            data=request.data, context={"instance": instance},
+    def routeservers(self, request, org, instance, pk=None, *args, **kwargs):
+
+        serializer = Serializers.rs(
+            instance=models.Routeserver.objects.filter(
+                ix_id=pk, ix__instance=instance
+            ).order_by("name"),
+            many=True,
         )
 
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["DELETE"])
+    @grainy_endpoint()
+    def delete_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
+        ix = models.InternetExchange.objects.get(instance=instance, id=pk)
+        routeserver = models.Routeserver.objects.get(ix=ix, id=request.data["id"])
+        routeserver.delete()
+        routeserver.id = request.data.get("id")
+        return Response(Serializers.rs(instance=routeserver).data)
+
+    @action(detail=True, methods=["POST"])
+    @grainy_endpoint()
+    def add_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
+        data = request.data
+        data["ix"] = models.InternetExchange.objects.get(instance=instance, id=pk).id
+        serializer = Serializers.rs(data=data, context={"instance": instance})
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
 
-        ix = serializer.save()
+        routeserver = serializer.save()
 
-        return Response(Serializers.ix(instance=ix).data)
+        return Response(Serializers.rs(instance=routeserver).data)
+
+
+    @action(detail=True, methods=["PUT"])
+    @grainy_endpoint()
+    def edit_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
+        routeserver = models.Routeserver.objects.get(
+            ix__instance=instance, ix_id=pk, id=request.data["id"]
+        )
+        serializer = Serializers.rs(
+            data=request.data, instance=routeserver, context={"instance": instance}
+        )
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+
+        routeserver = serializer.save()
+
+        return Response(Serializers.rs(instance=routeserver).data)
+
+
+@route
+class RouteserverConfig(viewsets.ViewSet):
+    serializer_class = Serializers.rsconf
+    queryset = models.RouteserverConfig.objects.all()
+    lookup_value_regex = '[0-9.]+'
+
+    @grainy_endpoint()
+    def retrieve(self, request, org, instance, pk, *args, **kwargs):
+        serializer = Serializers.rsconf(
+            instance=models.RouteserverConfig.objects.get(rs__ix__instance=instance, rs__router_id=pk),
+            many=False,
+        )
+        return Response(serializer.data)
+
+

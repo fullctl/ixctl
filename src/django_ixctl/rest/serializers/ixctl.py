@@ -1,3 +1,10 @@
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
+import yaml
+
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
@@ -174,3 +181,47 @@ class InternetExchangeMember(serializers.ModelSerializer):
         if not ipaddr6:
             return None
         return ipaddr6
+
+
+@register
+class Routeserver(serializers.ModelSerializer):
+
+    router_id = IPAddressField(
+        version=4,
+    )
+
+    class Meta:
+        model = models.Routeserver
+        fields = [
+            "ix",
+            "name",
+            "display_name",
+            "asn",
+            "router_id",
+            "ars_type",
+            "max_as_path_length",
+            "no_export_action",
+            "graceful_shutdown",
+            "extra_config",
+        ]
+
+    def validate_extra_config(self, value):
+        try:
+            data = yaml.load(value, Loader=Loader)
+        except Exception as exc:
+            raise serializers.ValidationError(f"Invalid yaml formatting: {exc}")
+
+        if data and not isinstance(data, dict):
+            raise serializers.ValidationError("Config object literal expected")
+        return value
+
+
+@register
+class Routeserver(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.RouteserverConfig
+        fields = [
+            "rs",
+            "body",
+        ]

@@ -1,10 +1,30 @@
+import time
+import os.path
+import tempfile
+import subprocess
+
 from secrets import token_urlsafe
+
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
+import yaml
 
 from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse
+
+from django_inet.models import (
+    IPAddressField,
+    MacAddressField,
+    ASNField,
+)
+
 
 import reversion
 
@@ -13,7 +33,9 @@ from django_peeringdb.models.concrete import IXLan, NetworkIXLan
 
 from django_ixctl.inet.util import pdb_lookup
 from django_ixctl.validators import validate_ip_v4, validate_ip_v6
+
 import django_ixctl.enum
+
 def generate_secret():
     return token_urlsafe()
 
@@ -235,7 +257,7 @@ class OrganizationUser(HandleRefModel):
         tag = "orguser"
 
     class Meta:
-        db_table = "account_org_user"
+        db_table = "ixctl_org_user"
         verbose_name = _("Organization User")
         verbose_name = _("Organization Users")
 
@@ -259,7 +281,7 @@ class APIKey(HandleRefModel):
     )
 
     class Meta:
-        db_table = "account_api_key"
+        db_table = "ixctl_api_key"
         verbose_name = _("API Key")
         verbose_name_plural = _("API Keys")
 
@@ -285,7 +307,7 @@ class InternetExchange(PdbRefModel):
         tag = "ix"
 
     class Meta:
-        db_table = "django_ixctl_ix"
+        db_table = "ixctl_ix"
         verbose_name_plural = _("Internet Exchanges")
         verbose_name = _("Internet Exchange")
 
@@ -315,8 +337,13 @@ class InternetExchange(PdbRefModel):
 
     @property
     def ixf_export_url(self):
-        # TODO: CRUFT (check any references and remove)
-        return "/ix/export/ixf/{}/{}".format(self.instance.secret.self.id)
+        return reverse(
+            "django_ixctl:ixf export", args=(
+                ix.instance.org.slug,
+                ix.secret,
+            )
+        )
+
 
 @reversion.register()
 class InternetExchangeMember(PdbRefModel):
@@ -343,7 +370,7 @@ class InternetExchangeMember(PdbRefModel):
         tag = "member"
 
     class Meta:
-        db_table = "django_ixctl_ixmember"
+        db_table = "ixctl_member"
         verbose_name_plural = _("Internet Exchange Members")
         verbose_name = _("Internet Exchange Member")
         unique_together = (("ipaddr4", "ix"), ("ipaddr6", "ix"))
@@ -370,6 +397,253 @@ class InternetExchangeMember(PdbRefModel):
     @property
     def display_name(self):
         return self.name or f"AS{self.asn}"
+
+@reversion.register
+class Routeserver(HandleRefModel):
+
+    ix = models.ForeignKey(
+        InternetExchange,
+        on_delete=models.CASCADE,
+        related_name="rs_set",
+    )
+
+    # RS Config
+
+    name = models.CharField(
+        max_length=255,
+        help_text=_("Routeserver name"),
+    )
+
+    asn = ASNField(
+        help_text=_("ASN")
+    )
+
+    router_id = IPAddressField(
+        version=4,
+        help_text=_("Router Id"),
+    )
+
+    # ARS Config
+
+    ars_type = models.CharField(
+        max_length=32,
+        choices=django_ixctl.enum.ARS_TYPES,
+        default="bird",
+    )
+
+    max_as_path_length = models.IntegerField(
+        default=32,
+        help_text=_("Max length of AS_PATH attribute."),
+    )
+
+    no_export_action = models.CharField(
+        max_length=8,
+        choices=django_ixctl.enum.ARS_NO_EXPORT_ACTIONS,
+        default="pass",
+        help_text=_("RFC1997 well-known communities (NO_EXPORT and NO_ADVERTISE)"),
+    )
+
+    graceful_shutdown = models.BooleanField(
+        default=False,
+        help_text=_("Graceful BGP session shutdown"),
+    )
+
+    extra_config = models.TextField(
+        null=True,
+        blank=True,
+        help_text=_("Extra arouteserver config")
+    )
+
+
+    class Meta:
+        db_table = "ixctl_rs"
+        unique_together = (("ix", "router_id"),)
+
+    class HandleRef:
+        tag = "rs"
+
+    @property
+    def display_name(self):
+        return self.name
+
+    @property
+    def rsconf(self):
+        if not hasattr(self, "_rsconf"):
+            rsconf, created = RouteserverConfig.objects.get_or_create(
+                rs=self
+            )
+            self._rsconf = rsconf
+        return self._rsconf
+
+    @property
+    def ars_general(self):
+        ars_general = {
+            "cfg" : {
+                "rs_as": self.asn,
+                "router_id": f"{self.router_id}",
+                "filtering": {
+                    "max_as_path_len": self.max_as_path_length,
+                },
+                "rfc1997_wellknown_communities": {
+                    "policy": self.no_export_action,
+                },
+                "graceful_shutdown": {
+                    "enabled": self.graceful_shutdown
+                }
+            }
+        }
+
+        if self.extra_config:
+            extra_config = yaml.load(self.extra_config, Loader=Loader)
+
+            # TODO: should we expect people to put the cfg:
+            # root element into the extra config or not ?
+            #
+            # support both approaches for now
+
+            if "cfg" in extra_config:
+                ars_general["cfg"].update(extra_config["cfg"])
+            else:
+                ars_general.update(extra_config)
+
+        return ars_general
+
+
+    @property
+    def ars_clients(self):
+        asns = {}
+        clients = {}
+
+        # TODO
+        # where to get ASN sets from ??
+        # peeringdb network ??
+
+        for member in self.ix.member_set.all():
+            asn = f"AS{member.asn}"
+            if asn not in asns:
+                continue
+                if member.pdb_id:
+                    asns[asn] = {"as_sets":[member.pdb.net.irr_as_set]}
+                else:
+                    asns[asn] = {"as_sets":[]}
+
+            if member.asn not in clients:
+                clients[member.asn] = {
+                    "asn": member.asn,
+                    "ip": []
+                }
+
+            if member.ipaddr4:
+                clients[member.asn]["ip"].append(f"{member.ipaddr4}")
+
+            if member.ipaddr6:
+                clients[member.asn]["ip"].append(f"{member.ipaddr6}")
+
+        return {"asns": asns, "clients": list(clients.values())}
+
+
+    def __str__(self):
+        return f"Routeserver {self.name} AS{self.asn}"
+
+@reversion.register
+class RouteserverConfig(HandleRefModel):
+
+    rs = models.OneToOneField(
+        Routeserver,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    generated = models.DateTimeField(
+        auto_now=True,
+        blank=True,
+        help_text=_("Time of generation")
+    )
+
+    # TODO: rename to `config` ?
+    # Once we have confu backed config fields
+    # i sort of want the `config` attribute to be
+    # reserved for confu config fields though.
+
+    body = models.TextField(help_text=_("Config content"))
+
+    ars_general = models.TextField(help_text=("ARouteserver general config"), null=True, blank=True)
+    ars_clients = models.TextField(help_text=("ARouteserver clients config"), null=True, blank=True)
+
+    class HandleRef:
+        tag = "rsconf"
+
+    class Meta:
+        db_table = "ixctl_rsconf"
+
+    @property
+    def outdated(self):
+        print(self.generated)
+        print(self.updated)
+        if not self.generated or self.generated < self.rs.updated:
+            return True
+        return False
+
+    def generate(self):
+        ix = self.rs.ix
+        rs = self.rs
+        ars_general = rs.ars_general
+        ars_clients = rs.ars_clients
+
+        config_dir = tempfile.mkdtemp(prefix="ixctl_rsconf")
+
+        general_config_file = os.path.join(config_dir, "general.yaml")
+        clients_config_file = os.path.join(config_dir, "clients.yaml")
+        outfile = os.path.join(config_dir, "generated-config.txt")
+
+        with open(general_config_file, "w") as fh:
+            as_yaml = yaml.dump(ars_general, Dumper=Dumper)
+            self.ars_general = as_yaml
+            fh.write(as_yaml)
+
+        with open(clients_config_file, "w") as fh:
+            as_yaml = yaml.dump(ars_clients, Dumper=Dumper)
+            self.ars_clients = as_yaml
+            fh.write(as_yaml)
+
+        # no reasonable way found to call an arouteserve
+        # python api - so lets just run the command
+
+        if rs.ars_type in ["bird", "bird2"]:
+            ars_type = "bird"
+        else:
+            ars_type = rs.ars_type
+
+        cmd = [
+            "arouteserver",
+            ars_type,
+            "--general",
+            general_config_file,
+            "--clients",
+            clients_config_file,
+            "-o",
+            outfile
+        ]
+
+        # TODO: bird v1 needs to generate
+        # separate for each ip version
+        #
+        # how to store?
+
+        if rs.ars_type == "bird":
+            cmd += ["--ip-ver", "4"]
+        elif rs.ars_type == "bird2":
+            cmd += ["--target-version", "2.0.7"]
+
+        process = subprocess.Popen(cmd)
+        process.wait(10)
+
+        with open(outfile,"r") as fh:
+            self.body = fh.read()
+
+        self.save()
+
 
 
 
