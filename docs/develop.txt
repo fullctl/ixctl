@@ -13,3 +13,7 @@
 6. cd src 
 7. python manage.py migrate
 8. python manage.py runserver
+
+### cron job to regen routeserver config
+
+* * * * * python manage.py ixctl_rsconf_generate
