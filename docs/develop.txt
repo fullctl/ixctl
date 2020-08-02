@@ -17,3 +17,22 @@
 ### cron job to regen routeserver config
 
 * * * * * python manage.py ixctl_rsconf_generate
+
+### api key auth
+
+#### HTTP Header
+
+```
+Authorization: bearer {key}
+```
+
+```
+curl -X GET https://localhost/api/20c/ix/ -H "Authorization: bearer abc"
+```
+
+#### Alternatively also as URI parameter
+
+```
+?key={key}
+```
+
