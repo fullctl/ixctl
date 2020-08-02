@@ -14,7 +14,7 @@ class APIKeyAuthentication(authentication.BaseAuthentication):
             auth = request.headers.get("Authorization")
             if auth:
                 auth = auth.split(" ")
-                if auth[0] == "token":
+                if auth[0].lower() in ["token", "bearer"]:
                     key = auth[1]
 
         try:
