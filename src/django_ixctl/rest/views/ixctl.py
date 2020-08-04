@@ -47,9 +47,8 @@ class InternetExchange(viewsets.ViewSet):
         )
         return Response(serializer.data)
 
-    @action(detail=False, methods=["POST"])
     @grainy_endpoint()
-    def add_exchange(self, request, org, instance, *args, **kwargs):
+    def create(self, request, org, instance, *args, **kwargs):
         data = request.data
         data["pdb_id"] = None
         serializer = Serializers.ix(data=data)
