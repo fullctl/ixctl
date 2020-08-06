@@ -563,10 +563,17 @@ class RouteserverConfig(HandleRefModel):
 
     @property
     def outdated(self):
-        print(self.generated)
-        print(self.updated)
+
+        # Route server has been updated since last generation,
+
         if not self.generated or self.generated < self.rs.updated:
             return True
+
+        # RS Peer has been updated since last generation
+
+        for member in self.rs.ix.member_set.filter(is_rs_peer=True):
+            if self.generated < member.updated:
+                return True
         return False
 
     def generate(self):
