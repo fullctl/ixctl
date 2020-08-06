@@ -36,9 +36,6 @@ class JSONRenderer(renderers.JSONRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         status = renderer_context.get("response").status_code
 
-        if renderer_context.get("plain"):
-            return "PLAIN"
-
         container = {"data": [], "errors": {}}
 
         # FIXME: should be a config value to disable/enable profile
