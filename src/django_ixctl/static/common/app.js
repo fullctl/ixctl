@@ -88,6 +88,13 @@ fullctl.application.Modal = $tc.extend(
       this.Component("modal_"+type)
       this.set_title(title);
       this.set_content(content);
+
+      var modal = this;
+
+      content.find('.modal-action-note-text').each(function() {
+        $(this).appendTo(modal.jquery.find('.modal-action-note'))
+      });
+
       this.show();
     },
     show : function() {
