@@ -4,6 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = ">=6.0.1"
+pytest-django = ">=3.8.0"
 
 [packages]
 django-handleref = ">=0.5"
@@ -17,6 +19,8 @@ django-autocomplete-light = ">=3,<=4"
 social-auth-app-django = "<4"
 django-grainy = {file = "https://github.com/20c/django-grainy/archive/master.zip"}
 pyyaml = "*"
+
+
 
 [requires]
 python_version = "3.7"

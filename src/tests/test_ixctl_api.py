@@ -1,0 +1,165 @@
+import json
+from django.urls import reverse
+
+import django_ixctl.models as models
+
+
+def test_ix_import_peeringdb(db, pdb_data, account_objects):
+    org = account_objects.org
+
+    client = account_objects.api_client
+    response = client.post(
+        reverse("ixctl_api:ix-import-peeringdb", args=(org.slug,)), {"pdb_ix_id": 239}
+    )
+    data = response.json()
+    assert response.status_code == 200
+    assert data["data"][0]["pdb_id"] == 239
+
+
+def test_ix_list(db, pdb_data, account_objects):
+
+    ix = account_objects.ix
+    client = account_objects.api_client
+    org = account_objects.org
+
+    response = client.get(reverse("ixctl_api:ix-list", args=(org.slug,)))
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data) == 1
+    assert data[0]["pdb_id"] == ix.pdb_id
+    assert data[0]["urlkey"] == ix.urlkey
+    assert data[0]["name"] == ix.pdb.ix.name
+    assert data[0]["id"] == ix.id
+    assert data[0]["status"] == ix.status
+
+
+def test_ix_retrieve(db, pdb_data, account_objects):
+
+    ix = account_objects.ix
+    client = account_objects.api_client
+    org = account_objects.org
+
+    response = client.get(reverse("ixctl_api:ix-detail", args=(org.slug, ix.id)))
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data) == 1
+    assert data[0]["pdb_id"] == ix.pdb_id
+    assert data[0]["urlkey"] == ix.urlkey
+    assert data[0]["name"] == ix.pdb.ix.name
+    assert data[0]["id"] == ix.id
+    assert data[0]["status"] == ix.status
+
+
+def test_ix_members(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    net = account_objects.net
+    client = account_objects.api_client
+    org = account_objects.org
+
+    portinfo = ix.portinfo_set.first()
+
+    response = client.get(reverse("ixctl_api:ix-members", args=(org.slug, ix.id)))
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data) == 1
+    assert data[0]["pdb_id"] == portinfo.pdb_id
+    assert data[0]["id"] == portinfo.id
+    assert data[0]["status"] == portinfo.status
+    assert data[0]["ixf_member_type"] == portinfo.ixf_member_type
+    assert data[0]["ixf_state"] == portinfo.ixf_state
+    assert data[0]["display_name"] == portinfo.display_name
+    assert data[0]["ipaddr4"] == portinfo.ipaddr4
+    assert data[0]["ipaddr6"] == portinfo.ipaddr6
+    assert data[0]["is_rs_peer"] == portinfo.is_rs_peer
+    assert data[0]["speed"] == portinfo.speed
+
+
+def test_ix_delete_member(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    net = account_objects.net
+    client = account_objects.api_client
+    org = account_objects.org
+
+    portinfo = ix.portinfo_set.first()
+
+    response = client.delete(
+        reverse("ixctl_api:ix-delete-member", args=(org.slug, ix.id)),
+        {"id": portinfo.id},
+    )
+
+    assert response.status_code == 200
+
+    assert models.PortInfo.objects.filter(id=portinfo.id).exists() == False
+
+
+def test_ix_add_member(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    net = account_objects.net
+    client = account_objects.api_client
+    org = account_objects.org
+
+    portinfo = ix.portinfo_set.first()
+
+    response = client.post(
+        reverse("ixctl_api:ix-add-member", args=(org.slug, ix.id)),
+        json.dumps(
+            {
+                "asn": 63311,
+                "ixf_state": "active",
+                "ixf_member_type": "peering",
+                "name": "",
+                "ippadr4": "206.41.111.20",
+                "ipaddr6": "2001:504:41:111::20",
+                "speed": 1000,
+                "is_rs_peer": False,
+            }
+        ),
+        content_type="application/json",
+    )
+
+    print(response.json())
+    data = response.json()["data"]
+    assert response.status_code == 200
+
+    assert models.PortInfo.objects.filter(id=data[0]["id"]).exists()
+
+
+def test_ix_edit_member(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    net = account_objects.net
+    client = account_objects.api_client
+    org = account_objects.org
+
+    portinfo = ix.portinfo_set.first()
+
+    response = client.put(
+        reverse("ixctl_api:ix-edit-member", args=(org.slug, portinfo.ix.id)),
+        json.dumps(
+            {
+                "id": portinfo.id,
+                "ix": portinfo.ix.id,
+                "net": portinfo.net.id,
+                "asn": 63311,
+                "ixf_state": "active",
+                "ixf_member_type": "peering",
+                "name": "override",
+                "ipaddr4": "206.41.111.20",
+                "ipaddr6": "2001:504:41:111::20",
+                "speed": 1000,
+                "is_rs_peer": False,
+            }
+        ),
+        content_type="application/json",
+    )
+
+    print(response.json())
+    data = response.json()["data"]
+    assert response.status_code == 200
+
+    portinfo.refresh_from_db()
+    assert portinfo.name == "override"
+    assert portinfo.ipaddr4 == "206.41.111.20"
+    assert portinfo.ipaddr6 == "2001:504:41:111::20"
