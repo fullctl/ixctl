@@ -1,5 +1,6 @@
 import json
 from django.db import connection, IntegrityError
+from django.utils.encoding import smart_text
 from rest_framework import status, renderers
 from rest_framework.utils import encoders
 
@@ -35,6 +36,9 @@ class JSONRenderer(renderers.JSONRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         status = renderer_context.get("response").status_code
 
+        if renderer_context.get("plain"):
+            return "PLAIN"
+
         container = {"data": [], "errors": {}}
 
         # FIXME: should be a config value to disable/enable profile
@@ -62,3 +66,11 @@ class JSONRenderer(renderers.JSONRenderer):
             if "pretty" in request.GET:
                 indent = 2
         return json.dumps(data, cls=JSONEncoder, indent=indent)
+
+
+class PlainTextRenderer(renderers.BaseRenderer):
+    media_type = 'text/plain'
+    format = 'txt'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        return smart_text(data, encoding=self.charset)

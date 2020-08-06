@@ -10,7 +10,9 @@ import django_ixctl.models as models
 from django_ixctl.rest.route.ixctl import route
 from django_ixctl.rest.serializers.ixctl import Serializers
 from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint
+from django_ixctl.rest.renderers import PlainTextRenderer
 from django_ixctl.peeringdb import import_org
+
 
 
 class grainy_endpoint(_grainy_endpoint):
@@ -191,3 +193,14 @@ class RouteserverConfig(viewsets.ViewSet):
             many=False,
         )
         return Response(serializer.data)
+
+    @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
+    @grainy_endpoint()
+    def plain(self, request, org, instance, pk, *args, **kwargs):
+        serializer = Serializers.rsconf(
+            instance=models.RouteserverConfig.objects.get(
+                rs__ix__instance=instance, rs__router_id=pk
+            ),
+            many=False,
+        )
+        return Response(serializer.instance.body)
