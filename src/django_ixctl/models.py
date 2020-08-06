@@ -33,6 +33,7 @@ from django_peeringdb.models.concrete import IXLan, NetworkIXLan
 
 from django_ixctl.inet.util import pdb_lookup
 from django_ixctl.validators import validate_ip_v4, validate_ip_v6
+from django_ixctl.peeringdb import get_as_set
 
 import django_ixctl.enum
 
@@ -360,6 +361,7 @@ class InternetExchangeMember(PdbRefModel):
     ipaddr6 = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_ip_v6]
     )
+    macaddr = MacAddressField(null=True, blank=True)
     is_rs_peer = models.BooleanField(default=False)
     speed = models.PositiveIntegerField()
     asn = models.PositiveIntegerField()
@@ -377,7 +379,7 @@ class InternetExchangeMember(PdbRefModel):
         db_table = "ixctl_member"
         verbose_name_plural = _("Internet Exchange Members")
         verbose_name = _("Internet Exchange Member")
-        unique_together = (("ipaddr4", "ix"), ("ipaddr6", "ix"))
+        unique_together = (("ipaddr4", "ix"), ("ipaddr6", "ix"), ("macaddr", "ix"))
 
     @classmethod
     def create_from_pdb(cls, pdb_object, ix, save=True, **fields):
@@ -415,6 +417,11 @@ class Routeserver(HandleRefModel):
     asn = ASNField(help_text=_("ASN"))
 
     router_id = IPAddressField(version=4, help_text=_("Router Id"),)
+
+    rpki_bgp_origin_validation = models.BooleanField(
+        default=False
+    )
+
 
     # ARS Config
 
@@ -465,7 +472,12 @@ class Routeserver(HandleRefModel):
             "cfg": {
                 "rs_as": self.asn,
                 "router_id": f"{self.router_id}",
-                "filtering": {"max_as_path_len": self.max_as_path_length,},
+                "filtering": {
+                    "max_as_path_len": self.max_as_path_length,
+                    "rpki_bgp_origin_validation": {
+                        "enabled": self.rpki_bgp_origin_validation
+                    }
+                },
                 "rfc1997_wellknown_communities": {"policy": self.no_export_action,},
                 "graceful_shutdown": {"enabled": self.graceful_shutdown},
             }
@@ -495,14 +507,13 @@ class Routeserver(HandleRefModel):
         # where to get ASN sets from ??
         # peeringdb network ??
 
-        for member in self.ix.member_set.all():
+        for member in self.ix.member_set.filter(is_rs_peer=True):
             asn = f"AS{member.asn}"
             if asn not in asns:
-                continue
                 if member.pdb_id:
-                    asns[asn] = {"as_sets": [member.pdb.net.irr_as_set]}
-                else:
-                    asns[asn] = {"as_sets": []}
+                    as_set = get_as_set(member.pdb.net)
+                    if as_set:
+                        asns[asn] = {"as_sets": [as_set]}
 
             if member.asn not in clients:
                 clients[member.asn] = {"asn": member.asn, "ip": []}
@@ -552,10 +563,17 @@ class RouteserverConfig(HandleRefModel):
 
     @property
     def outdated(self):
-        print(self.generated)
-        print(self.updated)
+
+        # Route server has been updated since last generation,
+
         if not self.generated or self.generated < self.rs.updated:
             return True
+
+        # RS Peer has been updated since last generation
+
+        for member in self.rs.ix.member_set.filter(is_rs_peer=True):
+            if self.generated < member.updated:
+                return True
         return False
 
     def generate(self):
@@ -610,7 +628,7 @@ class RouteserverConfig(HandleRefModel):
             cmd += ["--target-version", "2.0.7"]
 
         process = subprocess.Popen(cmd)
-        process.wait(10)
+        process.wait(600)
 
         with open(outfile, "r") as fh:
             self.body = fh.read()

@@ -44,6 +44,14 @@
           <input type="text" value="32" class="form-control" id="routeserver-max-as-path-length" name="max_as_path_length" />
         </div>
       </div>
+
+      <div class="row form-check">
+        <div class="col-12" data-api-submit="yes">
+          <input type="checkbox" class="form-check-input" id="routeserver-rpki-bgp-origin-validation" name="rpki_bgp_origin_validation" />
+          <label for="routeserver-rpki-bgp-origin-validation" class="form-check-label">{% trans "RPKI BGP Origin Validation" %}</label>
+        </div>
+      </div>
+
       <div class="row form-check">
         <div class="col-12" data-api-submit="yes">
           <input type="checkbox" class="form-check-input" id="routeserver-graceful-shutdown" name="graceful_shutdown" />
@@ -75,6 +83,7 @@
 
     </div>
   </div>
+  <span class="modal-action-note-text">{% trans "It will take a moment for the routeserver config to be (re)generated" %}</span>
 </form>
 
 

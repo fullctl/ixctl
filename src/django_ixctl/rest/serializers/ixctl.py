@@ -6,6 +6,7 @@ except ImportError:
 import yaml
 
 from django.utils.translation import ugettext_lazy as _
+from django.core.validators import RegexValidator
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -137,6 +138,7 @@ class InternetExchangeMember(serializers.ModelSerializer):
     ipaddr6 = IPAddressField(
         version=6, allow_blank=True, allow_null=True, required=False, default=None
     )
+    macaddr = serializers.CharField(allow_blank=True, allow_null=True, required=False, default=None, validators=[RegexValidator(r'(?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$')])
 
     display_name = serializers.CharField(read_only=True)
 
@@ -152,6 +154,7 @@ class InternetExchangeMember(serializers.ModelSerializer):
             "display_name",
             "ipaddr4",
             "ipaddr6",
+            "macaddr",
             "is_rs_peer",
             "speed",
         ]
@@ -182,6 +185,11 @@ class InternetExchangeMember(serializers.ModelSerializer):
             return None
         return ipaddr6
 
+    def validate_macaddr(self, macaddr):
+        if not macaddr:
+            return None
+        return macaddr
+
 
 @register
 class Routeserver(serializers.ModelSerializer):
@@ -199,6 +207,7 @@ class Routeserver(serializers.ModelSerializer):
             "ars_type",
             "max_as_path_length",
             "no_export_action",
+            "rpki_bgp_origin_validation",
             "graceful_shutdown",
             "extra_config",
         ]

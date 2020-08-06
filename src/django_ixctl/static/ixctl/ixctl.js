@@ -297,6 +297,11 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           var routeserver = row.data("apiobject");
           new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix(), routeserver);
         });
+
+        row.find('a[data-action="view_rsconf"]').mousedown(function() {
+          var routeserver = row.data("apiobject");
+          $(this).attr("href", row.data("rsconfurl").replace("0.0.0.0", routeserver.router_id))
+        });
       };
 
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;

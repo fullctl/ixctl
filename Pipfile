@@ -19,6 +19,9 @@ django-autocomplete-light = ">=3,<=4"
 social-auth-app-django = "<4"
 django-grainy = {file = "https://github.com/20c/django-grainy/archive/master.zip"}
 pyyaml = "*"
+grainy = "*"
+pip = "*"
+arouteserver = "*"
 
 
 
