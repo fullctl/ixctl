@@ -54,54 +54,51 @@ def test_ix_retrieve(db, pdb_data, account_objects):
 
 def test_ix_members(db, pdb_data, account_objects):
     ix = account_objects.ix
-    net = account_objects.net
     client = account_objects.api_client
     org = account_objects.org
 
-    portinfo = ix.portinfo_set.first()
+    ixmember = ix.member_set.first()
 
     response = client.get(reverse("ixctl_api:ix-members", args=(org.slug, ix.id)))
 
     assert response.status_code == 200
     data = response.json()["data"]
     assert len(data) == 1
-    assert data[0]["pdb_id"] == portinfo.pdb_id
-    assert data[0]["id"] == portinfo.id
-    assert data[0]["status"] == portinfo.status
-    assert data[0]["ixf_member_type"] == portinfo.ixf_member_type
-    assert data[0]["ixf_state"] == portinfo.ixf_state
-    assert data[0]["display_name"] == portinfo.display_name
-    assert data[0]["ipaddr4"] == portinfo.ipaddr4
-    assert data[0]["ipaddr6"] == portinfo.ipaddr6
-    assert data[0]["is_rs_peer"] == portinfo.is_rs_peer
-    assert data[0]["speed"] == portinfo.speed
+    assert data[0]["pdb_id"] == ixmember.pdb_id
+    assert data[0]["id"] == ixmember.id
+    assert data[0]["status"] == ixmember.status
+    assert data[0]["ixf_member_type"] == ixmember.ixf_member_type
+    assert data[0]["ixf_state"] == ixmember.ixf_state
+    assert data[0]["display_name"] == ixmember.display_name
+    assert data[0]["ipaddr4"] == ixmember.ipaddr4
+    assert data[0]["ipaddr6"] == ixmember.ipaddr6
+    assert data[0]["is_rs_peer"] == ixmember.is_rs_peer
+    assert data[0]["speed"] == ixmember.speed
 
 
 def test_ix_delete_member(db, pdb_data, account_objects):
     ix = account_objects.ix
-    net = account_objects.net
     client = account_objects.api_client
     org = account_objects.org
 
-    portinfo = ix.portinfo_set.first()
+    ixmember = ix.member_set.first()
 
     response = client.delete(
         reverse("ixctl_api:ix-delete-member", args=(org.slug, ix.id)),
-        {"id": portinfo.id},
+        {"id": ixmember.id},
     )
 
     assert response.status_code == 200
 
-    assert models.PortInfo.objects.filter(id=portinfo.id).exists() == False
+    assert models.InternetExchangeMember.objects.filter(id=ixmember.id).exists() == False
 
 
 def test_ix_add_member(db, pdb_data, account_objects):
     ix = account_objects.ix
-    net = account_objects.net
     client = account_objects.api_client
     org = account_objects.org
 
-    portinfo = ix.portinfo_set.first()
+    ixmember = ix.member_set.first()
 
     response = client.post(
         reverse("ixctl_api:ix-add-member", args=(org.slug, ix.id)),
@@ -124,24 +121,22 @@ def test_ix_add_member(db, pdb_data, account_objects):
     data = response.json()["data"]
     assert response.status_code == 200
 
-    assert models.PortInfo.objects.filter(id=data[0]["id"]).exists()
+    assert models.InternetExchangeMember.objects.filter(id=data[0]["id"]).exists()
 
 
 def test_ix_edit_member(db, pdb_data, account_objects):
     ix = account_objects.ix
-    net = account_objects.net
     client = account_objects.api_client
     org = account_objects.org
 
-    portinfo = ix.portinfo_set.first()
+    ixmember = ix.member_set.first()
 
     response = client.put(
-        reverse("ixctl_api:ix-edit-member", args=(org.slug, portinfo.ix.id)),
+        reverse("ixctl_api:ix-edit-member", args=(org.slug, ixmember.ix.id)),
         json.dumps(
             {
-                "id": portinfo.id,
-                "ix": portinfo.ix.id,
-                "net": portinfo.net.id,
+                "id": ixmember.id,
+                "ix": ixmember.ix.id,
                 "asn": 63311,
                 "ixf_state": "active",
                 "ixf_member_type": "peering",
@@ -159,7 +154,7 @@ def test_ix_edit_member(db, pdb_data, account_objects):
     data = response.json()["data"]
     assert response.status_code == 200
 
-    portinfo.refresh_from_db()
-    assert portinfo.name == "override"
-    assert portinfo.ipaddr4 == "206.41.111.20"
-    assert portinfo.ipaddr6 == "2001:504:41:111::20"
+    ixmember.refresh_from_db()
+    assert ixmember.name == "override"
+    assert ixmember.ipaddr4 == "206.41.111.20"
+    assert ixmember.ipaddr6 == "2001:504:41:111::20"

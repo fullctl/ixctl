@@ -40,13 +40,6 @@ class AccountObjects:
 
         self.org = self.orgs[0]
 
-        # Organization.create(**{
-        #             "id": 1,
-        #             "name": f"ORG{handle}",
-        #             "slug": handle,
-        #             "personal": True,
-        #         }
-        #     )
         self.other_org = Organization.objects.create(name="Other", slug="other", id=3,)
 
         self.api_client = APIClient()
@@ -101,19 +94,6 @@ class AccountObjects:
                     self.ixctl_instance, self.pdb_ixlan
                 )
         return self._ix
-
-    @property
-    def net(self):
-        from django_ixctl.models import Network
-
-        if not hasattr(self, "_net"):
-            try:
-                self._net = Network.objects.get(
-                    instance=self.ixctl_instance, pdb_id=self.pdb_net.id
-                )
-            except Network.DoesNotExist:
-                self._net = Network.create_from_pdb(self.ixctl_instance, self.pdb_net)
-        return self._net
 
 
 @pytest.fixture

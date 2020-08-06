@@ -76,16 +76,17 @@ def pytest_configure():
         AUTHENTICATION_BACKENDS=["django_grainy.backends.GrainyBackend"],
         NETOM_TEMPLATE_DIR=os.path.join(os.path.dirname(__file__), "data", "netom"),
         REST_FRAMEWORK={
-            "DEFAULT_THROTTLE_RATES": {"email": "3/minute"},
             "DEFAULT_RENDERER_CLASSES": ["django_ixctl.rest.renderers.JSONRenderer",],
             "DEFAULT_AUTHENTICATION_CLASSES": (
                 "django_ixctl.rest.authentication.APIKeyAuthentication",
                 "rest_framework.authentication.SessionAuthentication",
             ),
+            "DEFAULT_MODEL_SERIALIZER_CLASS": "rest_framework.serializers.HyperlinkedModelSerializer",
             "DEFAULT_PERMISSION_CLASSES": [
                 "rest_framework.permissions.IsAuthenticated",
             ],
-            # "EXCEPTION_HANDLER": "common.rest.exception_handler",
+            "EXCEPTION_HANDLER": "django_ixctl.rest.exception_handler",
+            "DEFAULT_THROTTLE_RATES": {"email": "1/minute"},
         },
         LOGGING={
             "version": 1,
