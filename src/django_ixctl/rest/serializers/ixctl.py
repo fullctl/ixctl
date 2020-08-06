@@ -199,6 +199,7 @@ class Routeserver(serializers.ModelSerializer):
             "ars_type",
             "max_as_path_length",
             "no_export_action",
+            "rpki_bgp_origin_validation",
             "graceful_shutdown",
             "extra_config",
         ]

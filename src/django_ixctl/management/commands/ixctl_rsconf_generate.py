@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
         for rs in qset:
             rsconf, created = RouteserverConfig.objects.get_or_create(rs=rs)
-            if created or rs.rsconf.outdated:
+            if True or created or rs.rsconf.outdated:
                 self.stdout.write("Regenerating {rs}")
                 rs.rsconf.generate()
                 self.stdout.write("Done")

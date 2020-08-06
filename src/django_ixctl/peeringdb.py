@@ -20,3 +20,13 @@ def import_exchange(pdb_ix, instance):
     if qset.exists():
         return
     return models.InternetExchange.create_from_pdb(instance, pdb_ix.ixlan_set.first(),)
+
+
+def get_as_set(pdb_net):
+    as_set = pdb_net.irr_as_set
+    if as_set and "::" in as_set:
+        as_set = as_set.split("::")[1]
+    elif as_set and "@" in as_set:
+        as_set = as_set.split("@")[0]
+    return as_set
+

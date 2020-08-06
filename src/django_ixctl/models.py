@@ -33,6 +33,7 @@ from django_peeringdb.models.concrete import IXLan, NetworkIXLan
 
 from django_ixctl.inet.util import pdb_lookup
 from django_ixctl.validators import validate_ip_v4, validate_ip_v6
+from django_ixctl.peeringdb import get_as_set
 
 import django_ixctl.enum
 
@@ -416,6 +417,11 @@ class Routeserver(HandleRefModel):
 
     router_id = IPAddressField(version=4, help_text=_("Router Id"),)
 
+    rpki_bgp_origin_validation = models.BooleanField(
+        default=False
+    )
+
+
     # ARS Config
 
     ars_type = models.CharField(
@@ -465,7 +471,12 @@ class Routeserver(HandleRefModel):
             "cfg": {
                 "rs_as": self.asn,
                 "router_id": f"{self.router_id}",
-                "filtering": {"max_as_path_len": self.max_as_path_length,},
+                "filtering": {
+                    "max_as_path_len": self.max_as_path_length,
+                    "rpki_bgp_origin_validation": {
+                        "enabled": self.rpki_bgp_origin_validation
+                    }
+                },
                 "rfc1997_wellknown_communities": {"policy": self.no_export_action,},
                 "graceful_shutdown": {"enabled": self.graceful_shutdown},
             }
@@ -495,14 +506,13 @@ class Routeserver(HandleRefModel):
         # where to get ASN sets from ??
         # peeringdb network ??
 
-        for member in self.ix.member_set.all():
+        for member in self.ix.member_set.filter(is_rs_peer=True):
             asn = f"AS{member.asn}"
             if asn not in asns:
-                continue
                 if member.pdb_id:
-                    asns[asn] = {"as_sets": [member.pdb.net.irr_as_set]}
-                else:
-                    asns[asn] = {"as_sets": []}
+                    as_set = get_as_set(member.pdb.net)
+                    if as_set:
+                        asns[asn] = {"as_sets": [as_set]}
 
             if member.asn not in clients:
                 clients[member.asn] = {"asn": member.asn, "ip": []}
@@ -610,7 +620,7 @@ class RouteserverConfig(HandleRefModel):
             cmd += ["--target-version", "2.0.7"]
 
         process = subprocess.Popen(cmd)
-        process.wait(10)
+        process.wait(600)
 
         with open(outfile, "r") as fh:
             self.body = fh.read()

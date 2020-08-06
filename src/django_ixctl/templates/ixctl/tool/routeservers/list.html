@@ -54,11 +54,21 @@
             <span class="highlight" data-field="no_export_action"></span>
           </div>
           <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            <div>
+            {% trans "RPKI BGP Origin Validation" %}:
+            <span data-field="rpki_bgp_origin_validation" data-toggle="checked">
+              <img data-false src="{% static "common/icons/Indicator/X-Ind/X.svg" %}" class="icon filled">
+              <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
+            </span>
+            </div>
+
+            <div>
             {% trans "Graceful shutdown" %}:
             <span data-field="graceful_shutdown" data-toggle="checked">
               <img data-false src="{% static "common/icons/Indicator/X-Ind/X.svg" %}" class="icon filled">
               <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
             </span>
+            </div>
           </div>
         </div>
       </td>
