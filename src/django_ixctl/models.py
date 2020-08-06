@@ -361,6 +361,7 @@ class InternetExchangeMember(PdbRefModel):
     ipaddr6 = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_ip_v6]
     )
+    macaddr = MacAddressField(null=True, blank=True)
     is_rs_peer = models.BooleanField(default=False)
     speed = models.PositiveIntegerField()
     asn = models.PositiveIntegerField()
@@ -378,7 +379,7 @@ class InternetExchangeMember(PdbRefModel):
         db_table = "ixctl_member"
         verbose_name_plural = _("Internet Exchange Members")
         verbose_name = _("Internet Exchange Member")
-        unique_together = (("ipaddr4", "ix"), ("ipaddr6", "ix"))
+        unique_together = (("ipaddr4", "ix"), ("ipaddr6", "ix"), ("macaddr", "ix"))
 
     @classmethod
     def create_from_pdb(cls, pdb_object, ix, save=True, **fields):
