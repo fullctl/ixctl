@@ -1,9 +1,13 @@
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from django.views.generic import TemplateView
+from django.conf import settings
+
+from rest_framework.schemas import get_schema_view
 
 import django_ixctl.views as views
 import django_ixctl.autocomplete.views
 
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path(
@@ -36,4 +40,21 @@ urlpatterns = [
     path("<str:org_tag>/export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
     path("<str:org_tag>/", views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),
+    path('openapi', 
+        get_schema_view(
+            title="IXCTL",
+            description="API for ixctl",
+            version=settings.PACKAGE_VERSION
+        ), name='openapi-schema'),
+    path("apidocs/swagger",
+        TemplateView.as_view(
+            template_name='ixctl/apidocs/swagger.html',
+            extra_context={'schema_url':'openapi-schema'}
+        ), name='swagger'),
+    path("apidocs/redoc",
+        TemplateView.as_view(
+            template_name='ixctl/apidocs/redoc.html',
+            extra_context={'schema_url':'openapi-schema'}
+        ), name='redoc'),
+
 ]
