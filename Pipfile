@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 pytest = ">=6.0.1"
 pytest-django = ">=3.8.0"
+pytest-cov = "*"
 
 [packages]
 django-handleref = ">=0.5"
@@ -22,8 +23,6 @@ pyyaml = "*"
 grainy = "*"
 pip = "*"
 arouteserver = "*"
-
-
 
 [requires]
 python_version = "3.7"
