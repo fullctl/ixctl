@@ -21,7 +21,7 @@ class RequestAugmentation:
             not hasattr(request.user, "org_set") or not request.user.org_set.exists()
         ) and "org_tag" not in kwargs:
 
-            if not settings.ORGANIZATION_PROVIDED_BY_OAUTH:
+            if not settings.MANAGED_BY_OAUTH:
 
                 # organizations are not managed by oauth
                 # so for now we just ensure that each user

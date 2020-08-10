@@ -22,7 +22,7 @@ DATABASES = {
     }
 }
 
-ORGANIZATION_PROVIDED_BY_OAUTH = False
+MANAGED_BY_OAUTH = False
 
 #INSTALLED_APPS += (
 #    'debug_toolbar',
