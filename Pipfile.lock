@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9ce140abec00ba5bee33eed5bf15fc2585dd4ee6b739a0aef710bec2063db072"
+            "sha256": "12b0f4b5a09623fa778988269f204bea86fc5c67d98ab619a08a53d65ff05a87"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -144,7 +144,7 @@
             "version": "==6.1.2"
         },
         "django-grainy": {
-            "file": "https://github.com/20c/django-grainy/archive/master.zip"
+            "file": "https://github.com/20c/django-grainy/archive/1.7.0.2.zip"
         },
         "django-handleref": {
             "hashes": [

@@ -3,7 +3,7 @@ from rest_framework import exceptions
 from rest_framework import permissions
 
 from django_ixctl.models import APIKey
-from django_ixctl.auth import Permissions
+from django_ixctl.auth import permissions
 
 
 class APIKeyAuthentication(authentication.BaseAuthentication):
@@ -21,7 +21,7 @@ class APIKeyAuthentication(authentication.BaseAuthentication):
             if key:
                 api_key = APIKey.objects.get(key=key)
                 request.api_key = api_key
-                perms = Permissions(key=api_key)
+                perms = permissions(apu_key.user)
                 return (api_key.user, None)
             else:
                 return None

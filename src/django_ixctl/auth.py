@@ -1,11 +1,35 @@
-from django_grainy.util import Permissions as GrainyPermissions
+from django.conf import settings
+
+import django_grainy.util
+import django_grainy.remote
 
 
-class Permissions(GrainyPermissions):
-    def check(self, *args, **kwargs):
-        return True
+class Permissions(django_grainy.util.Permissions):
+    pass
 
-    def get(self, *args, as_string=False, **kwargs):
-        if as_string:
-            return "crud"
-        return 15
+class RemotePermissions(django_grainy.remote.Permissions):
+
+    """
+    When MANAGED_BY_OAUTH is True, permissions are provided
+    from the oauth instance.
+
+    We use grainy remote permissions to facilitate this
+    """
+
+    def __init__(self, obj):
+        super().__init__(
+            obj,
+            **settings.GRAINY_REMOTE
+        )
+    def prepare_request(self, params, headers):
+        try:
+            key = self.obj.key_set.first().key
+            headers.update(Authorization=f"Bearer {key}")
+        except AttributeError:
+            pass
+
+
+def permissions(user):
+    if settings.MANAGED_BY_OAUTH:
+        return RemotePermissions(user)
+    return Permissions(user)

@@ -1,6 +1,6 @@
 from django.http import Http404
 from django_ixctl.models import Organization, OrganizationUser
-from django_ixctl.auth import Permissions
+from django_ixctl.auth import permissions
 
 from django.contrib.auth import get_user_model
 from django.conf import settings
@@ -16,7 +16,7 @@ class RequestAugmentation:
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         kwargs = request.resolver_match.kwargs
-        request.perms = Permissions(request.user)
+        request.perms = permissions(request.user)
         if (
             not hasattr(request.user, "org_set") or not request.user.org_set.exists()
         ) and "org_tag" not in kwargs:
@@ -38,6 +38,9 @@ class RequestAugmentation:
                     OrganizationUser.objects.create(
                         org=request.org, user=request.user,
                     )
+
+                    request.user.grainy_permissions.add_permission(request.org, "crud")
+                    request.perms = permissions(request.user)
 
                     request.orgs = [request.org]
                     return

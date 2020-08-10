@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from rest_framework import exceptions
 from rest_framework.response import Response
 
@@ -8,8 +10,8 @@ from django_grainy.decorators import grainy_rest_viewset, grainy_rest_viewset_re
 from django_ixctl.rest import HANDLEREF_FIELDS
 from django_ixctl.models import Organization, APIKey
 
-from django_ixctl.auth import Permissions
 
+from django_ixctl.auth import Permissions, RemotePermissions
 
 class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
     def apply_perms(self, request, response, view_function, view):
@@ -22,7 +24,7 @@ class grainy_endpoint(object):
     def __init__(
         self, namespace=None, require_auth=True, explicit=True, instance_class=None
     ):
-        self.namespace = namespace or ["fullctl", "org", "{request.org.id}"]
+        self.namespace = namespace or ["account", "org", "{request.org.permission_id}"]
         self.require_auth = require_auth
         self.explicit = explicit
         self.instance_class = instance_class
@@ -30,12 +32,17 @@ class grainy_endpoint(object):
     def __call__(self, fn):
         decorator = self
 
+        if settings.MANAGED_BY_OAUTH:
+            permissions_cls = RemotePermissions
+        else:
+            permissions_cls = Permissions
+
         @patched_grainy_rest_viewset_response(
             namespace=decorator.namespace,
             namespace_instance=decorator.namespace,
             explicit=decorator.explicit,
             ignore_grant_all=True,
-            permissions_cls=Permissions,
+            permissions_cls=permissions_cls,
         )
         def wrapped(self, request, *args, **kwargs):
 
