@@ -7,7 +7,7 @@ def account_service(request):
 
     # TODO abstract so other auth services can be
     # defined
-    if settings.ORGANIZATION_PROVIDED_BY_OAUTH:
+    if settings.MANAGED_BY_OAUTH:
         context.update(
             account_service={
                 "urls": {
@@ -15,7 +15,7 @@ def account_service(request):
                     "manage_org": f"{settings.TWENTYC_ENDPOINT}/account/?org={request.org.slug}",
                 },
             },
-            oauth_manages_org=settings.ORGANIZATION_PROVIDED_BY_OAUTH,
+            oauth_manages_org=settings.MANAGED_BY_OAUTH,
         )
 
     return context

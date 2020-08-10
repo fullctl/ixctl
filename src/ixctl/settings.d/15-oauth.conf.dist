@@ -26,4 +26,4 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 # organizations are provided by oauth
-ORGANIZATION_PROVIDED_BY_OAUTH = True
+MANAGED_BY_OAUTH = True

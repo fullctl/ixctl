@@ -19,6 +19,8 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 
+from django_grainy.decorators import grainy_model
+
 from django_inet.models import (
     IPAddressField,
     MacAddressField,
@@ -118,6 +120,10 @@ class PdbRefModel(HandleRefModel):
 
 
 @reversion.register()
+@grainy_model(
+    namespace="account.org",
+    namespace_instance="account.org.{instance.permission_id}"
+)
 class Organization(HandleRefModel):
 
     """
@@ -147,6 +153,12 @@ class Organization(HandleRefModel):
         "management",
         "ixctl",
     ]
+
+    @property
+    def permission_id(self):
+        if self.remote_id:
+            return self.remote_id
+        return self.id
 
     class HandleRef:
         tag = "org"
@@ -208,6 +220,7 @@ class Organization(HandleRefModel):
         return f"{self.name} ({self.slug})"
 
 
+@grainy_model(namespace="org")
 class Instance(HandleRefModel):
 
     """
@@ -245,6 +258,7 @@ class Instance(HandleRefModel):
 
 
 @reversion.register()
+@grainy_model(namespace="org")
 class OrganizationUser(HandleRefModel):
 
     """
@@ -271,6 +285,7 @@ class OrganizationUser(HandleRefModel):
 
 
 @reversion.register
+@grainy_model(namespace="org")
 class APIKey(HandleRefModel):
     """
     Describes an APIKey
@@ -295,6 +310,7 @@ class APIKey(HandleRefModel):
 
 
 @reversion.register()
+@grainy_model(namespace="ix")
 class InternetExchange(PdbRefModel):
     name = models.CharField(max_length=255, blank=False)
     created = models.DateTimeField(auto_now_add=True)
