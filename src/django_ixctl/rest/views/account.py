@@ -33,3 +33,6 @@ class Organization(viewsets.ViewSet):
             context={"user": request.user, "perms": request.perms,},
         )
         return Response(serializer.data)
+
+    def get_serializer(self):
+        return Serializers.org()

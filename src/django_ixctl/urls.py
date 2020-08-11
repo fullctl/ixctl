@@ -3,11 +3,11 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from django.conf import settings
 
-from rest_framework.schemas import get_schema_view
 
 import django_ixctl.views as views
 import django_ixctl.autocomplete.views
 
+from rest_framework.schemas import get_schema_view
 
 urlpatterns = [
     path(
@@ -56,5 +56,4 @@ urlpatterns = [
             template_name='ixctl/apidocs/redoc.html',
             extra_context={'schema_url':'openapi-schema'}
         ), name='redoc'),
-
 ]

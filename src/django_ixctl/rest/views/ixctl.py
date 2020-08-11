@@ -28,7 +28,24 @@ class grainy_endpoint(_grainy_endpoint):
 
 
 @route
-class InternetExchange(viewsets.ViewSet):
+class InternetExchange(viewsets.GenericViewSet):
+    """
+    retrieve:
+        Return a internet exchange instance.
+
+    list:
+        Return all internet exchanges.
+
+    create:
+        Create a new internet exchange.
+
+    import_peeringdb:
+        Import an internet exhange from Peeringdb.
+        
+    update:
+        Update a user.
+    """
+
     serializer_class = Serializers.ix
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
@@ -179,7 +196,7 @@ class InternetExchange(viewsets.ViewSet):
 
 
 @route
-class RouteserverConfig(viewsets.ViewSet):
+class RouteserverConfig(viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
     lookup_value_regex = "[0-9.]+"
