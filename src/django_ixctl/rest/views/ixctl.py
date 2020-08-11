@@ -41,7 +41,7 @@ class InternetExchange(viewsets.GenericViewSet):
 
     import_peeringdb:
         Import an internet exhange from Peeringdb.
-        
+
     update:
         Update a user.
     """
@@ -92,10 +92,19 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.ix(instance=ix).data)
 
-    @action(detail=True, methods=["GET"])
+    @action(detail=True, methods=["GET", "POST", "DELETE", "PUT"])
     @grainy_endpoint()
-    def members(self, request, org, instance, pk=None, *args, **kwargs):
+    def members(self, request, org, instance, pk, *args, **kwargs):
+        if request.method == "GET":
+            return self.list_members(request, org, instance, pk, *args, **kwargs)
+        elif request.method == "POST":
+            return self.create_member(request, org, instance, pk, *args, **kwargs)
+        elif request.method == "PUT":
+            return self.update_member(request, org, instance, pk, *args, **kwargs)
+        elif request.method == "DELETE":
+            return self.destroy_member(request, org, instance, pk, *args, **kwargs)
 
+    def list_members(self, request, org, instance, pk, *args, **kwargs):
         serializer = Serializers.member(
             instance=models.InternetExchangeMember.objects.filter(
                 ix_id=pk, ix__instance=instance
@@ -105,18 +114,14 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["DELETE"])
-    @grainy_endpoint()
-    def delete_member(self, request, org, instance, pk=None, *args, **kwargs):
+    def destroy_member(self, request, org, instance, pk=None, *args, **kwargs):
         ix = models.InternetExchange.objects.get(instance=instance, id=pk)
         member = models.InternetExchangeMember.objects.get(ix=ix, id=request.data["id"])
         member.delete()
         member.id = request.data.get("id")
         return Response(Serializers.member(instance=member).data)
 
-    @action(detail=True, methods=["POST"])
-    @grainy_endpoint()
-    def add_member(self, request, org, instance, pk=None, *args, **kwargs):
+    def create_member(self, request, org, instance, pk=None, *args, **kwargs):
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=pk).id
         serializer = Serializers.member(data=data, context={"instance": instance})
@@ -127,9 +132,7 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.member(instance=member).data)
 
-    @action(detail=True, methods=["PUT"])
-    @grainy_endpoint()
-    def edit_member(self, request, org, instance, pk=None, *args, **kwargs):
+    def update_member(self, request, org, instance, pk=None, *args, **kwargs):
         member = models.InternetExchangeMember.objects.get(
             ix__instance=instance, ix_id=pk, id=request.data["id"]
         )
@@ -143,9 +146,20 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.member(instance=member).data)
 
-    @action(detail=True, methods=["GET"])
+    @action(detail=True, methods=["GET", "POST", "PUT", "DELETE"])
     @grainy_endpoint()
     def routeservers(self, request, org, instance, pk=None, *args, **kwargs):
+        if request.method == "GET":
+            return self.list_routeservers(request, org, instance, pk, *args, **kwargs)
+        elif request.method == "POST":
+            return self.create_routeserver(request, org, instance, pk, *args, **kwargs)
+        elif request.method == "PUT":
+            return self.update_routeserver(request, org, instance, pk, *args, **kwargs)
+        elif request.method == "DELETE":
+            return self.destroy_routeserver(request, org, instance, pk, *args, **kwargs)
+
+
+    def list_routeservers(self, request, org, instance, pk=None, *args, **kwargs):
 
         serializer = Serializers.rs(
             instance=models.Routeserver.objects.filter(
@@ -156,18 +170,14 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["DELETE"])
-    @grainy_endpoint()
-    def delete_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
+    def destroy_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
         ix = models.InternetExchange.objects.get(instance=instance, id=pk)
         routeserver = models.Routeserver.objects.get(ix=ix, id=request.data["id"])
         routeserver.delete()
         routeserver.id = request.data.get("id")
         return Response(Serializers.rs(instance=routeserver).data)
 
-    @action(detail=True, methods=["POST"])
-    @grainy_endpoint()
-    def add_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
+    def create_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=pk).id
         serializer = Serializers.rs(data=data, context={"instance": instance})
@@ -178,9 +188,7 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.rs(instance=routeserver).data)
 
-    @action(detail=True, methods=["PUT"])
-    @grainy_endpoint()
-    def edit_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
+    def update_routeserver(self, request, org, instance, pk=None, *args, **kwargs):
         routeserver = models.Routeserver.objects.get(
             ix__instance=instance, ix_id=pk, id=request.data["id"]
         )
@@ -221,3 +229,19 @@ class RouteserverConfig(viewsets.GenericViewSet):
             many=False,
         )
         return Response(serializer.instance.body)
+
+@route
+class User(viewsets.ViewSet):
+
+    serializer_class = Serializers.orguser
+    queryset = models.OrganizationUser.objects.all()
+    ref_tag = "user"
+
+    @grainy_endpoint()
+    def list(self, request, org, *args, **kwargs):
+        serializer = Serializers.orguser(
+            org.user_set.all(),
+            many=True,
+            context={"user": request.user, "perms": request.perms,},
+        )
+        return Response(serializer.data)

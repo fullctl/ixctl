@@ -84,7 +84,7 @@ def test_ix_delete_member(db, pdb_data, account_objects):
     ixmember = ix.member_set.first()
 
     response = client.delete(
-        reverse("ixctl_api:ix-delete-member", args=(org.slug, ix.id)),
+        reverse("ixctl_api:ix-members", args=(org.slug, ix.id)),
         {"id": ixmember.id},
     )
 
@@ -101,7 +101,7 @@ def test_ix_add_member(db, pdb_data, account_objects):
     ixmember = ix.member_set.first()
 
     response = client.post(
-        reverse("ixctl_api:ix-add-member", args=(org.slug, ix.id)),
+        reverse("ixctl_api:ix-members", args=(org.slug, ix.id)),
         json.dumps(
             {
                 "asn": 63311,
@@ -132,7 +132,7 @@ def test_ix_edit_member(db, pdb_data, account_objects):
     ixmember = ix.member_set.first()
 
     response = client.put(
-        reverse("ixctl_api:ix-edit-member", args=(org.slug, ixmember.ix.id)),
+        reverse("ixctl_api:ix-members", args=(org.slug, ixmember.ix.id)),
         json.dumps(
             {
                 "id": ixmember.id,

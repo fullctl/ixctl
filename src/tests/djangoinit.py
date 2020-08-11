@@ -101,5 +101,6 @@ def pytest_configure():
         ROOT_URLCONF="ixctl.urls",
         USE_TZ=True,
         PEERINGDB_SYNC_STRIP_TZ=True,
+        MANAGED_BY_OAUTH=False,
         COUNTRIES_OVERRIDE={"XK": _("Kosovo"),},
     )

@@ -75,7 +75,7 @@ fullctl.permissions = {{ permissions|safe }}
           <!-- current org options / actions -->
           <!-- switch org options -->
           <div
-            data-api-base="{% url "ixctl_account_api:org-list" org_tag=request.org.slug %}"
+            data-api-base="{% url "ixctl_account_api:org-list" %}"
             data-org="{{ request.org.slug }}"
             data-element="select_org">
             <div class="list-body"></div>

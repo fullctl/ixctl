@@ -38,6 +38,10 @@ class AccountObjects:
             None,
         )
 
+        # add permissions
+        user.grainy_permissions.add_permission(self.orgs[0], "crud")
+        user.grainy_permissions.add_permission(self.orgs[1], "crud")
+
         self.org = self.orgs[0]
 
         self.other_org = Organization.objects.create(name="Other", slug="other", id=3,)

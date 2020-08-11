@@ -162,7 +162,6 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
 
       if(member) {
         title = "Edit "+member.display_name;
-        form.form_action = "edit_member";
         form.method = "PUT"
         form.fill(member);
         $(this.form).on("api-write:before", (ev, e, payload) => {
@@ -257,7 +256,6 @@ $ctl.application.Ixctl.ModalRouteserver = $tc.extend(
 
       if(routeserver) {
         title = "Edit "+routeserver.display_name;
-        form.form_action = "edit_routeserver";
         form.method = "PUT"
         form.fill(routeserver);
         $(this.form).on("api-write:before", (ev, e, payload) => {
