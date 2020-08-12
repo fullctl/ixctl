@@ -7,7 +7,7 @@ class BaseSchema(AutoSchema):
 
     """
     Augments the openapi schema generation for
-    the peeringdb API docs
+    the ixctl API docs
     """
 
     # map django internal types to openapi types
