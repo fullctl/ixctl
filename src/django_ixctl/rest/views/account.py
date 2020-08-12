@@ -10,10 +10,19 @@ from django_ixctl.rest.decorators import disable_api_key, set_org, grainy_endpoi
 
 
 @route
-class Organization(viewsets.ViewSet):
+class Organization(viewsets.GenericViewSet):
 
     serializer_class = Serializers.org
+    serializer_class_dict = {
+        "list": Serializers.org,
+        "users": Serializers.orguser
+    }
     queryset = models.Organization.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in self.serializer_class_dict:
+            return self.serializer_class_dict[self.action]
+        return self.serializer_class
 
     @grainy_endpoint()
     def list(self, request, org, *args, **kwargs):
@@ -33,6 +42,3 @@ class Organization(viewsets.ViewSet):
             context={"user": request.user, "perms": request.perms,},
         )
         return Response(serializer.data)
-
-    def get_serializer(self):
-        return Serializers.org()

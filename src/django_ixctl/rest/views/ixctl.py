@@ -45,10 +45,28 @@ class InternetExchange(viewsets.GenericViewSet):
     update:
         Update a user.
     """
-
     serializer_class = Serializers.ix
+    serializer_class_dict = {
+        "list": Serializers.ix,
+        "retrieve": Serializers.ix,
+        "create": Serializers.ix,
+        "import_peeringdb": Serializers.impix,
+        "members": Serializers.member,
+        "add_member": Serializers.member,
+        "delete_member": Serializers.member,
+        "routeservers": Serializers.rs,
+        "add_routeserver": Serializers.rs,
+        "edit_routeserver": Serializers.rs
+    }
+
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
+
+    def get_serializer_class(self):
+        if self.action in self.serializer_class_dict:
+            return self.serializer_class_dict[self.action]
+        return self.serializer_class
+
 
     @grainy_endpoint()
     def list(self, request, org, instance, *args, **kwargs):
