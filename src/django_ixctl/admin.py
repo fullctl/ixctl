@@ -46,7 +46,7 @@ class InternetInternetExchangeAdmin(BaseAdmin):
     list_display = ("name", "id", "instance")
     inlines = (InternetExchangeMemberInline,)
 
+
 @admin.register(RouteserverConfig)
 class RouteserverConfigAdmin(BaseAdmin):
     list_display = ("rs", "created", "updated", "generated")
-

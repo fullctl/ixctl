@@ -121,8 +121,7 @@ class PdbRefModel(HandleRefModel):
 
 @reversion.register()
 @grainy_model(
-    namespace="account.org",
-    namespace_instance="account.org.{instance.permission_id}"
+    namespace="account.org", namespace_instance="account.org.{instance.permission_id}"
 )
 class Organization(HandleRefModel):
 
@@ -434,10 +433,7 @@ class Routeserver(HandleRefModel):
 
     router_id = IPAddressField(version=4, help_text=_("Router Id"),)
 
-    rpki_bgp_origin_validation = models.BooleanField(
-        default=False
-    )
-
+    rpki_bgp_origin_validation = models.BooleanField(default=False)
 
     # ARS Config
 
@@ -492,7 +488,7 @@ class Routeserver(HandleRefModel):
                     "max_as_path_len": self.max_as_path_length,
                     "rpki_bgp_origin_validation": {
                         "enabled": self.rpki_bgp_origin_validation
-                    }
+                    },
                 },
                 "rfc1997_wellknown_communities": {"policy": self.no_export_action,},
                 "graceful_shutdown": {"enabled": self.graceful_shutdown},

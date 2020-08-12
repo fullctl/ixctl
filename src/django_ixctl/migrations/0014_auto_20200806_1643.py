@@ -7,17 +7,19 @@ import django_inet.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_ixctl', '0013_routeserver_rpki_bgp_origin_validation'),
+        ("django_ixctl", "0013_routeserver_rpki_bgp_origin_validation"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='internetexchangemember',
-            name='macaddr',
-            field=django_inet.models.MacAddressField(blank=True, max_length=17, null=True),
+            model_name="internetexchangemember",
+            name="macaddr",
+            field=django_inet.models.MacAddressField(
+                blank=True, max_length=17, null=True
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='internetexchangemember',
-            unique_together={('ipaddr6', 'ix'), ('macaddr', 'ix'), ('ipaddr4', 'ix')},
+            name="internetexchangemember",
+            unique_together={("ipaddr6", "ix"), ("macaddr", "ix"), ("ipaddr4", "ix")},
         ),
     ]

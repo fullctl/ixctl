@@ -89,7 +89,9 @@ def test_ix_delete_member(db, pdb_data, account_objects):
 
     assert response.status_code == 200
 
-    assert models.InternetExchangeMember.objects.filter(id=ixmember.id).exists() == False
+    assert (
+        models.InternetExchangeMember.objects.filter(id=ixmember.id).exists() == False
+    )
 
 
 def test_ix_add_member(db, pdb_data, account_objects):

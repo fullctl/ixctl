@@ -138,7 +138,13 @@ class InternetExchangeMember(serializers.ModelSerializer):
     ipaddr6 = IPAddressField(
         version=6, allow_blank=True, allow_null=True, required=False, default=None
     )
-    macaddr = serializers.CharField(allow_blank=True, allow_null=True, required=False, default=None, validators=[RegexValidator(r'(?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$')])
+    macaddr = serializers.CharField(
+        allow_blank=True,
+        allow_null=True,
+        required=False,
+        default=None,
+        validators=[RegexValidator(r"(?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$")],
+    )
 
     display_name = serializers.CharField(read_only=True)
 
@@ -233,6 +239,7 @@ class Routeserver(serializers.ModelSerializer):
             "rs",
             "body",
         ]
+
 
 @register
 class OrganizationUser(serializers.ModelSerializer):

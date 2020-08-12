@@ -40,20 +40,27 @@ urlpatterns = [
     path("<str:org_tag>/export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
     path("<str:org_tag>/", views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),
-    path('openapi',
+    path(
+        "openapi",
         get_schema_view(
-            title="IXCTL",
-            description="API for ixctl",
-            version=settings.PACKAGE_VERSION
-        ), name='openapi-schema'),
-    path("apidocs/swagger",
+            title="IXCTL", description="API for ixctl", version=settings.PACKAGE_VERSION
+        ),
+        name="openapi-schema",
+    ),
+    path(
+        "apidocs/swagger",
         TemplateView.as_view(
-            template_name='ixctl/apidocs/swagger.html',
-            extra_context={'schema_url':'openapi-schema'}
-        ), name='swagger'),
-    path("apidocs/redoc",
+            template_name="ixctl/apidocs/swagger.html",
+            extra_context={"schema_url": "openapi-schema"},
+        ),
+        name="swagger",
+    ),
+    path(
+        "apidocs/redoc",
         TemplateView.as_view(
-            template_name='ixctl/apidocs/redoc.html',
-            extra_context={'schema_url':'openapi-schema'}
-        ), name='redoc'),
+            template_name="ixctl/apidocs/redoc.html",
+            extra_context={"schema_url": "openapi-schema"},
+        ),
+        name="redoc",
+    ),
 ]

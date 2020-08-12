@@ -3,14 +3,13 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from rest_framework.schemas.openapi import AutoSchema
 
+
 class BaseSchema(AutoSchema):
 
     """
     Augments the openapi schema generation for
     the ixctl API docs
     """
-
-    # map django internal types to openapi types
 
     def get_operation_type(self, *args):
         """
@@ -68,9 +67,6 @@ class BaseSchema(AutoSchema):
                 model = serializer.Meta.model
         return (serializer, model)
 
-
-
-
     def get_operation(self, *args, **kwargs):
 
         """
@@ -103,7 +99,6 @@ class BaseSchema(AutoSchema):
                 augment(serializer, model, op_dict)
 
         return op_dict
-
 
     def request_body_schema(self, op_dict, content="application/json"):
         """

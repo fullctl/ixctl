@@ -29,4 +29,3 @@ def get_as_set(pdb_net):
     elif as_set and "@" in as_set:
         as_set = as_set.split("@")[0]
     return as_set
-

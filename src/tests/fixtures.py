@@ -21,12 +21,7 @@ class AccountObjects:
 
         self.orgs = Organization.sync(
             [
-                {
-                    "id": 1,
-                    "name": f"ORG{handle}",
-                    "slug": handle,
-                    "personal": True,
-                },
+                {"id": 1, "name": f"ORG{handle}", "slug": handle, "personal": True,},
                 {
                     "id": 2,
                     "name": f"ORG{handle}-2",

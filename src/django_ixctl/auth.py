@@ -7,6 +7,7 @@ import django_grainy.remote
 class Permissions(django_grainy.util.Permissions):
     pass
 
+
 class RemotePermissions(django_grainy.remote.Permissions):
 
     """
@@ -17,10 +18,8 @@ class RemotePermissions(django_grainy.remote.Permissions):
     """
 
     def __init__(self, obj):
-        super().__init__(
-            obj,
-            **settings.GRAINY_REMOTE
-        )
+        super().__init__(obj, **settings.GRAINY_REMOTE)
+
     def prepare_request(self, params, headers):
         try:
             key = self.obj.key_set.first().key

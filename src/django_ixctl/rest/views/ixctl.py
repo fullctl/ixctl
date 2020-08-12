@@ -27,6 +27,7 @@ class grainy_endpoint(_grainy_endpoint):
         if "namespace" not in kwargs:
             self.namespace += ["ixctl"]
 
+
 class PeeringDBImportSchema(AutoSchema):
     def __init__(self, *args, **kwargs):
         super(AutoSchema, self).__init__(*args, **kwargs)
@@ -43,20 +44,16 @@ class PeeringDBImportSchema(AutoSchema):
         self.response_media_types = self.map_renderers(path, method)
         serializer = Serializers.ix()
         response_schema = self._map_serializer(serializer)
-        status_code = '200'
+        status_code = "200"
 
         return {
-                status_code: {
-                    'content': {
-                        ct: {'schema': response_schema}
-                        for ct in self.response_media_types
-                    },
-                    'description': ""
-                }
+            status_code: {
+                "content": {
+                    ct: {"schema": response_schema} for ct in self.response_media_types
+                },
+                "description": "",
             }
-
-
-
+        }
 
 
 @route
@@ -77,6 +74,7 @@ class InternetExchange(viewsets.GenericViewSet):
     update:
         Update a user.
     """
+
     serializer_class = Serializers.ix
     serializer_class_dict = {
         "list": Serializers.ix,
@@ -88,7 +86,7 @@ class InternetExchange(viewsets.GenericViewSet):
         "delete_member": Serializers.member,
         "routeservers": Serializers.rs,
         "add_routeserver": Serializers.rs,
-        "edit_routeserver": Serializers.rs
+        "edit_routeserver": Serializers.rs,
     }
 
     queryset = models.InternetExchange.objects.all()
@@ -98,7 +96,6 @@ class InternetExchange(viewsets.GenericViewSet):
         if self.action in self.serializer_class_dict:
             return self.serializer_class_dict[self.action]
         return self.serializer_class
-
 
     @grainy_endpoint()
     def list(self, request, org, instance, *args, **kwargs):
@@ -150,13 +147,22 @@ class InternetExchange(viewsets.GenericViewSet):
         else:
             return self.list_members(request, org, instance, pk, *args, **kwargs)
 
-    @action(detail=True, url_path="members/(?P<member_id>[^/.]+)", serializer_class=Serializers.member, methods=["PUT", "DELETE"])
+    @action(
+        detail=True,
+        url_path="members/(?P<member_id>[^/.]+)",
+        serializer_class=Serializers.member,
+        methods=["PUT", "DELETE"],
+    )
     @grainy_endpoint()
     def member(self, request, org, instance, pk, member_id, *args, **kwargs):
         if request.method == "PUT":
-            return self.update_member(request, org, instance, pk, member_id, *args, **kwargs)
+            return self.update_member(
+                request, org, instance, pk, member_id, *args, **kwargs
+            )
         elif request.method == "DELETE":
-            return self.destroy_member(request, org, instance, pk, member_id, *args, **kwargs)
+            return self.destroy_member(
+                request, org, instance, pk, member_id, *args, **kwargs
+            )
 
     def list_members(self, request, org, instance, pk, *args, **kwargs):
         serializer = Serializers.member(
@@ -208,14 +214,22 @@ class InternetExchange(viewsets.GenericViewSet):
         elif request.method == "POST":
             return self.create_routeserver(request, org, instance, pk, *args, **kwargs)
 
-    @action(detail=True, url_path="routeservers/(?P<rs_id>[^/.]+)", serializer_class=Serializers.rs, methods=["PUT", "DELETE"])
+    @action(
+        detail=True,
+        url_path="routeservers/(?P<rs_id>[^/.]+)",
+        serializer_class=Serializers.rs,
+        methods=["PUT", "DELETE"],
+    )
     @grainy_endpoint()
     def routeserver(self, request, org, instance, pk, rs_id, *args, **kwargs):
         if request.method == "PUT":
-            return self.update_routeserver(request, org, instance, pk, rs_id, *args, **kwargs)
+            return self.update_routeserver(
+                request, org, instance, pk, rs_id, *args, **kwargs
+            )
         elif request.method == "DELETE":
-            return self.destroy_routeserver(request, org, instance, pk, rs_id, *args, **kwargs)
-
+            return self.destroy_routeserver(
+                request, org, instance, pk, rs_id, *args, **kwargs
+            )
 
     def list_routeservers(self, request, org, instance, pk, *args, **kwargs):
 
@@ -288,6 +302,7 @@ class RouteserverConfig(viewsets.GenericViewSet):
             many=False,
         )
         return Response(serializer.instance.body)
+
 
 @route
 class User(viewsets.GenericViewSet):
