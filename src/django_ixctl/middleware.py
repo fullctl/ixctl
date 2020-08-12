@@ -7,6 +7,15 @@ from django.conf import settings
 
 
 class RequestAugmentation:
+
+    """
+    Augments the request by selecting org from `org_tag`
+    passed in the URL
+
+    When ixctl is not managed by oauth it also makes sure
+    that the request users personal org exists.
+    """
+
     def __init__(self, get_response):
         self.get_response = get_response
 

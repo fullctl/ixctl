@@ -5,8 +5,15 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.conf import settings
 
+from django_ixctl.models import Instance
+
 
 class require_auth:
+
+    """
+    decorate a view to require auth
+    """
+
     def __call__(self, fn):
         def wrapped(request, *args, **kwargs):
             if not request.user.is_authenticated:
@@ -24,8 +31,24 @@ class require_auth:
 
 
 class load_instance:
-    def __init__(self, model, public=False):
-        self.model = model
+
+    """
+    decorator that loads the instance for the selected
+    org.
+
+    org is selected in middleware.py and set on the request
+    at request.org
+
+    This will create the org's instance if it does not exist yet
+
+    Keyword Argument(s):
+
+    - public (`bool`): if public, no permission checks will be done,
+    otherwise read permission to the org is required
+    """
+
+    def __init__(self, public=False):
+        self.model = Instance
         self.public = public
 
     def __call__(self, fn):

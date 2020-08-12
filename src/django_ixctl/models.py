@@ -47,6 +47,7 @@ def generate_secret():
 class HandleRefModel(SoftDeleteHandleRefModel):
     """
     Like handle ref, but with hard delete
+    and extended status types
     """
 
     status = models.CharField(
@@ -133,6 +134,9 @@ class Organization(HandleRefModel):
     slug = models.CharField(max_length=64, unique=True)
     personal = models.BooleanField(default=False)
 
+    # if oauth manages organizations these will describe a reference
+    # to the backend that created the organization
+
     backend = models.CharField(
         max_length=255,
         null=True,
@@ -153,14 +157,15 @@ class Organization(HandleRefModel):
         "ixctl",
     ]
 
+    class HandleRef:
+        tag = "org"
+
+
     @property
     def permission_id(self):
         if self.remote_id:
             return self.remote_id
         return self.id
-
-    class HandleRef:
-        tag = "org"
 
     @classmethod
     def sync(cls, orgs, user, backend):
@@ -314,6 +319,13 @@ class APIKey(HandleRefModel):
 @reversion.register()
 @grainy_model(namespace="ix")
 class InternetExchange(PdbRefModel):
+
+    """
+    Describes an internet exchange
+
+    Can have a reference to a peeringdb ixlan object
+    """
+
     name = models.CharField(max_length=255, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -337,6 +349,25 @@ class InternetExchange(PdbRefModel):
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
 
+        """
+        create instance from peeringdb ixlan
+
+        Argument(s):
+
+        - instance (`Instance`): instance that contains this exchange
+        - pdb_object (`django_peeringdb.IXLan`): pdb ixlan instance
+        - save (`bool`): if True commit to the database, otherwise dont
+
+        Keyword Argument(s):
+
+        Any arguments passed will be used to set properties on the
+        object before creation
+
+        Returns:
+
+        - `InternetExchange` instance
+        """
+
         ix = super().create_from_pdb(pdb_object, save=save, instance=instance, **fields)
 
         ix.name = pdb_object.ix.name
@@ -351,14 +382,29 @@ class InternetExchange(PdbRefModel):
 
     @property
     def display_name(self):
+        """
+        Will return the exchange name if specified.
+
+        If self.name is not specified and pdb reference is set return
+        the name of the peeringdb ix instead
+
+        If peeringdb reference is not specified either, return
+        generic "Nameless Exchange ({id})"
+        """
+
         if self.name:
             return self.name
         if self.pdb_id:
-            return ixlan.ix.name
+            return self.pdb.ix.name
         return f"Nameless Exchange ({self.id})"
 
     @property
     def ixf_export_url(self):
+        """
+        Returns the path for the ix-f export URL for this
+        exchange
+        """
+
         return reverse(
             "django_ixctl:ixf export", args=(ix.instance.org.slug, ix.secret,)
         )
@@ -369,6 +415,12 @@ class InternetExchange(PdbRefModel):
 
 @reversion.register()
 class InternetExchangeMember(PdbRefModel):
+
+    """
+    Describes a member at an internet exchange
+
+    Can have a reference to a peeringdb netixlan object
+    """
 
     ix = models.ForeignKey(
         InternetExchange,
@@ -405,6 +457,20 @@ class InternetExchangeMember(PdbRefModel):
     @classmethod
     def create_from_pdb(cls, pdb_object, ix, save=True, **fields):
 
+        """
+        Create `InternetExchangeMember` from peeringdb netixlan
+
+        Argument(s):
+
+        - pdb_object (`django_peeringdb.NetworkIXLan`): netixlan instance
+        - ix (`InternetExchange`): member of this ix
+
+        Keyword Argument(s):
+
+        And keyword arguments passwed will be used to inform properties
+        of the InternetExchangeMember to be created
+        """
+
         member = super().create_from_pdb(pdb_object, ix=ix, save=False, **fields)
 
         member.ipaddr4 = pdb_object.ipaddr4
@@ -426,6 +492,10 @@ class InternetExchangeMember(PdbRefModel):
 
 @reversion.register
 class Routeserver(HandleRefModel):
+
+    """
+    Describes a routeserver at an internet exchange
+    """
 
     ix = models.ForeignKey(
         InternetExchange, on_delete=models.CASCADE, related_name="rs_set",
@@ -479,6 +549,11 @@ class Routeserver(HandleRefModel):
 
     @property
     def rsconf(self):
+        """
+        Return the rsconf instance for this routeserver
+
+        Will create the rsconf instance if it does not exist yet
+        """
         if not hasattr(self, "_rsconf"):
             rsconf, created = RouteserverConfig.objects.get_or_create(rs=self)
             self._rsconf = rsconf
@@ -486,6 +561,11 @@ class Routeserver(HandleRefModel):
 
     @property
     def ars_general(self):
+
+        """
+        Generate and return `dict` for ARouteserver general config
+        """
+
         ars_general = {
             "cfg": {
                 "rs_as": self.asn,
@@ -518,6 +598,11 @@ class Routeserver(HandleRefModel):
 
     @property
     def ars_clients(self):
+
+        """
+        Generate and return `dirct` for ARouteserver clients config
+        """
+
         asns = {}
         clients = {}
 
@@ -551,6 +636,11 @@ class Routeserver(HandleRefModel):
 @reversion.register
 class RouteserverConfig(HandleRefModel):
 
+    """
+    Describes a configuration (aroutserver generated) for a
+    `Routeserver` instance
+    """
+
     rs = models.OneToOneField(
         Routeserver, on_delete=models.CASCADE, null=True, blank=True,
     )
@@ -582,6 +672,10 @@ class RouteserverConfig(HandleRefModel):
     @property
     def outdated(self):
 
+        """
+        Returns whether or not the config needs to be regenerated
+        """
+
         # Route server has been updated since last generation,
 
         if not self.generated or self.generated < self.rs.updated:
@@ -595,6 +689,11 @@ class RouteserverConfig(HandleRefModel):
         return False
 
     def generate(self):
+
+        """
+        Generate the route server config using arouteserver
+        """
+
         ix = self.rs.ix
         rs = self.rs
         ars_general = rs.ars_general

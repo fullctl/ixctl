@@ -26,7 +26,7 @@ def make_env(request, **kwargs):
 
 
 @require_auth()
-@load_instance(Instance)
+@load_instance()
 def view_instance(request, instance, **kwargs):
     env = make_env(request, instance=instance, org=instance.org)
     env["forms"] = {"import_ix": django_ixctl.forms.ImportIXForm()}
@@ -39,7 +39,7 @@ def org_redirect(request):
     return redirect(f"/{request.org.slug}/")
 
 
-@load_instance(Instance, public=True)
+@load_instance(public=True)
 def export_ixf(request, org, urlkey, **kwargs):
     try:
         exchange = InternetExchange.objects.get(urlkey=urlkey)
