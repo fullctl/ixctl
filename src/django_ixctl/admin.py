@@ -8,6 +8,7 @@ from django_ixctl.models import (
     APIKey,
     InternetExchange,
     InternetExchangeMember,
+    Routeserver,
     RouteserverConfig,
 )
 
@@ -40,12 +41,18 @@ class OrganizationAdmin(BaseAdmin):
 class InternetExchangeMemberInline(BaseTabularAdmin):
     model = InternetExchangeMember
 
+class RouteserverInline(BaseTabularAdmin):
+    model = Routeserver
+
 
 @admin.register(InternetExchange)
 class InternetInternetExchangeAdmin(BaseAdmin):
-    list_display = ("name", "id", "instance")
-    inlines = (InternetExchangeMemberInline,)
+    list_display = ("name", "id", "org")
+    readonly_fields = ("org",)
+    inlines = (InternetExchangeMemberInline, RouteserverInline)
 
+    def org(self, obj):
+        return obj.instance.org
 
 @admin.register(RouteserverConfig)
 class RouteserverConfigAdmin(BaseAdmin):

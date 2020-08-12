@@ -255,6 +255,9 @@ class Instance(HandleRefModel):
             instance = cls.objects.create(org=org, status="ok")
         return instance
 
+    def __str__(self):
+        return f"{self.org} ({self.id})"
+
 
 @reversion.register()
 @grainy_model(namespace="org")
@@ -359,6 +362,9 @@ class InternetExchange(PdbRefModel):
         return reverse(
             "django_ixctl:ixf export", args=(ix.instance.org.slug, ix.secret,)
         )
+
+    def __str__(self):
+        return f"{self.name} ({self.id})"
 
 
 @reversion.register()
