@@ -606,11 +606,13 @@ twentyc.rest.List = twentyc.cls.extend(
         $(this).click(function() {
           if(confirm_set && !confirm(confirm_set))
             return;
-          var _action = action;
-          var match = action.match(/^\{(.+)\}$/);
-          if(match) {
-            _action = row.data("apiobject")[match[1]];
-          }
+          var apiobj = row.data("apiobject")
+          var _action = action.replace(
+            /\{([^\{\}]+)\}/,
+            (match, p1, offset, string) => {
+              return apiobj[p1];
+            }
+          )
           var request = widget[method](_action, row.data("apiobject")).then(
             callback, widget.action_failure.bind(widget)
           );

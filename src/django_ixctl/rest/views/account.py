@@ -19,7 +19,6 @@ class Organization(viewsets.GenericViewSet):
     serializer_class = Serializers.org
     queryset = models.Organization.objects.all()
 
-    @grainy_endpoint()
     def list(self, request, *args, **kwargs):
 
         """

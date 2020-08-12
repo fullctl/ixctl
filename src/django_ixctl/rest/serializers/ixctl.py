@@ -145,6 +145,7 @@ class InternetExchangeMember(serializers.ModelSerializer):
     class Meta:
         model = models.InternetExchangeMember
         fields = [
+            "id",
             "pdb_id",
             "ix",
             "ixf_member_type",
@@ -199,6 +200,7 @@ class Routeserver(serializers.ModelSerializer):
     class Meta:
         model = models.Routeserver
         fields = [
+            "id",
             "ix",
             "name",
             "display_name",

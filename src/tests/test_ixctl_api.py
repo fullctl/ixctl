@@ -84,8 +84,7 @@ def test_ix_delete_member(db, pdb_data, account_objects):
     ixmember = ix.member_set.first()
 
     response = client.delete(
-        reverse("ixctl_api:ix-members", args=(org.slug, ix.id)),
-        {"id": ixmember.id},
+        reverse("ixctl_api:ix-member", args=(org.slug, ix.id, ixmember.id)),
     )
 
     assert response.status_code == 200
@@ -132,7 +131,7 @@ def test_ix_edit_member(db, pdb_data, account_objects):
     ixmember = ix.member_set.first()
 
     response = client.put(
-        reverse("ixctl_api:ix-members", args=(org.slug, ixmember.ix.id)),
+        reverse("ixctl_api:ix-member", args=(org.slug, ixmember.ix.id, ixmember.id)),
         json.dumps(
             {
                 "id": ixmember.id,
