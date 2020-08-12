@@ -10,7 +10,7 @@ def export(ix, pretty=False):
         "version": "0.6",
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "member_list": member_list,
-        "ixp_list": [{"ixp_id": ix.pdb.id, "shortname": ix.name}],
+        "ixp_list": [{"ixp_id": ix.id, "shortname": ix.name}],
     }
 
     for ix in [ix]:
