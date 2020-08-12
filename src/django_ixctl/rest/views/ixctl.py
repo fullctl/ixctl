@@ -1,8 +1,10 @@
+import re
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.schemas.openapi import AutoSchema
 
 from django_ixctl.rest import BadRequest
 
@@ -12,7 +14,6 @@ from django_ixctl.rest.serializers.ixctl import Serializers
 from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint
 from django_ixctl.rest.renderers import PlainTextRenderer
 from django_ixctl.peeringdb import import_org
-
 
 
 class grainy_endpoint(_grainy_endpoint):
@@ -25,6 +26,37 @@ class grainy_endpoint(_grainy_endpoint):
         )
         if "namespace" not in kwargs:
             self.namespace += ["ixctl"]
+
+class PeeringDBImportSchema(AutoSchema):
+    def __init__(self, *args, **kwargs):
+        super(AutoSchema, self).__init__(*args, **kwargs)
+
+    def get_operation(self, path, method):
+        operation = super().get_operation(path, method)
+        operation["responses"] = self._get_responses(path, method)
+        return operation
+
+    def _get_operation_id(self, path, method):
+        return "import peeringdb ix"
+    
+    def _get_responses(self, path, method):
+        self.response_media_types = self.map_renderers(path, method)
+        serializer = Serializers.ix()
+        response_schema = self._map_serializer(serializer)
+        status_code = '200'
+
+        return {
+                status_code: {
+                    'content': {
+                        ct: {'schema': response_schema}
+                        for ct in self.response_media_types
+                    },
+                    'description': ""
+                }
+            }
+
+
+
 
 
 @route
@@ -96,7 +128,7 @@ class InternetExchange(viewsets.GenericViewSet):
         ix.save()
         return Response(Serializers.ix(instance=ix).data)
 
-    @action(detail=False, methods=["POST"])
+    @action(detail=False, methods=["POST"], schema=PeeringDBImportSchema())
     @grainy_endpoint()
     def import_peeringdb(self, request, org, instance, *args, **kwargs):
         serializer = Serializers.impix(
@@ -249,7 +281,7 @@ class RouteserverConfig(viewsets.GenericViewSet):
         return Response(serializer.instance.body)
 
 @route
-class User(viewsets.ViewSet):
+class User(viewsets.GenericViewSet):
 
     serializer_class = Serializers.orguser
     queryset = models.OrganizationUser.objects.all()

@@ -17,16 +17,7 @@ class Organization(viewsets.GenericViewSet):
     """
 
     serializer_class = Serializers.org
-    serializer_class_dict = {
-        "list": Serializers.org,
-        "users": Serializers.orguser
-    }
     queryset = models.Organization.objects.all()
-
-    def get_serializer_class(self):
-        if self.action in self.serializer_class_dict:
-            return self.serializer_class_dict[self.action]
-        return self.serializer_class
 
     @grainy_endpoint()
     def list(self, request, *args, **kwargs):
