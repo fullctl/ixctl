@@ -11,7 +11,7 @@ from rest_framework.schemas import get_schema_view
 
 urlpatterns = [
     path(
-        "api/<str:org_tag>/account/",
+        "api/account/",
         include(
             ("django_ixctl.rest.urls.account", "ixctl_account_api"),
             namespace="ixctl_account_api",
@@ -40,7 +40,7 @@ urlpatterns = [
     path("<str:org_tag>/export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
     path("<str:org_tag>/", views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),
-    path('openapi', 
+    path('openapi',
         get_schema_view(
             title="IXCTL",
             description="API for ixctl",

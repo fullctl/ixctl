@@ -12,6 +12,10 @@ from django_ixctl.rest.decorators import disable_api_key, set_org, grainy_endpoi
 @route
 class Organization(viewsets.GenericViewSet):
 
+    """
+    Manage user's organizations
+    """
+
     serializer_class = Serializers.org
     serializer_class_dict = {
         "list": Serializers.org,
@@ -25,20 +29,16 @@ class Organization(viewsets.GenericViewSet):
         return self.serializer_class
 
     @grainy_endpoint()
-    def list(self, request, org, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
+
+        """
+        list the organizations that the user belongs
+        to
+        """
+
         serializer = Serializers.org(
             instance=[o.org for o in request.user.org_set.all()],
             many=True,
-            context={"user": request.user, "org": org},
-        )
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["GET"])
-    @grainy_endpoint()
-    def users(self, request, org, *args, **kwargs):
-        serializer = Serializers.orguser(
-            org.user_set.all(),
-            many=True,
-            context={"user": request.user, "perms": request.perms,},
+            context={"user": request.user},
         )
         return Response(serializer.data)
