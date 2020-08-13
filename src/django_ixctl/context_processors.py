@@ -11,8 +11,8 @@ def account_service(request):
         context.update(
             account_service={
                 "urls": {
-                    "create_org": f"{settings.TWENTYC_ENDPOINT}/account/org/create/",
-                    "manage_org": f"{settings.TWENTYC_ENDPOINT}/account/?org={request.org.slug}",
+                    "create_org": f"{settings.OAUTH_TWENTYC_HOST}/account/org/create/",
+                    "manage_org": f"{settings.OAUTH_TWENTYC_HOST}/account/?org={request.org.slug}",
                 },
             },
             oauth_manages_org=settings.MANAGED_BY_OAUTH,

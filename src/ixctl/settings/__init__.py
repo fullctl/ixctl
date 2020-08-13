@@ -273,21 +273,33 @@ LOGIN_URL = "/login"
 
 # OAUTH
 
-set_option("TWENTYC_ENDPOINT", "https://account.20c.com")
-TWENTYC_OAUTH_ACCESS_TOKEN_URL = "{}/account/auth/o/token/".format(TWENTYC_ENDPOINT)
-TWENTYC_OAUTH_AUTHORIZE_URL = "{}/account/auth/o/authorize/".format(TWENTYC_ENDPOINT)
-TWENTYC_OAUTH_PROFILE_URL = "{}/account/auth/o/profile/".format(TWENTYC_ENDPOINT)
+# controls whether or not orgs, users and permissions
+# are managed by oauth
+set_option("MANAGED_BY_OAUTH", False)
+
+set_option("OAUTH_TWENTYC_HOST", "https://account.20c.com")
+OAUTH_TWENTYC_ACCESS_TOKEN_URL = "{}/account/auth/o/token/".format(OAUTH_TWENTYC_HOST)
+OAUTH_TWENTYC_AUTHORIZE_URL = "{}/account/auth/o/authorize/".format(OAUTH_TWENTYC_HOST)
+OAUTH_TWENTYC_PROFILE_URL = "{}/account/auth/o/profile/".format(OAUTH_TWENTYC_HOST)
 
 set_option("OAUTH_TWENTYC_KEY", "")
 set_option("OAUTH_TWENTYC_SECRET", "")
 set_option("OAUTH_TWENTYC", False)
 
-if OAUTH_TWENTYC:
+if OAUTH_TWENTYC or MANAGED_BY_OAUTH:
     SOCIAL_AUTH_TWENTYC_KEY = OAUTH_TWENTYC_KEY
     SOCIAL_AUTH_TWENTYC_SECRET = OAUTH_TWENTYC_SECRET
     AUTHENTICATION_BACKENDS = [
         "django_ixctl.social.backends.twentyc.TwentycOAuth2",
     ] + AUTHENTICATION_BACKENDS
+
+    if MANAGED_BY_OAUTH:
+        GRAINY_REMOTE = {
+            "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
+            "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/"+"{}/",
+        }
+
+
 
 
 set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
@@ -305,10 +317,6 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.user.user_details",
 )
 
-
-# controls whether or not orgs, users and permissions
-# are managed by oauth
-set_option("MANAGED_BY_OAUTH", False)
 
 # PEERINGDB
 

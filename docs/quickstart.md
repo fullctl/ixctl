@@ -16,6 +16,7 @@ pipenv shell
 cd src
 python manage.py migrate
 python manage.py createsuperuser
+python manage.py createcachetable
 python manage.py ixctl_peeringdb_sync
 python manage.py runserver 0.0.0.0:8000
 ```
