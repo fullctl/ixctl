@@ -179,17 +179,116 @@ def test_ix_edit_member(db, pdb_data, account_objects):
     assert ixmember.ipaddr6 == "2001:504:41:111::20"
 
 
-def test_list_routeservers():
-    assert 0
+def test_list_routeservers(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    rs = account_objects.routeserver
+    client = account_objects.api_client
+    org = account_objects.org
 
-def test_create_routeserver():
-    assert 0
+    response = client.get(reverse("ixctl_api:ix-routeservers", args=(org.slug, ix.id)))
+    assert response.status_code == 200
+    data = response.json()["data"]
 
-def test_delete_routeserver():
-    assert 0
+    assert len(data) == ix.rs_set.count()
+    assert data[0]["name"] == ix.rs_set.first().name
 
-def test_update_routeserver():
-    assert 0
+def test_create_routeserver(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    rs = account_objects.routeserver
+    client = account_objects.api_client
+    org = account_objects.org
+
+    payload = {
+        'asn': 63311,
+        'graceful_shutdown': False,
+        'ix': 1,
+        'max_as_path_length': 32,
+        'name': 'New rs',
+        'no_export_action': 'pass',
+        'router_id': '194.168.0.1',
+    }
+    response = client.post(
+        reverse("ixctl_api:ix-routeservers", args=(org.slug, ix.id)),
+        json.dumps(payload),
+        content_type="application/json"
+    )
+
+    # Response is correct
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data) == 1
+    assert data[0]["name"] == "New rs"
+    assert data[0]["router_id"] == "194.168.0.1"
+
+    # Changes are persisted to db
+    assert models.Routeserver.objects.filter(id=data[0]["id"]).exists()
+    new_rs = models.Routeserver.objects.filter(id=data[0]["id"]).first()
+    assert new_rs.name == "New rs"
+    ix.refresh_from_db()
+    assert ix.rs_set.count() == 2
+
+
+def test_delete_routeserver(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    rs = account_objects.routeserver
+    client = account_objects.api_client
+    org = account_objects.org
+    response = client.delete(
+        reverse("ixctl_api:ix-routeserver", args=(org.slug, ix.id, rs.id)),
+        content_type="application/json"
+    )
+
+    assert response.status_code == 200
+    # Response is correct
+    data = response.json()["data"]
+    assert len(data) == 1
+    assert data[0]["name"] == "test routeserver"
+    assert data[0]["router_id"] == "192.168.0.1"
+
+    # Changes are persisted to db
+    assert not models.Routeserver.objects.filter(id=rs.id).exists()
+
+
+def test_update_routeserver(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    rs = account_objects.routeserver
+    client = account_objects.api_client
+    org = account_objects.org
+    payload = {
+        'ars_type': 'bird',
+        'asn': 63311,
+        'graceful_shutdown': False,
+        'id': 1,
+        'ix': 1,
+        'max_as_path_length': 32,
+        'name': 'changed name', #changed
+        'no_export_action': 'pass',
+        'router_id': '193.168.0.1', #changed
+        'rpki_bgp_origin_validation': False,
+        'status': 'ok',
+    }
+    response = client.put(
+        reverse("ixctl_api:ix-routeserver", args=(org.slug, ix.id, rs.id)),
+        json.dumps(payload),
+        content_type="application/json"
+    )
+
+    assert response.status_code == 200
+    # Response is correct
+    data = response.json()["data"]
+    assert len(data) == 1
+    assert data[0]["name"] == "changed name"
+    assert data[0]["router_id"] == "193.168.0.1"
+
+    # Changes are persisted to db
+    routeserver = models.Routeserver.objects.filter(id=rs.id).first()
+    assert routeserver.name == "changed name"
+    assert str(routeserver.router_id) == "193.168.0.1"
+
+    # Unchanged fields remain unchanged
+    assert data[0]["ars_type"] == routeserver.ars_type
+
+
 
 def test_retrieve_routeserverconfig():
     assert 0 
@@ -211,5 +310,16 @@ def test_list_users(db, pdb_data, account_objects):
         f"{user.first_name} {user.last_name}" for user in get_user_model().objects.all()
     ])
 
-def test_list_orgs():
-    assert 0
+def test_list_orgs(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    client = account_objects.api_client
+    org = account_objects.org
+
+    response = client.get(reverse("ixctl_account_api:org-list"))
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data) == len(account_objects.orgs)
+    assert set([d["name"] for d in data]) == set([
+        org.display_name for org in account_objects.orgs
+    ])

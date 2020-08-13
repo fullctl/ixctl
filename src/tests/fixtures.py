@@ -16,7 +16,19 @@ class AccountObjects:
         from django_ixctl.models import Organization, OrganizationUser
 
         self.user = user = get_user_model().objects.create_user(
-            username=f"user_{handle}", email=f"{handle}@localhost", password="test",
+            username=f"user_{handle}",
+            email=f"{handle}@localhost",
+            password="test",
+            first_name=f"user_{handle}",
+            last_name="last_name"
+        )
+
+        self.other_user = get_user_model().objects.create_user(
+            username=f"other_user_{handle}",
+            email=f"other_{handle}@localhost",
+            password="test",
+            first_name=f"other_user_{handle}",
+            last_name="last_name"
         )
 
         self.orgs = Organization.sync(
@@ -43,6 +55,11 @@ class AccountObjects:
         user.grainy_permissions.add_permission(self.orgs[1], "r")
 
         self.org = self.orgs[0]
+
+        OrganizationUser.objects.create(
+            org=self.org,
+            user=self.other_user
+        )
 
         self.other_org = Organization.objects.create(name="Other", slug="other", id=3,)
 
@@ -99,7 +116,24 @@ class AccountObjects:
                 )
         return self._ix
 
+    @property
+    def routeserver(self):
+        from django_ixctl.models import Routeserver
+        kwargs = {
+            "ix": self.ix,
+            "name": "test routeserver",
+            "asn": self.pdb_net.asn,
+            "router_id": "192.168.0.1",
+            "rpki_bgp_origin_validation": False,
+            "ars_type": "bird",
+            "max_as_path_length": 32
+        }
+        rs = Routeserver.objects.create(**kwargs)
+        return rs
 
+
+
+    
 @pytest.fixture
 def pdb_data():
     """
