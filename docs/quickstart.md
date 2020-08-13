@@ -71,3 +71,8 @@ curl -X GET https://localhost/api/20c/ix/ -H "Authorization: bearer {key}"
 ?key={key}
 ```
 
+## Generate openapi schema
+
+```sh
+python manage.py generateschema > django_ixctl/static/ixctl/openapi.yaml
+```

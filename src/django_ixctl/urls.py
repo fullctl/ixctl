@@ -7,8 +7,6 @@ from django.conf import settings
 import django_ixctl.views as views
 import django_ixctl.autocomplete.views
 
-from rest_framework.schemas import get_schema_view
-
 urlpatterns = [
     path(
         "api/account/",
@@ -41,17 +39,9 @@ urlpatterns = [
     path("<str:org_tag>/", views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),
     path(
-        "openapi",
-        get_schema_view(
-            title="IXCTL", description="API for ixctl", version=settings.PACKAGE_VERSION
-        ),
-        name="openapi-schema",
-    ),
-    path(
         "apidocs/swagger",
         TemplateView.as_view(
             template_name="ixctl/apidocs/swagger.html",
-            extra_context={"schema_url": "openapi-schema"},
         ),
         name="swagger",
     ),
@@ -59,7 +49,6 @@ urlpatterns = [
         "apidocs/redoc",
         TemplateView.as_view(
             template_name="ixctl/apidocs/redoc.html",
-            extra_context={"schema_url": "openapi-schema"},
         ),
         name="redoc",
     ),

@@ -1,0 +1,1198 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /api/account/org/:
+    get:
+      operationId: org.list
+      description: 'list the organizations that the user belongs
+
+        to'
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    slug:
+                      type: string
+                      maxLength: 64
+                    name:
+                      type: string
+                      readOnly: true
+                    selected:
+                      type: string
+                      readOnly: true
+                    personal:
+                      type: boolean
+                    id:
+                      type: integer
+                      readOnly: true
+                    status:
+                      enum:
+                      - ok
+                      - pending
+                      - deactivated
+                      - failed
+                      - expired
+                    created:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                    updated:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                  required:
+                  - slug
+          description: ''
+  /api/{org_tag}/ix/:
+    get:
+      operationId: ix.list
+      description: Return all internet exchanges.
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    pdb_id:
+                      type: integer
+                      nullable: true
+                    urlkey:
+                      type: string
+                      maxLength: 255
+                    name:
+                      type: string
+                      maxLength: 255
+                    id:
+                      type: integer
+                      readOnly: true
+                    status:
+                      enum:
+                      - ok
+                      - pending
+                      - deactivated
+                      - failed
+                      - expired
+                    created:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                    updated:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                  required:
+                  - name
+          description: ''
+    post:
+      operationId: ix.create
+      description: Create a new internet exchange.
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id001
+              properties:
+                pdb_id:
+                  type: integer
+                  nullable: true
+                urlkey:
+                  type: string
+                  maxLength: 255
+                name:
+                  type: string
+                  maxLength: 255
+                status:
+                  enum:
+                  - ok
+                  - pending
+                  - deactivated
+                  - failed
+                  - expired
+              required:
+              - name
+          application/x-www-form-urlencoded:
+            schema: *id001
+          multipart/form-data:
+            schema: *id001
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  pdb_id:
+                    type: integer
+                    nullable: true
+                  urlkey:
+                    type: string
+                    maxLength: 255
+                  name:
+                    type: string
+                    maxLength: 255
+                  id:
+                    type: integer
+                    readOnly: true
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - name
+          description: ''
+  /api/{org_tag}/ix/{id}/:
+    get:
+      operationId: ix.retrieve
+      description: Return a internet exchange instance.
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  pdb_id:
+                    type: integer
+                    nullable: true
+                  urlkey:
+                    type: string
+                    maxLength: 255
+                  name:
+                    type: string
+                    maxLength: 255
+                  id:
+                    type: integer
+                    readOnly: true
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - name
+          description: ''
+  /api/{org_tag}/ix/{id}/members/:
+    get:
+      operationId: member.list
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  pdb_id:
+                    type: integer
+                    nullable: true
+                  ix:
+                    type: integer
+                    description: Members at this Exchange
+                  ixf_member_type:
+                    enum:
+                    - peering
+                    - ixp
+                    - routeserver
+                    - probono
+                  ixf_state:
+                    type: string
+                    maxLength: 255
+                  asn:
+                    type: integer
+                  name:
+                    type: string
+                    nullable: true
+                    maxLength: 255
+                  display_name:
+                    type: string
+                    readOnly: true
+                  ipaddr4:
+                    type: string
+                    nullable: true
+                  ipaddr6:
+                    type: string
+                    nullable: true
+                  macaddr:
+                    type: string
+                    nullable: true
+                    pattern: (?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$
+                  is_rs_peer:
+                    type: boolean
+                  speed:
+                    type: integer
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - ix
+                - asn
+                - speed
+          description: ''
+    post:
+      operationId: member.create
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id002
+              properties:
+                pdb_id:
+                  type: integer
+                  nullable: true
+                ix:
+                  type: integer
+                  description: Members at this Exchange
+                ixf_member_type:
+                  enum:
+                  - peering
+                  - ixp
+                  - routeserver
+                  - probono
+                ixf_state:
+                  type: string
+                  maxLength: 255
+                asn:
+                  type: integer
+                name:
+                  type: string
+                  nullable: true
+                  maxLength: 255
+                ipaddr4:
+                  type: string
+                  nullable: true
+                ipaddr6:
+                  type: string
+                  nullable: true
+                macaddr:
+                  type: string
+                  nullable: true
+                  pattern: (?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$
+                is_rs_peer:
+                  type: boolean
+                speed:
+                  type: integer
+                status:
+                  enum:
+                  - ok
+                  - pending
+                  - deactivated
+                  - failed
+                  - expired
+              required:
+              - ix
+              - asn
+              - speed
+          application/x-www-form-urlencoded:
+            schema: *id002
+          multipart/form-data:
+            schema: *id002
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  pdb_id:
+                    type: integer
+                    nullable: true
+                  ix:
+                    type: integer
+                    description: Members at this Exchange
+                  ixf_member_type:
+                    enum:
+                    - peering
+                    - ixp
+                    - routeserver
+                    - probono
+                  ixf_state:
+                    type: string
+                    maxLength: 255
+                  asn:
+                    type: integer
+                  name:
+                    type: string
+                    nullable: true
+                    maxLength: 255
+                  display_name:
+                    type: string
+                    readOnly: true
+                  ipaddr4:
+                    type: string
+                    nullable: true
+                  ipaddr6:
+                    type: string
+                    nullable: true
+                  macaddr:
+                    type: string
+                    nullable: true
+                    pattern: (?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$
+                  is_rs_peer:
+                    type: boolean
+                  speed:
+                    type: integer
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - ix
+                - asn
+                - speed
+          description: ''
+  /api/{org_tag}/ix/{id}/routeservers/:
+    get:
+      operationId: rs.list
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  ix:
+                    type: integer
+                  name:
+                    type: string
+                    description: Routeserver name
+                    maxLength: 255
+                  display_name:
+                    type: string
+                    readOnly: true
+                  asn:
+                    type: integer
+                    description: ASN
+                  router_id:
+                    type: string
+                  ars_type:
+                    enum:
+                    - bird
+                    - bird2
+                    - openbgpd
+                  max_as_path_length:
+                    type: integer
+                    description: Max length of AS_PATH attribute.
+                  no_export_action:
+                    enum:
+                    - pass
+                    - strip
+                    description: RFC1997 well-known communities (NO_EXPORT and NO_ADVERTISE)
+                  rpki_bgp_origin_validation:
+                    type: boolean
+                  graceful_shutdown:
+                    type: boolean
+                    description: Graceful BGP session shutdown
+                  extra_config:
+                    type: string
+                    nullable: true
+                    description: Extra arouteserver config
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - ix
+                - name
+                - asn
+                - router_id
+          description: ''
+    post:
+      operationId: rs.create
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id003
+              properties:
+                ix:
+                  type: integer
+                name:
+                  type: string
+                  description: Routeserver name
+                  maxLength: 255
+                asn:
+                  type: integer
+                  description: ASN
+                router_id:
+                  type: string
+                ars_type:
+                  enum:
+                  - bird
+                  - bird2
+                  - openbgpd
+                max_as_path_length:
+                  type: integer
+                  description: Max length of AS_PATH attribute.
+                no_export_action:
+                  enum:
+                  - pass
+                  - strip
+                  description: RFC1997 well-known communities (NO_EXPORT and NO_ADVERTISE)
+                rpki_bgp_origin_validation:
+                  type: boolean
+                graceful_shutdown:
+                  type: boolean
+                  description: Graceful BGP session shutdown
+                extra_config:
+                  type: string
+                  nullable: true
+                  description: Extra arouteserver config
+                status:
+                  enum:
+                  - ok
+                  - pending
+                  - deactivated
+                  - failed
+                  - expired
+              required:
+              - ix
+              - name
+              - asn
+              - router_id
+          application/x-www-form-urlencoded:
+            schema: *id003
+          multipart/form-data:
+            schema: *id003
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  ix:
+                    type: integer
+                  name:
+                    type: string
+                    description: Routeserver name
+                    maxLength: 255
+                  display_name:
+                    type: string
+                    readOnly: true
+                  asn:
+                    type: integer
+                    description: ASN
+                  router_id:
+                    type: string
+                  ars_type:
+                    enum:
+                    - bird
+                    - bird2
+                    - openbgpd
+                  max_as_path_length:
+                    type: integer
+                    description: Max length of AS_PATH attribute.
+                  no_export_action:
+                    enum:
+                    - pass
+                    - strip
+                    description: RFC1997 well-known communities (NO_EXPORT and NO_ADVERTISE)
+                  rpki_bgp_origin_validation:
+                    type: boolean
+                  graceful_shutdown:
+                    type: boolean
+                    description: Graceful BGP session shutdown
+                  extra_config:
+                    type: string
+                    nullable: true
+                    description: Extra arouteserver config
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - ix
+                - name
+                - asn
+                - router_id
+          description: ''
+  /api/{org_tag}/rsconf/{router_id}/:
+    get:
+      operationId: rsconf.list
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: router_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  rs:
+                    type: integer
+                    nullable: true
+                  body:
+                    type: string
+                    description: Config content
+                  id:
+                    type: integer
+                    readOnly: true
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - body
+          description: ''
+  /api/{org_tag}/rsconf/{router_id}/plain/:
+    get:
+      operationId: rsconf.list
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: router_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            text/plain:
+              schema:
+                properties:
+                  rs:
+                    type: integer
+                    nullable: true
+                  body:
+                    type: string
+                    description: Config content
+                  id:
+                    type: integer
+                    readOnly: true
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - body
+          description: ''
+  /api/{org_tag}/user/:
+    get:
+      operationId: orguser.list
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    name:
+                      type: string
+                      readOnly: true
+                    email:
+                      type: string
+                      readOnly: true
+                    you:
+                      type: string
+                      readOnly: true
+          description: ''
+  /api/{org_tag}/ix/import_peeringdb/:
+    post:
+      operationId: ix.import_peeringdb
+      description: Import an internet exhange from Peeringdb.
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id004
+              properties:
+                pdb_ix_id:
+                  type: integer
+              required:
+              - pdb_ix_id
+          application/x-www-form-urlencoded:
+            schema: *id004
+          multipart/form-data:
+            schema: *id004
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  pdb_id:
+                    type: integer
+                    nullable: true
+                  urlkey:
+                    type: string
+                    maxLength: 255
+                  name:
+                    type: string
+                    maxLength: 255
+                  id:
+                    type: integer
+                    readOnly: true
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - name
+          description: ''
+  /api/{org_tag}/ix/{id}/members/{member_id}/:
+    put:
+      operationId: member.update
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      - name: member_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id005
+              properties:
+                pdb_id:
+                  type: integer
+                  nullable: true
+                ix:
+                  type: integer
+                  description: Members at this Exchange
+                ixf_member_type:
+                  enum:
+                  - peering
+                  - ixp
+                  - routeserver
+                  - probono
+                ixf_state:
+                  type: string
+                  maxLength: 255
+                asn:
+                  type: integer
+                name:
+                  type: string
+                  nullable: true
+                  maxLength: 255
+                ipaddr4:
+                  type: string
+                  nullable: true
+                ipaddr6:
+                  type: string
+                  nullable: true
+                macaddr:
+                  type: string
+                  nullable: true
+                  pattern: (?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$
+                is_rs_peer:
+                  type: boolean
+                speed:
+                  type: integer
+                status:
+                  enum:
+                  - ok
+                  - pending
+                  - deactivated
+                  - failed
+                  - expired
+              required:
+              - ix
+              - asn
+              - speed
+          application/x-www-form-urlencoded:
+            schema: *id005
+          multipart/form-data:
+            schema: *id005
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  pdb_id:
+                    type: integer
+                    nullable: true
+                  ix:
+                    type: integer
+                    description: Members at this Exchange
+                  ixf_member_type:
+                    enum:
+                    - peering
+                    - ixp
+                    - routeserver
+                    - probono
+                  ixf_state:
+                    type: string
+                    maxLength: 255
+                  asn:
+                    type: integer
+                  name:
+                    type: string
+                    nullable: true
+                    maxLength: 255
+                  display_name:
+                    type: string
+                    readOnly: true
+                  ipaddr4:
+                    type: string
+                    nullable: true
+                  ipaddr6:
+                    type: string
+                    nullable: true
+                  macaddr:
+                    type: string
+                    nullable: true
+                    pattern: (?i)^([0-9a-f]{2}[-:]){5}[0-9a-f]{2}$
+                  is_rs_peer:
+                    type: boolean
+                  speed:
+                    type: integer
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - ix
+                - asn
+                - speed
+          description: ''
+    delete:
+      operationId: member.delete
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      - name: member_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+  /api/{org_tag}/ix/{id}/routeservers/{rs_id}/:
+    put:
+      operationId: rs.update
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      - name: rs_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id006
+              properties:
+                ix:
+                  type: integer
+                name:
+                  type: string
+                  description: Routeserver name
+                  maxLength: 255
+                asn:
+                  type: integer
+                  description: ASN
+                router_id:
+                  type: string
+                ars_type:
+                  enum:
+                  - bird
+                  - bird2
+                  - openbgpd
+                max_as_path_length:
+                  type: integer
+                  description: Max length of AS_PATH attribute.
+                no_export_action:
+                  enum:
+                  - pass
+                  - strip
+                  description: RFC1997 well-known communities (NO_EXPORT and NO_ADVERTISE)
+                rpki_bgp_origin_validation:
+                  type: boolean
+                graceful_shutdown:
+                  type: boolean
+                  description: Graceful BGP session shutdown
+                extra_config:
+                  type: string
+                  nullable: true
+                  description: Extra arouteserver config
+                status:
+                  enum:
+                  - ok
+                  - pending
+                  - deactivated
+                  - failed
+                  - expired
+              required:
+              - ix
+              - name
+              - asn
+              - router_id
+          application/x-www-form-urlencoded:
+            schema: *id006
+          multipart/form-data:
+            schema: *id006
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  ix:
+                    type: integer
+                  name:
+                    type: string
+                    description: Routeserver name
+                    maxLength: 255
+                  display_name:
+                    type: string
+                    readOnly: true
+                  asn:
+                    type: integer
+                    description: ASN
+                  router_id:
+                    type: string
+                  ars_type:
+                    enum:
+                    - bird
+                    - bird2
+                    - openbgpd
+                  max_as_path_length:
+                    type: integer
+                    description: Max length of AS_PATH attribute.
+                  no_export_action:
+                    enum:
+                    - pass
+                    - strip
+                    description: RFC1997 well-known communities (NO_EXPORT and NO_ADVERTISE)
+                  rpki_bgp_origin_validation:
+                    type: boolean
+                  graceful_shutdown:
+                    type: boolean
+                    description: Graceful BGP session shutdown
+                  extra_config:
+                    type: string
+                    nullable: true
+                    description: Extra arouteserver config
+                  status:
+                    enum:
+                    - ok
+                    - pending
+                    - deactivated
+                    - failed
+                    - expired
+                  created:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  updated:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                required:
+                - ix
+                - name
+                - asn
+                - router_id
+          description: ''
+    delete:
+      operationId: rs.delete
+      description: ''
+      parameters:
+      - name: org_tag
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Internet Exchange.
+        schema:
+          type: string
+      - name: rs_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
