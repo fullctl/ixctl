@@ -52,7 +52,25 @@ def test_ix_retrieve(db, pdb_data, account_objects):
     assert data[0]["status"] == ix.status
 
 def test_ix_create(db, pdb_data, account_objects):
-    assert 0
+    ix = account_objects.ix
+    client = account_objects.api_client
+    org = account_objects.org
+    
+    data = {
+        "name": "test IX new"
+    }
+    response = client.post(
+        reverse("ixctl_api:ix-list", args=(org.slug,)),
+        json.dumps(data),
+        content_type="application/json"
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data) == 1
+    assert data[0]["pdb_id"] == None
+    assert data[0]["name"] == "test IX new"
+    assert models.InternetExchange.objects.filter(name="test IX new").exists()
 
 def test_ix_members(db, pdb_data, account_objects):
     ix = account_objects.ix
