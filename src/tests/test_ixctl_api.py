@@ -51,6 +51,8 @@ def test_ix_retrieve(db, pdb_data, account_objects):
     assert data[0]["id"] == ix.id
     assert data[0]["status"] == ix.status
 
+def test_ix_create(db, pdb_data, account_objects):
+    assert 0
 
 def test_ix_members(db, pdb_data, account_objects):
     ix = account_objects.ix
@@ -118,7 +120,6 @@ def test_ix_add_member(db, pdb_data, account_objects):
         content_type="application/json",
     )
 
-    print(response.json())
     data = response.json()["data"]
     assert response.status_code == 200
 
@@ -150,8 +151,6 @@ def test_ix_edit_member(db, pdb_data, account_objects):
         ),
         content_type="application/json",
     )
-
-    print(response.json())
     data = response.json()["data"]
     assert response.status_code == 200
 
@@ -159,3 +158,28 @@ def test_ix_edit_member(db, pdb_data, account_objects):
     assert ixmember.name == "override"
     assert ixmember.ipaddr4 == "206.41.111.20"
     assert ixmember.ipaddr6 == "2001:504:41:111::20"
+
+
+def test_list_routeservers():
+    assert 0
+
+def test_create_routeserver():
+    assert 0
+
+def test_delete_routeserver():
+    assert 0
+
+def test_update_routeserver():
+    assert 0
+
+def test_retrieve_routeserverconfig():
+    assert 0 
+
+def test_retrieve_routeserverconfig_plain():
+    assert 0
+
+def test_list_users():
+    assert 0
+
+def test_list_orgs():
+    assert 0
