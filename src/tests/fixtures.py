@@ -12,7 +12,7 @@ class AccountObjects:
     def __init__(self, handle):
         from django.contrib.auth import get_user_model
         from rest_framework.test import APIClient
-        from django_grainy.util import Permissions
+        from django_ixctl.auth import permissions
         from django_ixctl.models import Organization, OrganizationUser
 
         self.user = user = get_user_model().objects.create_user(
@@ -21,7 +21,12 @@ class AccountObjects:
 
         self.orgs = Organization.sync(
             [
-                {"id": 1, "name": f"ORG{handle}", "slug": handle, "personal": True,},
+                {
+                    "id": 1, 
+                    "name": f"ORG{handle}", 
+                    "slug": handle, 
+                    "personal": True,
+                },
                 {
                     "id": 2,
                     "name": f"ORG{handle}-2",
@@ -35,7 +40,7 @@ class AccountObjects:
 
         # add permissions
         user.grainy_permissions.add_permission(self.orgs[0], "crud")
-        user.grainy_permissions.add_permission(self.orgs[1], "crud")
+        user.grainy_permissions.add_permission(self.orgs[1], "r")
 
         self.org = self.orgs[0]
 
@@ -47,7 +52,7 @@ class AccountObjects:
         self.client = Client()
         self.client.login(username=user.username, password="test")
 
-        self.perms = Permissions(user)
+        self.perms = permissions(user)
 
     @property
     def ixctl_instance(self):

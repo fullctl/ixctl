@@ -11,7 +11,6 @@ def test_import_exchange(db, pdb_data, account_objects):
     assert ix.name == pdb_ix.name
     assert ix.pdb_id == pdb_ix.id
 
-
 def test_import_exchanges(db, pdb_data, account_objects):
     pdb_org = pdb_models.Organization.objects.filter(id=10843).first()
     exchanges = peeringdb.import_exchanges(pdb_org, account_objects.ixctl_instance)
@@ -19,7 +18,6 @@ def test_import_exchanges(db, pdb_data, account_objects):
     for ix in exchanges:
         assert pdb_org.ix_set.filter(name=ix.name).exists()
         assert pdb_org.ix_set.filter(id=ix.pdb_id).exists()
-
 
 def test_import_org(db, pdb_data, account_objects):
     pdb_org = pdb_models.Organization.objects.filter(id=10843).first()
