@@ -15,7 +15,7 @@ def validate_ip4(value):
 def validate_ip6(value):
     try:
         ipaddress.IPv6Address(value)
-    except ipaddress.AddessValueError:
+    except ipaddress.AddressValueError:
         raise ValidationError("Invalid IPv6 Address")
 
 
