@@ -32,11 +32,7 @@ def test_validate_prefix(ipaddrs):
     with pytest.raises(ValidationError) as execinfo:
         validators.validate_prefix(ipaddrs.INVALID_PREFIX)
     
-    assert "Invalid prefix address" in str(execinfo.value)
-
-
-
-
+    assert "Invalid prefix" in str(execinfo.value)
 
 @pytest.fixture
 def ipaddrs():
