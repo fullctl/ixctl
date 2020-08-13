@@ -22,10 +22,8 @@ def validate_ip6(value):
 def validate_prefix(value):
     try:
         ipaddress.ip_network(value)
-    except (ipaddress.AddressValueError, ValueError):
+    except ValueError:
         raise ValidationError("Invalid prefix address")
-    except ipaddress.NetmaskValueError:
-        raise ValidationError("Invalid prefix netmask")
 
 
 def validate_masklength_range(value):
