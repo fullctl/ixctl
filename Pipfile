@@ -13,12 +13,12 @@ django-handleref = ">=0.5"
 djangorestframework = ">=3.11,<4"
 Django = ">=2.2,<3"
 django-peeringdb = "*"
-peeringdb = "*"
+peeringdb = {file = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
 django-reversion = "<4"
 django-inet = "*"
 django-autocomplete-light = ">=3,<=4"
 social-auth-app-django = "<4"
-django-grainy = {file = "https://github.com/20c/django-grainy/archive/1.7.0.2.zip"}
+django-grainy = {file = "https://github.com/peeringdb/peeringdb-py/archive/master.zip"}
 pyyaml = "*"
 grainy = "*"
 pip = "*"

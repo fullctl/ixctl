@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "12b0f4b5a09623fa778988269f204bea86fc5c67d98ab619a08a53d65ff05a87"
+            "sha256": "48d49ad709d1cdac0511e749bcd4e3277912867b9ba2553192e193f9173e0efe"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -69,25 +69,12 @@
             ],
             "version": "==1.14.1"
         },
-        "cfu": {
-            "hashes": [
-                "sha256:5052fdec7a808823893b73cb438c39a4f780d2c0bba8af06e02192af99424f60"
-            ],
-            "version": "==1.5.0"
-        },
         "chardet": {
             "hashes": [
                 "sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae",
                 "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"
             ],
             "version": "==3.0.4"
-        },
-        "click": {
-            "hashes": [
-                "sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a",
-                "sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"
-            ],
-            "version": "==7.1.2"
         },
         "cryptography": {
             "hashes": [
@@ -144,7 +131,7 @@
             "version": "==6.1.2"
         },
         "django-grainy": {
-            "file": "https://github.com/20c/django-grainy/archive/1.7.0.2.zip"
+            "file": "https://github.com/peeringdb/peeringdb-py/archive/master.zip"
         },
         "django-handleref": {
             "hashes": [
@@ -248,12 +235,6 @@
             ],
             "version": "==1.1.1"
         },
-        "munge": {
-            "hashes": [
-                "sha256:e531dd74f9fa7279d39914dd7576e49c781dd89a1eadfba67ea450e72b308361"
-            ],
-            "version": "==1.0.0"
-        },
         "nose": {
             "hashes": [
                 "sha256:9ff7c6cc443f8c51994b34a667bbcf45afd6d945be7477b52e97516fd17c53ac",
@@ -277,11 +258,7 @@
             "version": "==20.4"
         },
         "peeringdb": {
-            "hashes": [
-                "sha256:bc6fcc74b87ea5ae2e554cc58ac46161f5ea4e27b3c422154701174c2b5091f2"
-            ],
-            "index": "pypi",
-            "version": "==1.0.0"
+            "file": "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"
         },
         "py-radix": {
             "hashes": [
