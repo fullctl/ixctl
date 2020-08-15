@@ -37,7 +37,7 @@ class AccountObjects:
                     "id": 1, 
                     "name": f"ORG{handle}", 
                     "slug": handle, 
-                    "personal": True,
+                    "personal": True
                 },
                 {
                     "id": 2,

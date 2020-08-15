@@ -16,6 +16,29 @@ def test_ix_import_peeringdb(db, pdb_data, account_objects):
     assert response.status_code == 200
     assert data["data"][0]["pdb_id"] == 239
 
+def test_ix_import_peeringdb_invalid(db, pdb_data, account_objects):
+    org = account_objects.org
+    client = account_objects.api_client
+    response = client.post(
+        reverse("ixctl_api:ix-import-peeringdb", args=(org.slug,)), {"pdb_ix_id": 10000000000000}
+    )
+    data = response.json()
+    assert response.status_code == 400
+    assert "Unknown peeringdb organization" in data["errors"]["pdb_ix_id"]
+
+def test_ix_import_peeringdb_reimport(db, pdb_data, account_objects):
+    org = account_objects.org
+    client = account_objects.api_client
+    client.post(
+        reverse("ixctl_api:ix-import-peeringdb", args=(org.slug,)), {"pdb_ix_id": 239}
+    )
+    response = client.post(
+        reverse("ixctl_api:ix-import-peeringdb", args=(org.slug,)), {"pdb_ix_id": 239}
+    )
+    data = response.json()
+    assert response.status_code == 400
+    assert "You have already imported this exchange" in data["errors"]["pdb_ix_id"]
+
 
 def test_ix_list(db, pdb_data, account_objects):
 
@@ -288,13 +311,11 @@ def test_update_routeserver(db, pdb_data, account_objects):
     # Unchanged fields remain unchanged
     assert data[0]["ars_type"] == routeserver.ars_type
 
+# def test_retrieve_routeserverconfig():
+#     assert 0 
 
-
-def test_retrieve_routeserverconfig():
-    assert 0 
-
-def test_retrieve_routeserverconfig_plain():
-    assert 0
+# def test_retrieve_routeserverconfig_plain():
+#     assert 0
 
 def test_list_users(db, pdb_data, account_objects):
     ix = account_objects.ix
