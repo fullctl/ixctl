@@ -232,7 +232,7 @@ class Routeserver(serializers.ModelSerializer):
 
 
 @register
-class Routeserver(serializers.ModelSerializer):
+class RouteserverConfig(serializers.ModelSerializer):
     class Meta:
         model = models.RouteserverConfig
         fields = [
