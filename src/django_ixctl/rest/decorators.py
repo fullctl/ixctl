@@ -21,7 +21,7 @@ class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
         return response
 
 
-class grainy_endpoint(object):
+class grainy_endpoint:
     def __init__(
         self, namespace=None, require_auth=True, explicit=True, instance_class=None
     ):
@@ -71,7 +71,7 @@ class grainy_endpoint(object):
 
 
 def serializer_registry():
-    class Serializers(object):
+    class Serializers:
         pass
 
     def register(cls):

@@ -81,16 +81,16 @@ def set_bool(name, value):
 
 def try_include(filename):
     """ Tries to include another file from the settings directory. """
-    print_debug("including {} {}".format(filename, RELEASE_ENV))
+    print_debug(f"including {filename} {RELEASE_ENV}")
     try:
         with open(filename) as f:
             exec(compile(f.read(), filename, "exec"), globals())
 
-        print_debug("loaded additional settings file '{}'".format(filename))
+        print_debug(f"loaded additional settings file '{filename}'")
 
     except FileNotFoundError:
         print_debug(
-            "additional settings file '{}' was not found, skipping".format(filename)
+            f"additional settings file '{filename}' was not found, skipping"
         )
         pass
 
@@ -112,11 +112,11 @@ else:
     set_bool("DEBUG", False)
 
 # look for mainsite/settings/${RELEASE_ENV}.py and load if it exists
-env_file = os.path.join(os.path.dirname(__file__), "{}.py".format(RELEASE_ENV))
+env_file = os.path.join(os.path.dirname(__file__), f"{RELEASE_ENV}.py")
 try_include(env_file)
 
 
-print_debug("Release env is '{}'".format(RELEASE_ENV))
+print_debug(f"Release env is '{RELEASE_ENV}'")
 
 # set version, default from /srv/service/etc/VERSION
 set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "Ctl/VERSION")).strip())
@@ -278,9 +278,9 @@ LOGIN_URL = "/login"
 set_option("MANAGED_BY_OAUTH", False)
 
 set_option("OAUTH_TWENTYC_HOST", "https://account.20c.com")
-OAUTH_TWENTYC_ACCESS_TOKEN_URL = "{}/account/auth/o/token/".format(OAUTH_TWENTYC_HOST)
-OAUTH_TWENTYC_AUTHORIZE_URL = "{}/account/auth/o/authorize/".format(OAUTH_TWENTYC_HOST)
-OAUTH_TWENTYC_PROFILE_URL = "{}/account/auth/o/profile/".format(OAUTH_TWENTYC_HOST)
+OAUTH_TWENTYC_ACCESS_TOKEN_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/token/"
+OAUTH_TWENTYC_AUTHORIZE_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/authorize/"
+OAUTH_TWENTYC_PROFILE_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/profile/"
 
 set_option("OAUTH_TWENTYC_KEY", "")
 set_option("OAUTH_TWENTYC_SECRET", "")
@@ -356,5 +356,5 @@ DEBUG_EMAIL = DEBUG
 
 TEMPLATES[0]["OPTIONS"]["debug"] = DEBUG
 
-print_debug("loaded settings for version {} (DEBUG: {})".format(PACKAGE_VERSION, DEBUG))
+print_debug(f"loaded settings for version {PACKAGE_VERSION} (DEBUG: {DEBUG})")
 

@@ -12,7 +12,7 @@ class peeringdb_ix(autocomplete.Select2QuerySetView):
 
     def get_result_label(self, ixlan):
         if ixlan.name:
-            return "{} - {}".format(ixlan.ix.name, ixlan.name)
+            return f"{ixlan.ix.name} - {ixlan.name}"
         return ixlan.ix.name
 
 
