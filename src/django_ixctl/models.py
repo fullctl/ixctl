@@ -97,7 +97,7 @@ class PdbRefModel(HandleRefModel):
         """ create object from peeringdb instance """
 
         if not isinstance(pdb_object, cls.PdbRef.model):
-            raise ValueError(_("Expected {} instance".format(cls.PdbRef.model)))
+            raise ValueError(_(f"Expected {cls.PdbRef.model} instance"))
 
         for k, v in cls.PdbRef.fields.items():
             fields[v] = getattr(pdb_object, k, k)
@@ -159,7 +159,6 @@ class Organization(HandleRefModel):
 
     class HandleRef:
         tag = "org"
-
 
     @property
     def permission_id(self):
@@ -747,7 +746,7 @@ class RouteserverConfig(HandleRefModel):
         process = subprocess.Popen(cmd)
         process.wait(600)
 
-        with open(outfile, "r") as fh:
+        with open(outfile) as fh:
             self.body = fh.read()
 
         self.save()

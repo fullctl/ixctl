@@ -15,7 +15,7 @@ def sync_api_keys(backend, details, response, uid, user, *args, **kwargs):
     if social:
         api_keys = social.extra_data.get("api_keys", [])
 
-        api_keys = dict([(api_key["key"], api_key["perms"]) for api_key in api_keys])
+        api_keys = {api_key["key"]: api_key["perms"] for api_key in api_keys}
         print("SYNCING API KEYS", api_keys)
 
         # delete / update existing keys

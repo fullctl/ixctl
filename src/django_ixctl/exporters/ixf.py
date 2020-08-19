@@ -38,12 +38,12 @@ def export(ix, pretty=False):
 
                 if _member.ipaddr4:
                     vlan_list[0]["ipv4"] = {
-                        "address": "{}".format(_member.ipaddr4),
+                        "address": f"{_member.ipaddr4}",
                         "routeserver": _member.is_rs_peer,
                     }
                 if _member.ipaddr6:
                     vlan_list[0]["ipv6"] = {
-                        "address": "{}".format(_member.ipaddr6),
+                        "address": f"{_member.ipaddr6}",
                         "routeserver": _member.is_rs_peer,
                     }
 

@@ -28,7 +28,7 @@ from django_ixctl.peeringdb import (
 Serializers, register = serializer_registry()
 
 
-class SoftRequiredValidator(object):
+class SoftRequiredValidator:
     """
     A validator that allows us to require that at least
     one of the specified fields is set
@@ -254,7 +254,7 @@ class OrganizationUser(serializers.ModelSerializer):
         fields = ["id", "name", "email", "you"]
 
     def get_name(self, obj):
-        return "{} {}".format(obj.user.first_name, obj.user.last_name)
+        return f"{obj.user.first_name} {obj.user.last_name}"
 
     def get_email(self, obj):
         return obj.user.email

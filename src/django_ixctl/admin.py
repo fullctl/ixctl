@@ -41,6 +41,7 @@ class OrganizationAdmin(BaseAdmin):
 class InternetExchangeMemberInline(BaseTabularAdmin):
     model = InternetExchangeMember
 
+
 class RouteserverInline(BaseTabularAdmin):
     model = Routeserver
 
@@ -53,6 +54,7 @@ class InternetInternetExchangeAdmin(BaseAdmin):
 
     def org(self, obj):
         return obj.instance.org
+
 
 @admin.register(RouteserverConfig)
 class RouteserverConfigAdmin(BaseAdmin):

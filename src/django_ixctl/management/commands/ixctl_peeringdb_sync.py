@@ -19,6 +19,7 @@ class Command(BaseCommand):
         self.sync()
 
     def sync(self):
+        settings.USE_TZ = False
         config = {
             "sync": {
                 "url": self.pdburl,

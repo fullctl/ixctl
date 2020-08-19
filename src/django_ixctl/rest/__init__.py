@@ -32,10 +32,10 @@ def exception_handler(exc, context):
 
     response = Response({})
     if isinstance(exc, ObjectDoesNotExist):
-        response.data = {"errors": {"non_field_errors": "{}".format(exc)}}
+        response.data = {"errors": {"non_field_errors": f"{exc}"}}
         response.status_code = 404
     elif isinstance(exc, IntegrityError):
-        response.data = {"non_field_errors": "{}".format(exc)}
+        response.data = {"non_field_errors": f"{exc}"}
         response.status_code = 400
     elif isinstance(exc, Http404):
         if getattr(context.get("request"), "destroyed", False):

@@ -27,5 +27,5 @@ def validate_prefix(value):
 
 
 def validate_masklength_range(value):
-    if not re.match("^([0-9]+\.\.[0-9]+|exact)$", value):
+    if not re.match(r"^([0-9]+\.\.[0-9]+|exact)$", value):
         raise ValidationError("Needs to be [0-9]+..[0-9]+ or 'exact'")

@@ -102,6 +102,7 @@ def pytest_configure():
         USE_TZ=True,
         PEERINGDB_SYNC_STRIP_TZ=True,
         MANAGED_BY_OAUTH=False,
+        OAUTH_TWENTYC_HOST="localhost",
         COUNTRIES_OVERRIDE={"XK": _("Kosovo"),},
         TWENTYC_ENDPOINT="https://account.20c.com",
     )
