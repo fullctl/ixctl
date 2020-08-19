@@ -160,7 +160,6 @@ class Organization(HandleRefModel):
     class HandleRef:
         tag = "org"
 
-
     @property
     def permission_id(self):
         if self.remote_id:

@@ -40,16 +40,12 @@ urlpatterns = [
     path("", views.org_redirect),
     path(
         "apidocs/swagger",
-        TemplateView.as_view(
-            template_name="ixctl/apidocs/swagger.html",
-        ),
+        TemplateView.as_view(template_name="ixctl/apidocs/swagger.html",),
         name="swagger",
     ),
     path(
         "apidocs/redoc",
-        TemplateView.as_view(
-            template_name="ixctl/apidocs/redoc.html",
-        ),
+        TemplateView.as_view(template_name="ixctl/apidocs/redoc.html",),
         name="redoc",
     ),
 ]

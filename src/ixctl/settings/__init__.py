@@ -89,9 +89,7 @@ def try_include(filename):
         print_debug(f"loaded additional settings file '{filename}'")
 
     except FileNotFoundError:
-        print_debug(
-            f"additional settings file '{filename}' was not found, skipping"
-        )
+        print_debug(f"additional settings file '{filename}' was not found, skipping")
         pass
 
 
@@ -131,7 +129,7 @@ set_from_env("SECRET_KEY")
 set_option("DATABASE_ENGINE", "sqlite3")
 set_option("DATABASE_HOST", "")
 set_option("DATABASE_PORT", "")
-set_option("DATABASE_NAME", os.path.join(BASE_DIR, 'db.sqlite3'))
+set_option("DATABASE_NAME", os.path.join(BASE_DIR, "db.sqlite3"))
 set_option("DATABASE_USER", "")
 set_option("DATABASE_PASSWORD", "")
 
@@ -161,7 +159,7 @@ set_option("SESSION_COOKIE_NAME", "ixctlsid")
 
 set_option("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 
-AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
 
 INSTALLED_APPS = [
@@ -244,20 +242,18 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # IXCTL Base
 
-MIDDLEWARE += (
-    "django_ixctl.middleware.RequestAugmentation",
-)
+MIDDLEWARE += ("django_ixctl.middleware.RequestAugmentation",)
 
 INSTALLED_APPS += (
-    'dal',
-    'dal_select2',
-    'django_handleref',
-    'django_peeringdb',
-    'django_grainy',
-    'rest_framework',
-    'social_django',
-    'reversion',
-    'django_ixctl',
+    "dal",
+    "dal_select2",
+    "django_handleref",
+    "django_peeringdb",
+    "django_grainy",
+    "rest_framework",
+    "social_django",
+    "reversion",
+    "django_ixctl",
 )
 
 TEMPLATES[0]["OPTIONS"]["context_processors"] += [
@@ -296,10 +292,8 @@ if OAUTH_TWENTYC or MANAGED_BY_OAUTH:
     if MANAGED_BY_OAUTH:
         GRAINY_REMOTE = {
             "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
-            "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/"+"{}/",
+            "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
         }
-
-
 
 
 set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
@@ -325,7 +319,7 @@ ABSTRACT_ONLY = False
 
 # add user defined iso code for Kosovo
 COUNTRIES_OVERRIDE = {
-    'XK': 'Kosovo',
+    "XK": "Kosovo",
 }
 
 # DJANGO REST FRAMEWORK
@@ -357,4 +351,3 @@ DEBUG_EMAIL = DEBUG
 TEMPLATES[0]["OPTIONS"]["debug"] = DEBUG
 
 print_debug(f"loaded settings for version {PACKAGE_VERSION} (DEBUG: {DEBUG})")
-
