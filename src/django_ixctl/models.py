@@ -405,7 +405,7 @@ class InternetExchange(PdbRefModel):
         """
 
         return reverse(
-            "django_ixctl:ixf export", args=(ix.instance.org.slug, ix.secret,)
+            "ixf export", args=(self.instance.org.slug, self.instance.secret,)
         )
 
     def __str__(self):

@@ -128,8 +128,9 @@ class AccountObjects:
             "ars_type": "bird",
             "max_as_path_length": 32
         }
-        rs = Routeserver.objects.create(**kwargs)
-        return rs
+        if not hasattr(self, "_rs"):
+            self._rs = Routeserver.objects.create(**kwargs)
+        return self._rs
 
 
 
