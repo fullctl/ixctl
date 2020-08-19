@@ -1,5 +1,9 @@
+import pytest
+
 import django_ixctl.models as models
 import django_peeringdb.models.concrete as pdb_models
+
+
 
 def test_org_permission_id(db, pdb_data, account_objects):
     org = account_objects.org
@@ -113,5 +117,10 @@ def test_ixmember(db, pdb_data, account_objects):
     ixmember.name = "override"
     assert ixmember.display_name == "override"
 
+def test_pdb_create_error(db, pdb_data, account_objects):
+    with pytest.raises(ValueError, match=r"^Expected .* instance$"):
+        models.InternetExchange.create_from_pdb(
+            account_objects.ixctl_instance, account_objects.pdb_ix
+        )
 
 
