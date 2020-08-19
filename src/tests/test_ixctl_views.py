@@ -1,5 +1,5 @@
 from django.urls import reverse
-
+import django_peeringdb.models.concrete as pdb_models
 
 def test_view_instance(db, pdb_data, account_objects):
 
@@ -35,3 +35,23 @@ def test_view_ixf_export(db, pdb_data, account_objects, client_anon):
     )
 
     assert response.status_code == 200
+
+
+def test_autocomplete_peeringdb_ix(db, pdb_data, account_objects):
+
+    response = account_objects.client.get(
+        reverse("pdb ix autocomplete")
+    )
+    content = response.json()
+    
+    assert len(content["results"]) == pdb_models.InternetExchange.objects.count()
+    assert "pagination" in content
+
+def test_autocomplete_peeringdb_org(db, pdb_data, account_objects):
+    response = account_objects.client.get(
+        reverse("pdb org autocomplete")
+    )
+    content = response.json()
+
+    assert len(content["results"]) == pdb_models.Organization.objects.count()
+    assert "pagination" in content

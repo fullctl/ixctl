@@ -15,19 +15,17 @@ def validate_ip4(value):
 def validate_ip6(value):
     try:
         ipaddress.IPv6Address(value)
-    except ipaddress.AddessValueError:
+    except ipaddress.AddressValueError:
         raise ValidationError("Invalid IPv6 Address")
 
 
 def validate_prefix(value):
     try:
         ipaddress.ip_network(value)
-    except (ipaddress.AddressValueError, ValueError):
-        raise ValidationError("Invalid prefix address")
-    except ipaddress.NetmaskValueError:
-        raise ValidationError("Invalid prefix netmask")
+    except ValueError as exc:
+        raise ValidationError(f"Invalid prefix: {exc}")
 
 
 def validate_masklength_range(value):
-    if not re.match("^([0-9+\.\.[0-9]+|exact)$", value):
+    if not re.match("^([0-9]+\.\.[0-9]+|exact)$", value):
         raise ValidationError("Needs to be [0-9]+..[0-9]+ or 'exact'")

@@ -103,4 +103,5 @@ def pytest_configure():
         PEERINGDB_SYNC_STRIP_TZ=True,
         MANAGED_BY_OAUTH=False,
         COUNTRIES_OVERRIDE={"XK": _("Kosovo"),},
+        TWENTYC_ENDPOINT="https://account.20c.com",
     )

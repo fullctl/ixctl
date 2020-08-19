@@ -99,6 +99,33 @@
 },
 {
   "model": "django_peeringdb.internetexchange",
+  "pk": 240,
+  "fields": {
+    "status": "ok",
+    "created": "2010-07-29T05:00:00Z",
+    "updated": "2020-01-10T23:51:28Z",
+    "version": 0,
+    "name": "BosIX",
+    "name_long": "Boston Internet Exchange",
+    "city": "Boston",
+    "country": "US",
+    "notes": "",
+    "region_continent": "North America",
+    "media": "Ethernet",
+    "proto_unicast": true,
+    "proto_multicast": true,
+    "proto_ipv6": true,
+    "website": "https://unitedix.net/location/boston",
+    "url_stats": "https://unitedix.net/location/boston/networks",
+    "tech_email": "neteng@unitedix.net",
+    "tech_phone": "",
+    "policy_email": "peering@unitedix.net",
+    "policy_phone": "",
+    "org": 10843
+  }
+},
+{
+  "model": "django_peeringdb.internetexchange",
   "pk": 239,
   "fields": {
     "status": "ok",
@@ -124,6 +151,7 @@
     "org": 10843
   }
 },
+
 {
   "model": "django_peeringdb.facility",
   "pk": 440,
@@ -165,6 +193,24 @@
     "rs_asn": 0,
     "arp_sponge": null,
     "ix": 239
+  }
+},
+{
+  "model": "django_peeringdb.ixlan",
+  "pk": 240,
+  "fields": {
+    "status": "ok",
+    "created": "2010-07-29T05:00:00Z",
+    "updated": "2016-03-23T16:53:43Z",
+    "version": 0,
+    "name": "",
+    "descr": "",
+    "mtu": 1500,
+    "vlan": null,
+    "dot1q_support": true,
+    "rs_asn": 0,
+    "arp_sponge": null,
+    "ix": 240
   }
 },
 {
