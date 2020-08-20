@@ -9,13 +9,15 @@ def test_account_service(db, pdb_data, account_objects, settings):
 
     expected = {
         "urls": {
-            "create_org": "https://account.20c.com/account/org/create/",
-            "manage_org": "https://account.20c.com/account/?org=test"
+            "create_org": "localhost/account/org/create/",
+            "manage_org": "localhost/account/?org=test"
         }
     }
 
     settings.MANAGED_BY_OAUTH = True
     context = context_processors.account_service(request)
+    print(context["account_service"])
+
     assert context["oauth_manages_org"] == True
     assert context["account_service"] == expected
 
