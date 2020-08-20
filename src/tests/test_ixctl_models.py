@@ -162,8 +162,9 @@ def test_routeserver(db, pdb_data, account_objects):
     assert rs.extra_config == None
 
     assert rs.display_name == rs.name
+    assert rs.__str__() == f"Routeserver test routeserver AS{account_objects.pdb_net.asn}"
 
-def test_routeserver_ars_general_no_extra_config(db, pdb_data, account_objects):
+def test_routeserver_ars_general(db, pdb_data, account_objects):
     rs = account_objects.routeserver
     fn = os.path.join(os.path.dirname(__file__), "data", "rs", "ars_general_default.json")
     with open(fn) as file:
@@ -171,13 +172,67 @@ def test_routeserver_ars_general_no_extra_config(db, pdb_data, account_objects):
 
     assert rs.ars_general == expected
 
+def test_routeserver_ars_general_extra_config(db, pdb_data, account_objects):
+    rs = account_objects.routeserver
 
+    config_fn = os.path.join(os.path.dirname(__file__), "data", "rs", "extra_config.yml")
+    with open(config_fn, "rb") as yml_file:
+        rs.extra_config = yml_file.read()
 
-def test_routeserver_ars_client_no_extra_config(db, pdb_data, account_objects):
+    json_fn = os.path.join(os.path.dirname(__file__), "data", "rs", "ars_general_extra_config.json")
+    with open(json_fn) as file:
+        expected = json.load(file)
+
+    assert rs.ars_general == expected
+
+def test_routeserver_ars_clients(db, pdb_data, account_objects):
     rs = account_objects.routeserver
 
     fn = os.path.join(os.path.dirname(__file__), "data", "rs", "ars_clients_default.json")
     with open(fn) as file:
         expected = json.load(file)
-
     assert rs.ars_clients == expected
+
+def test_routeserver_rsconf(db, pdb_data, account_objects):
+    rs = account_objects.routeserver
+    # This property creates a config if it doesn't already exist
+    rsconf = rs.rsconf
+    assert models.RouteserverConfig.objects.filter(rs=rs).exists()
+
+def test_rsconf(db, pdb_data, account_objects):
+    try:
+        from yaml import CLoader as Loader, CDumper as Dumper
+    except ImportError:
+        from yaml import Loader, Dumper
+    import yaml
+
+    rs = account_objects.routeserver
+    rsconf = rs.rsconf
+    # Currently printing an Error but not raising an exception
+    # it does save the ars_general and ars_clients fields so
+    # we test that.
+    rsconf.generate()
+    assert rsconf.ars_general == yaml.dump(rs.ars_general, Dumper=Dumper)
+    assert rsconf.ars_clients == yaml.dump(rs.ars_clients, Dumper=Dumper)
+
+def test_rsconf_outdated_update_rs(db, pdb_data, account_objects):
+    rs = account_objects.routeserver
+    rsconf = rs.rsconf
+
+    assert rsconf.outdated == False
+    # Update rs
+    rs.ars_type = "bird2"
+    rs.save()
+    assert rsconf.outdated == True
+
+def test_rsconf_outdated_update_ixmember(db, pdb_data, account_objects):
+    rs = account_objects.routeserver
+    rsconf = rs.rsconf    
+    assert rsconf.outdated == False
+    
+    ixmember = rs.ix.member_set.filter(is_rs_peer=True).first()
+    ixmember.name = "Changed name"
+    ixmember.save()
+    assert rsconf.outdated == True
+
+
