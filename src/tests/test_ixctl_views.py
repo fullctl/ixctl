@@ -1,3 +1,4 @@
+import json
 from django.urls import reverse
 import django_peeringdb.models.concrete as pdb_models
 
@@ -20,25 +21,40 @@ def test_view_instance_other(db, pdb_data, account_objects):
     assert response.status_code == 404
 
 
-def test_view_ixf_export(db, pdb_data, account_objects, client_anon):
-
+def test_view_ixf_export(db, pdb_data, account_objects):
     ix = account_objects.ix
-
     response = account_objects.client.get(
         reverse("ixf export", args=(account_objects.org.slug, ix.urlkey,))
     )
-
     assert response.status_code == 200
 
+
+def test_view_ixf_export_anon(db, pdb_data, account_objects, client_anon):
+    ix = account_objects.ix
     response = client_anon.get(
         reverse("ixf export", args=(account_objects.org.slug, ix.urlkey,))
     )
-
     assert response.status_code == 200
 
+def test_view_ixf_export_pretty(db, pdb_data, account_objects, client_anon):
+    ix = account_objects.ix
+    response = account_objects.client.get(
+        reverse("ixf export", args=(account_objects.org.slug, ix.urlkey,))
+    )
+    pretty_response = account_objects.client.get(
+        reverse("ixf export", args=(account_objects.org.slug, ix.urlkey,)) + "?pretty"
+    )
+    assert pretty_response.status_code == 200
+    assert json.dumps(json.loads(response.content), indent=2) == pretty_response.content.decode("utf-8")
+
+def test_view_ixf_export_error(db, pdb_data, account_objects, client_anon):
+    ix = account_objects.ix
+    response = account_objects.client.get(
+        reverse("ixf export", args=(account_objects.org.slug, "falseurlkey",))
+    )
+    assert response.status_code == 404
 
 def test_autocomplete_peeringdb_ix(db, pdb_data, account_objects):
-
     response = account_objects.client.get(
         reverse("pdb ix autocomplete")
     )
