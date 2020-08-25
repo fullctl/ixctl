@@ -6,7 +6,7 @@ import django.db.models.deletion
 import django.db.models.manager
 import django_handleref.models
 import django_ixctl.models
-import django_ixctl.validators
+import django_ixctl.inet.validators as validators
 
 
 class Migration(migrations.Migration):
@@ -286,7 +286,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         max_length=255,
                         null=True,
-                        validators=[django_ixctl.validators.validate_ip_v4],
+                        validators=[validators.validate_ip4],
                     ),
                 ),
                 (
@@ -295,7 +295,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         max_length=255,
                         null=True,
-                        validators=[django_ixctl.validators.validate_ip_v6],
+                        validators=[validators.validate_ip6],
                     ),
                 ),
                 ("is_rs_peer", models.BooleanField(default=False)),

@@ -34,7 +34,7 @@ from django_handleref.models import HandleRefModel as SoftDeleteHandleRefModel
 from django_peeringdb.models.concrete import IXLan, NetworkIXLan
 
 from django_ixctl.inet.util import pdb_lookup
-from django_ixctl.validators import validate_ip_v4, validate_ip_v6
+from django_ixctl.inet.validators import validate_ip4, validate_ip6
 from django_ixctl.peeringdb import get_as_set
 
 import django_ixctl.enum
@@ -428,10 +428,10 @@ class InternetExchangeMember(PdbRefModel):
         on_delete=models.CASCADE,
     )
     ipaddr4 = models.CharField(
-        max_length=255, blank=True, null=True, validators=[validate_ip_v4]
+        max_length=255, blank=True, null=True, validators=[validate_ip4]
     )
     ipaddr6 = models.CharField(
-        max_length=255, blank=True, null=True, validators=[validate_ip_v6]
+        max_length=255, blank=True, null=True, validators=[validate_ip6]
     )
     macaddr = MacAddressField(null=True, blank=True)
     is_rs_peer = models.BooleanField(default=False)
