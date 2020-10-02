@@ -131,6 +131,14 @@ fullctl.application.Tool = $tc.extend(
 
     },
 
+    hide : function() {
+      this.$e.body.parents(".tool").hide();
+    },
+
+    show : function() {
+      this.$e.body.parents(".tool").show();
+    },
+
     menu : function() {
       var menu = this.template("menu")
       console.log(this);

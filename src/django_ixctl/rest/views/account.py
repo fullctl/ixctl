@@ -23,11 +23,12 @@ class Organization(viewsets.GenericViewSet):
 
         """
         list the organizations that the user belongs
-        to
+        to or has permissions to
         """
 
+
         serializer = Serializers.org(
-            instance=[o.org for o in request.user.org_set.all()],
+            instance=models.Organization.accessible(request.user),
             many=True,
             context={"user": request.user},
         )

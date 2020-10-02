@@ -16,19 +16,21 @@ from django_ixctl.auth import Permissions, RemotePermissions
 
 class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
     def apply_perms(self, request, response, view_function, view):
-        return response
+        #return response
         response.data = self._apply_perms(request, response.data, view_function, view)
         return response
 
 
 class grainy_endpoint:
     def __init__(
-        self, namespace=None, require_auth=True, explicit=True, instance_class=None
+        self, namespace=None, require_auth=True, explicit=True, instance_class=None,
+        **kwargs
     ):
-        self.namespace = namespace or ["account", "org", "{request.org.permission_id}"]
+        self.namespace = namespace or ["org", "{request.org.permission_id}"]
         self.require_auth = require_auth
         self.explicit = explicit
         self.instance_class = instance_class
+        self.kwargs = kwargs
 
     def __call__(self, fn):
         decorator = self
@@ -44,13 +46,11 @@ class grainy_endpoint:
             explicit=decorator.explicit,
             ignore_grant_all=True,
             permissions_cls=permissions_cls,
+            **decorator.kwargs,
         )
         def wrapped(self, request, *args, **kwargs):
 
             request.org = Organization.objects.get(slug=request.nsparam["org_tag"])
-
-            if not request.perms.check(request.org, "r"):
-                return Response(status=403)
 
             if decorator.require_auth and not request.user.is_authenticated:
                 return Response(status=401)

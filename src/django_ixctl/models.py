@@ -36,6 +36,7 @@ from django_peeringdb.models.concrete import IXLan, NetworkIXLan
 from django_ixctl.inet.util import pdb_lookup
 from django_ixctl.inet.validators import validate_ip4, validate_ip6
 from django_ixctl.peeringdb import get_as_set
+from django_ixctl.auth import permissions
 
 import django_ixctl.enum
 
@@ -122,7 +123,7 @@ class PdbRefModel(HandleRefModel):
 
 @reversion.register()
 @grainy_model(
-    namespace="account.org", namespace_instance="account.org.{instance.permission_id}"
+    namespace="org", namespace_instance="org.{instance.permission_id}"
 )
 class Organization(HandleRefModel):
 
@@ -154,7 +155,6 @@ class Organization(HandleRefModel):
 
     permission_namespaces = [
         "management",
-        "ixctl",
     ]
 
     class HandleRef:
@@ -165,6 +165,33 @@ class Organization(HandleRefModel):
         if self.remote_id:
             return self.remote_id
         return self.id
+
+    @classmethod
+    def accessible(cls, user):
+        perms = permissions(user)
+
+        # user is a member of these orgs
+        if hasattr(user, "org_set"):
+            related_orgs = [o.org for o in user.org_set.all()]
+        else:
+            related_orgs = []
+
+        # user has permissions to these orgs (customer of)
+        permissioned_orgs = []
+
+        perms.load()
+        org_namespaces = perms.pset.expand("?.?", exact=True)
+
+        for ns in org_namespaces:
+            try:
+                org = cls.objects.get(remote_id=ns[1])
+                if org not in related_orgs:
+                    permissioned_orgs.append(org)
+            except cls.DoesNotExist:
+                pass
+
+        return list(set(related_orgs + permissioned_orgs))
+
 
     @classmethod
     def sync(cls, orgs, user, backend):

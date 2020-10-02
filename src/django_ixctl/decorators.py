@@ -5,8 +5,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.conf import settings
 
-from django_ixctl.models import Instance
-
+from django_ixctl.models import Instance, Organization
 
 class require_auth:
 
@@ -58,8 +57,7 @@ class load_instance:
         def wrapped(request, *args, **kwargs):
 
             org = request.org
-
-            if not public and not request.perms.check(org, "r"):
+            if not public and org not in Organization.accessible(request.user):
                 raise django.http.Http404()
 
             try:

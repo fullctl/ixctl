@@ -85,7 +85,7 @@ fullctl.permissions = {{ permissions|safe }}
                   <img src="{% static "common/icons/icon/org.svg" %}">
                 </span>
                 <span data-field="name"></span>
-                {% if permissions.update_org_management %}
+                {% if permissions.update_instance %}
                 <span class="action manage manage-org"><span class="icon icon-settings"></span></span>
                 {% endif %}
               </a>
@@ -95,7 +95,7 @@ fullctl.permissions = {{ permissions|safe }}
 
           <!-- other org related actions -->
 
-          {% if permissions.update_org_management %}
+          {% if permissions.update_instance %}
           <a class="dropdown-item" href="{{ account_service.urls.manage_org }}">
             <span class="icon icon-settings"></span>
             {% trans "Manage Organization" %}

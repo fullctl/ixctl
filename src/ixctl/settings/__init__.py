@@ -292,7 +292,7 @@ if OAUTH_TWENTYC or MANAGED_BY_OAUTH:
     if MANAGED_BY_OAUTH:
         GRAINY_REMOTE = {
             "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
-            "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
+            #"url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
         }
 
 

@@ -225,16 +225,28 @@ $ctl.application.Ixctl.Members = $tc.extend(
     },
 
     sync : function() {
-      if($ctl.ixctl.ix()) {
-        this.$w.list.load();
-        this.$e.menu.find('[data-element="button_ixf_export"]').attr(
-          "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
-        )
+      var ix_id = $ctl.ixctl.ix()
+      if(ix_id) {
+        if($ctl.permissions["read_member_"+ix_id]) {
+          this.show();
+          this.$w.list.load();
+          this.$e.menu.find('[data-element="button_ixf_export"]').attr(
+            "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
+          )
 
-        this.$e.menu.find('[data-element="button_api_view"]').attr(
-          "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
-        )
+          this.$e.menu.find('[data-element="button_api_view"]').attr(
+            "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
+          )
 
+          if($ctl.permissions["create_member_"+ix_id]) {
+            this.$e.menu.find('[data-element="button_add_member"]').show();
+          } else {
+            this.$e.menu.find('[data-element="button_add_member"]').hide();
+          }
+
+        } else {
+          this.hide();
+        }
       }
     }
   },
@@ -325,11 +337,17 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
     },
 
     sync : function() {
-      if($ctl.ixctl.ix()) {
-        this.$w.list.load();
-        this.$e.menu.find('[data-element="button_api_view"]').attr(
-          "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
-        )
+      var ix_id = $ctl.ixctl.ix()
+      if(ix_id) {
+        if($ctl.permissions["read_rs_"+ix_id]) {
+          this.show();
+          this.$w.list.load();
+          this.$e.menu.find('[data-element="button_api_view"]').attr(
+            "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
+          )
+        } else {
+          this.hide();
+        }
 
       }
     }

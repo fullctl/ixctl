@@ -35,14 +35,18 @@
     </span>
   </div>
   <div class="col-3 col-md-2">
+      {% if permissions.update_instance %}
       <button type="button" class="button" data-element="button_create_ix">
       <span class="icon ixctl icon-add"></span>
       {% trans "Create" %}</button>
+      {% endif %}
   </div>
   <div class="col-3 col-md-2">
+      {% if permissions.update_instance %}
       <button type="button" class="button" data-element="button_import">
       <span class="icon ixctl icon-add"></span>
       {% trans "Import" %}</button>
+      {% endif %}
   </div>
 </div>
 {% endblock %}
