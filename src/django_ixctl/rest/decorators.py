@@ -14,6 +14,31 @@ from django_ixctl.models import Organization, APIKey
 from django_ixctl.auth import Permissions, RemotePermissions
 
 
+class load_object:
+
+    def __init__(self, argname, model, **filters):
+        self.argname = argname
+        self.model = model
+        self.filters = filters
+
+    def __call__(self, fn):
+
+        decorator = self
+
+        def wrapped(self, request, *args, **kwargs):
+            filters = {}
+            for field, key in decorator.filters.items():
+                filters[field] = kwargs.get(key)
+
+            try:
+                kwargs[decorator.argname] = decorator.model.objects.get(**filters)
+            except decorator.model.DoesNotExist:
+                return Response(status=404)
+            return fn(self, request, *args, **kwargs)
+        wrapped.__name__ = fn.__name__
+        return wrapped
+
+
 class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
     def apply_perms(self, request, response, view_function, view):
         #return response

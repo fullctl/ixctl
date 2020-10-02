@@ -11,7 +11,7 @@ from django_ixctl.rest import BadRequest
 import django_ixctl.models as models
 from django_ixctl.rest.route.ixctl import route
 from django_ixctl.rest.serializers.ixctl import Serializers
-from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint
+from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint, load_object
 from django_ixctl.rest.renderers import PlainTextRenderer
 from django_ixctl.peeringdb import import_org
 
@@ -158,10 +158,11 @@ class InternetExchange(viewsets.GenericViewSet):
         serializer_class=Serializers.member,
         methods=["PUT", "DELETE"],
     )
+    @load_object("member", models.InternetExchangeMember, id="member_id")
     @grainy_endpoint(
-        namespace = "member.{request.org.permission_id}.{pk}.{member_id}"
+        namespace = "member.{request.org.permission_id}.{pk}.{member.asn}",
     )
-    def member(self, request, org, instance, pk, member_id, *args, **kwargs):
+    def member(self, request, org, instance, pk, member_id=None, *args, **kwargs):
         if request.method == "PUT":
             return self._update_member(
                 request, org, instance, pk, member_id, *args, **kwargs

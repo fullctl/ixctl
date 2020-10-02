@@ -202,6 +202,10 @@ $ctl.application.Ixctl.Members = $tc.extend(
           var member = row.data("apiobject");
           new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix(), member);
         });
+
+        if(!$ctl.permissions["delete_member_"+$ctl.ixctl.ix()]) {
+          row.find('a[data-api-method="DELETE"]').hide();
+        }
       };
 
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
@@ -240,8 +244,10 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
           if($ctl.permissions["create_member_"+ix_id]) {
             this.$e.menu.find('[data-element="button_add_member"]').show();
+            this.$e.menu.find('[data-element="button_ixf_export"]').show();
           } else {
             this.$e.menu.find('[data-element="button_add_member"]').hide();
+            this.$e.menu.find('[data-element="button_ixf_export"]').hide();
           }
 
         } else {
