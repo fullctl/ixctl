@@ -183,6 +183,12 @@ class Organization(HandleRefModel):
         org_namespaces = perms.pset.expand("?.?", exact=True)
 
         for ns in org_namespaces:
+
+            try:
+                int(ns[1])
+            except ValueError:
+                continue
+
             try:
                 org = cls.objects.get(remote_id=ns[1])
                 if org not in related_orgs:

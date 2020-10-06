@@ -48,7 +48,7 @@ class RequestAugmentation:
                         org=request.org, user=request.user,
                     )
 
-                    request.user.grainy_permissions.add_permission(["*",request.org.id], "crud")
+                    request.user.grainy_permissions.add_permission(f"*.{request.org.id}", "crud")
                     request.perms = permissions(request.user)
 
                     request.orgs = [request.org]
