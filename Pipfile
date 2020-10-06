@@ -18,9 +18,9 @@ django-reversion = "<4"
 django-inet = "*"
 django-autocomplete-light = ">=3,<=4"
 social-auth-app-django = "<4"
-django-grainy = {file = "https://github.com/peeringdb/peeringdb-py/archive/master.zip"}
+grainy = ">=1.5.0,<2"
+django-grainy = ">=1.8.0,<2"
 pyyaml = "*"
-grainy = "*"
 pip = "*"
 arouteserver = "*"
 
