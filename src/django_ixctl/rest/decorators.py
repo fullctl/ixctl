@@ -2,6 +2,7 @@ from django.conf import settings
 
 from rest_framework import exceptions
 from rest_framework.response import Response
+from rest_framework import serializers
 
 import reversion
 
@@ -39,13 +40,6 @@ class load_object:
         return wrapped
 
 
-class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
-    def apply_perms(self, request, response, view_function, view):
-        #return response
-        response.data = self._apply_perms(request, response.data, view_function, view)
-        return response
-
-
 class grainy_endpoint:
     def __init__(
         self, namespace=None, require_auth=True, explicit=True, instance_class=None,
@@ -65,7 +59,7 @@ class grainy_endpoint:
         else:
             permissions_cls = Permissions
 
-        @patched_grainy_rest_viewset_response(
+        @grainy_rest_viewset_response(
             namespace=decorator.namespace,
             namespace_instance=decorator.namespace,
             explicit=decorator.explicit,
@@ -102,7 +96,7 @@ def serializer_registry():
     def register(cls):
         if not hasattr(cls, "ref_tag"):
             cls.ref_tag = cls.Meta.model.HandleRef.tag
-            cls.Meta.fields += HANDLEREF_FIELDS
+            cls.Meta.fields += ["grainy"] + HANDLEREF_FIELDS
         setattr(Serializers, cls.ref_tag, cls)
         return cls
 

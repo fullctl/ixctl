@@ -37,11 +37,4 @@ def permissions(request):
         else:
             context[key] = request.perms.check(request.org, op)
 
-
-    for op, name in ops:
-        for ix in InternetExchange.objects.filter(instance__org=request.org):
-            for tag in ["member", "rs", "rsconf"]:
-                ns = f"{tag}.{request.org.permission_id}.{ix.id}.?"
-                context[f"{name}_{tag}_{ix.id}"] = request.perms.check(ns, op)
-
     return {"permissions": context}

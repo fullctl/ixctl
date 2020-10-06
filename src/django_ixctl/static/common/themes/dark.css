@@ -255,6 +255,18 @@ div.controls select {
   color: #FFFFFF;
 }
 
+div.controls .select2-container--default .select2-selection--single:disabled,
+div.controls textarea:disabled,
+div.controls input[type="text"]:disabled,
+div.controls input[type="password"]:disabled,
+div.controls select:disabled {
+  border-color: transparent;
+  background-color: #000;
+  color: #FFFFFF;
+}
+
+
+
 div.controls label {
   color: #BCBEC0;
 }

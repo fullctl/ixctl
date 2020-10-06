@@ -7,14 +7,17 @@ $ctl.application.Ixctl = $tc.extend(
       this.Application("ixctl");
 
       this.urlkeys = {}
+      this.exchanges = {}
 
       this.$c.header.app_slug = "ix";
       this.$c.toolbar.widget("select_ix", ($e) => {
         var w = new twentyc.rest.Select($e.select_ix);
         $(w).on("load:after", (event, element, data) => {
           var i;
-          for(i = 0; i < data.length; i++)
+          for(i = 0; i < data.length; i++) {
             this.urlkeys[data[i].id] = data[i].urlkey;
+            this.exchanges[data[i].id] = data[i];
+          }
           if(data.length == 0)
             this.prompt_import(true);
         });
@@ -22,7 +25,6 @@ $ctl.application.Ixctl = $tc.extend(
 
       });
 
-      console.log(this.$c.toolbar)
       $(this.$c.toolbar.$w.select_ix).one("load:after", () => {
         this.sync();
       });
@@ -165,6 +167,15 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
         form.method = "PUT"
         form.form_action = "members/"+member.id;
         form.fill(member);
+
+
+        form.element.find('input[type="text"],select,input[type="checkbox"]').each(function() {
+          if(!grainy.check(member.grainy+"."+$(this).attr("name"), "u")) {
+            $(this).attr("disabled", true)
+          }
+        });
+
+
         $(this.form).on("api-write:before", (ev, e, payload) => {
           payload["ix"] = member.ix;
           payload["id"] = member.id;
@@ -201,9 +212,13 @@ $ctl.application.Ixctl.Members = $tc.extend(
         row.find('a[data-action="edit_member"]').click(() => {
           var member = row.data("apiobject");
           new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix(), member);
+        }).each(function() {
+          if(!grainy.check(data.grainy+".?", "u")) {
+            $(this).hide()
+          }
         });
 
-        if(!$ctl.permissions["delete_member_"+$ctl.ixctl.ix()]) {
+        if(!grainy.check(data.grainy, "d")) {
           row.find('a[data-api-method="DELETE"]').hide();
         }
       };
@@ -212,7 +227,6 @@ $ctl.application.Ixctl.Members = $tc.extend(
       this.$w.list.base
 
       $(this.$w.list).on("api-read:before",function()  {
-        console.log(this.base_url)
         this.base_url = this.base_url.replace(
           /\/ix\/\d+$/,
           "/ix/"+$ctl.ixctl.ix()
@@ -231,7 +245,9 @@ $ctl.application.Ixctl.Members = $tc.extend(
     sync : function() {
       var ix_id = $ctl.ixctl.ix()
       if(ix_id) {
-        if($ctl.permissions["read_member_"+ix_id]) {
+        var exchange = $ctl.ixctl.exchanges[ix_id]
+        console.log(exchange.grainy)
+        if(grainy.check(exchange.grainy, "r")) {
           this.show();
           this.$w.list.load();
           this.$e.menu.find('[data-element="button_ixf_export"]').attr(
@@ -242,7 +258,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
             "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
           )
 
-          if($ctl.permissions["create_member_"+ix_id]) {
+          if(grainy.check(exchange.grainy, "c")) {
             this.$e.menu.find('[data-element="button_add_member"]').show();
             this.$e.menu.find('[data-element="button_ixf_export"]').show();
           } else {
@@ -345,7 +361,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
     sync : function() {
       var ix_id = $ctl.ixctl.ix()
       if(ix_id) {
-        if($ctl.permissions["read_rs_"+ix_id]) {
+        var exchange = $ctl.ixctl.exchanges[ix_id]
+        var rs_namespace =exchange.grainy.replace(/^ix\./, "rs.")+".?"
+        if(grainy.check(rs_namespace, "r")) {
           this.show();
           this.$w.list.load();
           this.$e.menu.find('[data-element="button_api_view"]').attr(

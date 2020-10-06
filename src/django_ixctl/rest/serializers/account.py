@@ -3,6 +3,7 @@ import re
 from rest_framework import serializers
 
 from django_ixctl.rest.decorators import serializer_registry
+from django_ixctl.rest.serializers import ModelSerializer
 
 import django_ixctl.models as models
 
@@ -10,7 +11,7 @@ Serializers, register = serializer_registry()
 
 
 @register
-class Organization(serializers.ModelSerializer):
+class Organization(ModelSerializer):
     selected = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
     access_type = serializers.SerializerMethodField()

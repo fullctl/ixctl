@@ -710,6 +710,15 @@ div.controls select {
   border-radius: 0;
 }
 
+div.controls .select2-container--default .select2-selection--single:disabled,
+div.controls textarea:disabled,
+div.controls input[type="text"]:disabled,
+div.controls input[type="password"]:disabled,
+div.controls select:disabled {
+  padding: 0px;
+}
+
+
 div.controls input[type="text"],
 div.controls input[type="password"] {
   padding: 6px 8px;

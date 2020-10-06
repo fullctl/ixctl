@@ -17,7 +17,8 @@ import django_ixctl.models as models
 import django_peeringdb.models.concrete as pdb_models
 
 from django_ixctl.rest.decorators import serializer_registry
-from django_ixctl.rest.serializers import RequireContext
+from django_ixctl.rest.serializers import RequireContext, ModelSerializer
+
 from django_inet.rest import IPAddressField
 
 from django_ixctl.peeringdb import (
@@ -123,14 +124,14 @@ class ImportExchange(RequireContext, serializers.Serializer):
 
 
 @register
-class InternetExchange(serializers.ModelSerializer):
+class InternetExchange(ModelSerializer):
     class Meta:
         model = models.InternetExchange
         fields = ["pdb_id", "urlkey", "name"]
 
 
 @register
-class InternetExchangeMember(serializers.ModelSerializer):
+class InternetExchangeMember(ModelSerializer):
 
     ipaddr4 = IPAddressField(
         version=4, allow_blank=True, allow_null=True, required=False, default=None
@@ -199,7 +200,7 @@ class InternetExchangeMember(serializers.ModelSerializer):
 
 
 @register
-class Routeserver(serializers.ModelSerializer):
+class Routeserver(ModelSerializer):
 
     router_id = IPAddressField(version=4,)
 
@@ -232,7 +233,7 @@ class Routeserver(serializers.ModelSerializer):
 
 
 @register
-class RouteserverConfig(serializers.ModelSerializer):
+class RouteserverConfig(ModelSerializer):
     class Meta:
         model = models.RouteserverConfig
         fields = [
@@ -242,7 +243,7 @@ class RouteserverConfig(serializers.ModelSerializer):
 
 
 @register
-class OrganizationUser(serializers.ModelSerializer):
+class OrganizationUser(ModelSerializer):
     ref_tag = "orguser"
 
     name = serializers.SerializerMethodField()

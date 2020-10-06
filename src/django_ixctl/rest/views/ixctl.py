@@ -160,7 +160,7 @@ class InternetExchange(viewsets.GenericViewSet):
     )
     @load_object("member", models.InternetExchangeMember, id="member_id")
     @grainy_endpoint(
-        namespace = "member.{request.org.permission_id}.{pk}.{member.asn}",
+        namespace = "member.{request.org.permission_id}.{pk}.{member.asn}.?",
     )
     def member(self, request, org, instance, pk, member_id=None, *args, **kwargs):
         if request.method == "PUT":
@@ -176,7 +176,7 @@ class InternetExchange(viewsets.GenericViewSet):
         serializer = Serializers.member(
             instance=models.InternetExchangeMember.objects.filter(
                 ix_id=pk, ix__instance=instance
-            ).order_by("asn"),
+            ).order_by("asn").select_related("ix", "ix__instance"),
             many=True,
         )
 
@@ -201,12 +201,14 @@ class InternetExchange(viewsets.GenericViewSet):
         return Response(Serializers.member(instance=member).data)
 
     def _update_member(self, request, org, instance, pk, member_id, *args, **kwargs):
-        member = models.InternetExchangeMember.objects.get(
-            ix__instance=instance, ix_id=pk, id=member_id
+        member = kwargs.get("member")
+
+        serializer = request.grainy_update_serializer(
+            Serializers.member,
+            member,
+            context={"instance": instance}
         )
-        serializer = Serializers.member(
-            data=request.data, instance=member, context={"instance": instance}
-        )
+
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
 

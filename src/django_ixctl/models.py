@@ -343,7 +343,7 @@ class APIKey(HandleRefModel):
 
 
 @reversion.register()
-@grainy_model(namespace="ix")
+@grainy_model(namespace="ix", namespace_instance="ix.{instance.org.permission_id}.{instance.id}")
 class InternetExchange(PdbRefModel):
 
     """
@@ -435,11 +435,20 @@ class InternetExchange(PdbRefModel):
             "ixf export", args=(self.instance.org.slug, self.instance.secret,)
         )
 
+    @property
+    def org(self):
+        return self.instance.org
+
+
     def __str__(self):
         return f"{self.name} ({self.id})"
 
 
 @reversion.register()
+@grainy_model(
+    namespace="member",
+    namespace_instance="member.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+)
 class InternetExchangeMember(PdbRefModel):
 
     """
@@ -515,8 +524,16 @@ class InternetExchangeMember(PdbRefModel):
     def display_name(self):
         return self.name or f"AS{self.asn}"
 
+    @property
+    def org(self):
+        return self.ix.instance.org
+
 
 @reversion.register
+@grainy_model(
+    namespace="rs",
+    namespace_instance="rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+)
 class Routeserver(HandleRefModel):
 
     """
@@ -568,6 +585,10 @@ class Routeserver(HandleRefModel):
 
     class HandleRef:
         tag = "rs"
+
+    @property
+    def org(self):
+        return self.ix.instance.org
 
     @property
     def display_name(self):
