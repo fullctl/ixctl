@@ -168,6 +168,23 @@ class Organization(HandleRefModel):
 
     @classmethod
     def accessible(cls, user):
+
+        """
+        Returns a list of organizations that are accessible by the
+        user.
+
+        Accessible here means they either have direct read permissions
+        to the organization or to an object inside the organization
+
+        **Arguments**
+
+        - user (`User`)
+
+        **Returns**
+
+        - `list`
+        """
+
         perms = permissions(user)
 
         # user is a member of these orgs

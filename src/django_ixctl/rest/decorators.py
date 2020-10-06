@@ -17,6 +17,21 @@ from django_ixctl.auth import Permissions, RemotePermissions
 
 class load_object:
 
+    """
+    Will load an object and pass it to the view handler
+    for `model` Model as argument `argname`
+
+    **Arguments**
+
+    - argname (`str`): will be passed as this keyword argument
+    - model (`Model`): django model class
+
+    **Keyword Arguments**
+
+    Any keyword argument will be passed as a filter to the
+    `get` query
+    """
+
     def __init__(self, argname, model, **filters):
         self.argname = argname
         self.model = model
