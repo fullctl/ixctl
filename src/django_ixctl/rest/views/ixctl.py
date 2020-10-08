@@ -4,12 +4,14 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
 from rest_framework.schemas.openapi import AutoSchema
 
 from django_ixctl.rest import BadRequest
 
 import django_ixctl.models as models
 from django_ixctl.rest.route.ixctl import route
+
 from django_ixctl.rest.serializers.ixctl import Serializers
 from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint
 from django_ixctl.rest.renderers import PlainTextRenderer
@@ -165,10 +167,18 @@ class InternetExchange(viewsets.GenericViewSet):
             )
 
     def list_members(self, request, org, instance, pk, *args, **kwargs):
+        ordering_filter = OrderingFilter()
+        ordering_filter.ordering_fields = ["name", "asn", "speed"]
+
+        queryset = models.InternetExchangeMember.objects.filter(
+                ix_id=pk,
+                ix__instance=instance
+            )
+
+        queryset = ordering_filter.filter_queryset(request, queryset, self)
+
         serializer = Serializers.member(
-            instance=models.InternetExchangeMember.objects.filter(
-                ix_id=pk, ix__instance=instance
-            ).order_by("asn"),
+            instance=queryset,
             many=True,
         )
 
