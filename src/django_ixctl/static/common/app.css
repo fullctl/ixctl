@@ -643,6 +643,27 @@ div.flags > span {
 
 
 /**
+ * Table headings (ordering)
+ */
+
+.selected-order-header-asc {
+  color: #0099FF;
+  opacity: 1;
+}
+.selected-order-header-asc::after {
+  content: " \2191";
+}
+
+.selected-order-header-desc {
+  color: #0099FF;
+  opacity: 1;
+}
+
+.selected-order-header-desc::after {
+  content: " \2193";
+}
+
+/**
  * modal
  */
 
@@ -827,4 +848,6 @@ div.login input {
   background-color: #3C4650;
   color: #fff;
 }
+
+
 

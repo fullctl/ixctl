@@ -22,7 +22,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       });
 
-      console.log(this.$c.toolbar)
+      // console.log(this.$c.toolbar)
       $(this.$c.toolbar.$w.select_ix).one("load:after", () => {
         this.sync();
       });
@@ -121,16 +121,16 @@ $ctl.application.Ixctl.ModalCreateIX = $tc.extend(
   "ModalCreateIX",
   {
     ModalCreateIX : function() {
-      console.log($ctl.template("form_create_ix"));
+      // console.log($ctl.template("form_create_ix"));
       var form = this.form = new twentyc.rest.Form(
         $ctl.template("form_create_ix")
       );
 
-      console.log(form);
+      // console.log(form);
       var modal = this;
 
       $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
-        console.log(response.content.data)
+        // console.log(response.content.data)
         $ctl.ixctl.refresh().then(
           () => { $ctl.ixctl.select_ix(response.content.data[0].id) }
         );
@@ -197,22 +197,72 @@ $ctl.application.Ixctl.Members = $tc.extend(
         );
       })
 
-      this.$w.list.formatters.row = (row, data) => {
+      const list = this.$w.list
+      this.sortHeading = "asn";
+      this.sortAsc = true;
+
+      list.formatters.row = (row, data) => {
         row.find('a[data-action="edit_member"]').click(() => {
           var member = row.data("apiobject");
           new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix(), member);
         });
       };
 
-      this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
-      this.$w.list.base
+      list.formatters.speed = $ctl.formatters.pretty_speed;
 
-      $(this.$w.list).on("api-read:before",function()  {
-        console.log(this.base_url)
+      $(list).on("api-read:before",function(endpoint)  {
         this.base_url = this.base_url.replace(
           /\/ix\/\d+$/,
-          "/ix/"+$ctl.ixctl.ix()
+          "/ix/" + $ctl.ixctl.ix()
         )
+      })
+      this.table = list.element[0];
+      this.tableHeadings = $(this.table).first().find("th[data-sort-target]");
+      this.tableHeadings.click( function(event) {
+        let button = event.currentTarget;
+        this.handleClick( $(button) );
+      }.bind(this))
+    },
+
+    ordering: function() {
+      if ( this.sortAsc ){
+        return this.sortHeading
+      }
+      return "-" + this.sortHeading
+    },
+
+    handleClick: function(button) {
+      let sortTarget = button.data("sort-target");
+
+      if ( sortTarget == this.sortHeading ){
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortHeading = sortTarget;
+        this.sortAsc = true;
+      };
+
+      this.sync();
+
+    },
+
+    formatHeadings : function() {
+      let heading = this.sortHeading;
+      let asc = this.sortAsc;
+
+      $(this.tableHeadings).each( function() {
+        $(this).find("span").remove();
+        if ( $(this).data("sort-target") == heading ){
+          if ( asc ){
+            $(this).removeClass("selected-order-header-desc")
+            $(this).addClass("selected-order-header-asc");
+          } else {
+            $(this).removeClass("selected-order-header-asc")
+            $(this).addClass("selected-order-header-desc");
+          }
+        } else {
+            $(this).removeClass("selected-order-header-asc");
+            $(this).removeClass("selected-order-header-desc");
+        }
       })
     },
 
@@ -226,6 +276,9 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
     sync : function() {
       if($ctl.ixctl.ix()) {
+        this.$w.list.ordering = this.ordering();
+        this.$w.list.payload = function(){return {ordering: this.ordering}}
+        this.formatHeadings();
         this.$w.list.load();
         this.$e.menu.find('[data-element="button_ixf_export"]').attr(
           "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
@@ -236,7 +289,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
         )
 
       }
-    }
+    },    
   },
   $ctl.application.Tool
 );
@@ -308,7 +361,6 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       this.$w.list.base
 
       $(this.$w.list).on("api-read:before",function()  {
-        console.log(this.base_url)
         this.base_url = this.base_url.replace(
           /\/ix\/\d+$/,
           "/ix/"+$ctl.ixctl.ix()
