@@ -198,6 +198,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
       })
 
       const list = this.$w.list
+      /* Initialize sorting settings */
       this.sortHeading = "asn";
       this.sortAsc = true;
 
@@ -220,18 +221,20 @@ $ctl.application.Ixctl.Members = $tc.extend(
       this.tableHeadings = $(this.table).first().find("th[data-sort-target]");
       this.tableHeadings.click( function(event) {
         let button = event.currentTarget;
-        this.handleClick( $(button) );
+        this.handle_click( $(button) );
       }.bind(this))
+
+      list.payload = function(){return {ordering: this.ordering}}
     },
 
-    ordering: function() {
+    return_ordering: function() {
       if ( this.sortAsc ){
         return this.sortHeading
       }
       return "-" + this.sortHeading
     },
 
-    handleClick: function(button) {
+    handle_click: function(button) {
       let sortTarget = button.data("sort-target");
 
       if ( sortTarget == this.sortHeading ){
@@ -245,7 +248,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
     },
 
-    formatHeadings : function() {
+    format_headings : function() {
       let heading = this.sortHeading;
       let asc = this.sortAsc;
 
@@ -276,9 +279,9 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
     sync : function() {
       if($ctl.ixctl.ix()) {
-        this.$w.list.ordering = this.ordering();
-        this.$w.list.payload = function(){return {ordering: this.ordering}}
-        this.formatHeadings();
+        this.$w.list.ordering = this.return_ordering();
+        // this.$w.list.payload = function(){return {ordering: this.ordering}}
+        this.format_headings();
         this.$w.list.load();
         this.$e.menu.find('[data-element="button_ixf_export"]').attr(
           "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
