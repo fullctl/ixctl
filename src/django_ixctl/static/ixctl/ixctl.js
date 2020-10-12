@@ -197,76 +197,23 @@ $ctl.application.Ixctl.Members = $tc.extend(
         );
       })
 
-      const list = this.$w.list
-      /* Initialize sorting settings */
-      this.sortHeading = "asn";
-      this.sortAsc = true;
-
-      list.formatters.row = (row, data) => {
+      this.$w.list.formatters.row = (row, data) => {
         row.find('a[data-action="edit_member"]').click(() => {
           var member = row.data("apiobject");
           new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix(), member);
         });
       };
 
-      list.formatters.speed = $ctl.formatters.pretty_speed;
+      this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
 
-      $(list).on("api-read:before",function(endpoint)  {
+      $(this.$w.list).on("api-read:before",function(endpoint)  {
         this.base_url = this.base_url.replace(
           /\/ix\/\d+$/,
           "/ix/" + $ctl.ixctl.ix()
         )
       })
-      this.table = list.element[0];
-      this.tableHeadings = $(this.table).first().find("th[data-sort-target]");
-      this.tableHeadings.click( function(event) {
-        let button = event.currentTarget;
-        this.handle_click( $(button) );
-      }.bind(this))
 
-      list.payload = function(){return {ordering: this.ordering}}
-    },
-
-    return_ordering: function() {
-      if ( this.sortAsc ){
-        return this.sortHeading
-      }
-      return "-" + this.sortHeading
-    },
-
-    handle_click: function(button) {
-      let sortTarget = button.data("sort-target");
-
-      if ( sortTarget == this.sortHeading ){
-        this.sortAsc = !this.sortAsc;
-      } else {
-        this.sortHeading = sortTarget;
-        this.sortAsc = true;
-      };
-
-      this.sync();
-
-    },
-
-    format_headings : function() {
-      let heading = this.sortHeading;
-      let asc = this.sortAsc;
-
-      $(this.tableHeadings).each( function() {
-        $(this).find("span").remove();
-        if ( $(this).data("sort-target") == heading ){
-          if ( asc ){
-            $(this).removeClass("selected-order-header-desc")
-            $(this).addClass("selected-order-header-asc");
-          } else {
-            $(this).removeClass("selected-order-header-asc")
-            $(this).addClass("selected-order-header-desc");
-          }
-        } else {
-            $(this).removeClass("selected-order-header-asc");
-            $(this).removeClass("selected-order-header-desc");
-        }
-      })
+      this.initialize_sortable_headers("name")
     },
 
     menu : function() {
@@ -279,9 +226,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
     sync : function() {
       if($ctl.ixctl.ix()) {
-        this.$w.list.ordering = this.return_ordering();
-        // this.$w.list.payload = function(){return {ordering: this.ordering}}
-        this.format_headings();
+        this.apply_ordering();
         this.$w.list.load();
         this.$e.menu.find('[data-element="button_ixf_export"]').attr(
           "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
