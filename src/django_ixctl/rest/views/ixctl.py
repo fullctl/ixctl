@@ -14,6 +14,7 @@ from django_ixctl.rest.serializers.ixctl import Serializers
 from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint, load_object
 from django_ixctl.rest.renderers import PlainTextRenderer
 from django_ixctl.peeringdb import import_org
+from django_ixctl.util import verified_asns
 
 
 class grainy_endpoint(_grainy_endpoint):
@@ -326,7 +327,75 @@ class RouteserverConfig(viewsets.GenericViewSet):
 
 
 @route
+class Network(viewsets.GenericViewSet):
+    serializer_class = Serializers.net
+    queryset = models.Network.objects.all()
+
+    lookup_url_kwarfs = "asn"
+
+
+    @grainy_endpoint(
+        namespace = "net.{request.org.permission_id}"
+    )
+    def list(self, request, org, instance, *args, **kwargs):
+        serializer = Serializers.net(
+            instance.net_set.all(),
+            many=True,
+        )
+        return Response(serializer.data)
+
+    @action(
+        detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)"
+    )
+    @grainy_endpoint(
+        namespace = "net.{request.org.permission_id}.{asn}"
+    )
+    @load_object("net", models.Network, asn="asn", instance="instance")
+    def presence(self, request, org, instance, asn, net=None, *args, **kwargs):
+        serializer = Serializers.presence(
+            net.members,
+            many=True,
+            context={"perms": request.perms, "user": request.user}
+        )
+        return Response(serializer.data)
+
+@route
+class PermissionRequest(viewsets.GenericViewSet):
+
+    serializer_class = Serializers.permreq
+    queryset = models.PermissionRequest.objects.all()
+
+    @grainy_endpoint()
+    def list(self, request, org, *args, **kwargs):
+        serializer = Serializers.permreq(
+            org.permreq_set.all(),
+            many=True,
+            context={"user": request.user, "perms": request.perms,},
+        )
+        return Response(serializer.data)
+
+
+    @grainy_endpoint(namespace="?.?")
+    def create(self, request, org, instance, *args, **kwargs):
+        data = request.data
+        data["user"] = request.user.id
+        data["org"] = org.id
+        serializer = Serializers.permreq(data=data)
+
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+
+        permreq = serializer.save()
+        return Response(serializer.data)
+
+
+
+@route
 class User(viewsets.GenericViewSet):
+
+    """
+    List users at the organization
+    """
 
     serializer_class = Serializers.orguser
     queryset = models.OrganizationUser.objects.all()
@@ -340,3 +409,7 @@ class User(viewsets.GenericViewSet):
             context={"user": request.user, "perms": request.perms,},
         )
         return Response(serializer.data)
+
+
+
+

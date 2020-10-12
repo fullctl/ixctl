@@ -8,6 +8,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       this.urlkeys = {}
       this.exchanges = {}
+      this.initial_load = false
 
       this.$c.header.app_slug = "ix";
       this.$c.toolbar.widget("select_ix", ($e) => {
@@ -18,15 +19,24 @@ $ctl.application.Ixctl = $tc.extend(
             this.urlkeys[data[i].id] = data[i].urlkey;
             this.exchanges[data[i].id] = data[i];
           }
-          if(data.length == 0)
-            this.prompt_import(true);
+          if(data.length == 0) {
+            $e.select_ix.attr('disabled', true)
+          } else {
+            $e.select_ix.attr('disabled', false)
+          }
         });
         return w
 
       });
 
       $(this.$c.toolbar.$w.select_ix).one("load:after", () => {
-        this.sync();
+        params = new URLSearchParams(window.location.search)
+        var preselect_ix = params.get("ix")
+        if(preselect_ix) {
+          this.select_ix(preselect_ix)
+        } else {
+          this.sync();
+        }
       });
 
       this.tool("members", () => {
@@ -36,6 +46,9 @@ $ctl.application.Ixctl = $tc.extend(
       this.tool("routeservers", () => {
         return new $ctl.application.Ixctl.Routeservers();
       });
+
+
+      $($ctl).trigger("init_tools", [this]);
 
 
       $(this.$c.toolbar.$e.select_ix).on("change", () => {
@@ -269,6 +282,9 @@ $ctl.application.Ixctl.Members = $tc.extend(
         } else {
           this.hide();
         }
+      } else {
+        // no exchange exists - hide members tool
+        this.hide();
       }
     }
   },
@@ -373,6 +389,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           this.hide();
         }
 
+      } else {
+        // no exchanges exist - hide route-servers tool
+        this.hide();
       }
     }
   },

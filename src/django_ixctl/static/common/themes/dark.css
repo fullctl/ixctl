@@ -65,6 +65,14 @@ div.validation-error {
   background-color: #0e3450;
 }
 
+a[data-action].ixctl,
+a[data-action].ixctl:hover,
+a.ixctl,
+.ixctl {
+  color: #0099FF;
+}
+
+
 a[data-action].prefixctl,
 a[data-action].prefixctl:hover,
 a.prefixctl,
@@ -141,6 +149,15 @@ div.toolbar .button {
 
 div.menu .button.prefixctl {
   color: #4ECDC4;
+}
+
+div.menu div.section.tabs h5 {
+  opacity: 0.5;
+}
+
+div.menu div.section.tabs .active {
+  color: #fff;
+  opacity: 1;
 }
 
 

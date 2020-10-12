@@ -34,3 +34,23 @@ class Organization(ModelSerializer):
         if obj.personal:
             return "Personal"
         return obj.name
+
+@register
+class ASN(serializers.Serializer):
+
+    asn = serializers.IntegerField()
+    name = serializers.SerializerMethodField()
+
+    ref_tag = "asn"
+
+    class Meta:
+        fields = ["asn", "name"]
+
+
+    def get_name(self, obj):
+        if obj["pdb_net"]:
+            return obj["pdb_net"].name
+        return ""
+
+
+

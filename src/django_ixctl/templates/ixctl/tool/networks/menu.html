@@ -1,0 +1,19 @@
+{% load static i18n %}
+<div
+  class="section tabs"
+  data-api-base="{% url "ixctl_api:net-list" org_tag=request.org.slug %}"
+  data-api-action=""
+  data-template="menu">
+  <h4>{% trans "Networks" %}</h4>
+  <div class="list-body">
+  </div>
+  <div class="templates">
+    <button data-template="row" class="button">
+      <span class="icon ixctl icon-list"></span>
+      <span class="asn">AS</span><span data-field="asn"></span>
+    </button>
+    <!--
+    <h5 data-template="row"><span class="asn">AS</span><span data-field="asn"></span></h5>
+    -->
+  </div>
+</div>

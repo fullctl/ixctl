@@ -10,6 +10,8 @@ from django_ixctl.models import (
     InternetExchangeMember,
     Routeserver,
     RouteserverConfig,
+    Network,
+    PermissionRequest,
 )
 
 
@@ -59,3 +61,15 @@ class InternetInternetExchangeAdmin(BaseAdmin):
 @admin.register(RouteserverConfig)
 class RouteserverConfigAdmin(BaseAdmin):
     list_display = ("rs", "created", "updated", "generated")
+
+@admin.register(Network)
+class NetworkAdmin(BaseAdmin):
+    list_display = ("asn", "name", "created", "updated", "org")
+    readonly_fields = ("org",)
+
+    def org(self, obj):
+        return obj.instance.org
+
+@admin.register(PermissionRequest)
+class PermissionRequestAdmin(BaseAdmin):
+    list_display = ("org","user","created","type")

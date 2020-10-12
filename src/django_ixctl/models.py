@@ -18,6 +18,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from django.conf import settings
 
 from django_grainy.decorators import grainy_model
 
@@ -31,8 +32,7 @@ from django_inet.models import (
 import reversion
 
 from django_handleref.models import HandleRefModel as SoftDeleteHandleRefModel
-from django_peeringdb.models.concrete import IXLan, NetworkIXLan
-
+from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network
 from django_ixctl.inet.util import pdb_lookup
 from django_ixctl.inet.validators import validate_ip4, validate_ip6
 from django_ixctl.peeringdb import get_as_set
@@ -153,12 +153,19 @@ class Organization(HandleRefModel):
         ),
     )
 
+    manages_ix = models.BooleanField(default=True)
+    manages_net = models.BooleanField(default=True)
+
     permission_namespaces = [
         "management",
     ]
 
     class HandleRef:
         tag = "org"
+
+    @property
+    def instance(self):
+        return self.instance_set.first()
 
     @property
     def permission_id(self):
@@ -203,11 +210,14 @@ class Organization(HandleRefModel):
 
             try:
                 int(ns[1])
-            except ValueError:
+            except (ValueError, IndexError):
                 continue
 
             try:
-                org = cls.objects.get(remote_id=ns[1])
+                if settings.MANAGED_BY_OAUTH:
+                    org = cls.objects.get(remote_id=ns[1])
+                else:
+                    org = cls.objects.get(id=ns[1])
                 if org not in related_orgs:
                     permissioned_orgs.append(org)
             except cls.DoesNotExist:
@@ -338,6 +348,32 @@ class OrganizationUser(HandleRefModel):
 
     def __str__(self):
         return f"{self.user.username} <{self.user.email}>"
+
+@reversion.register
+@grainy_model(namespace="org")
+class PermissionRequest(HandleRefModel):
+    org = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="permreq_set"
+    )
+    user = models.ForeignKey(
+        get_user_model(), on_delete=models.CASCADE, related_name="permreq_set"
+    )
+    type = models.CharField(
+        max_length=255,
+        choices=django_ixctl.enum.PERMISSION_REQUEST_TYPES,
+    )
+    extra = models.TextField(null=True, blank=True)
+
+    class HandleRef:
+        tag = "permreq"
+
+    class Meta:
+        db_table = "ixctl_permreq"
+        verbose_name = _("Permission Request")
+        verbose_name_plural = _("Permission Requests")
+
+    def __str__(self):
+        return f"Permission Request: {self.user} -> {self.org}"
 
 
 @reversion.register
@@ -550,6 +586,10 @@ class InternetExchangeMember(PdbRefModel):
     @property
     def org(self):
         return self.ix.instance.org
+
+    @property
+    def ix_name(self):
+        return self.ix.name
 
 
 @reversion.register
@@ -821,3 +861,98 @@ class RouteserverConfig(HandleRefModel):
             self.body = fh.read()
 
         self.save()
+
+@reversion.register()
+@grainy_model(namespace="net", namespace_instance="net.{instance.org.permission_id}.{instance.asn}")
+class Network(PdbRefModel):
+
+    """
+    Describes a network
+
+    Can have a reference to a peeringdb netlan object
+    """
+
+    name = models.CharField(max_length=255, blank=False)
+    asn = models.IntegerField()
+    instance = models.ForeignKey(
+        Instance, related_name="net_set", on_delete=models.CASCADE, null=True
+    )
+
+    class PdbRef(PdbRefModel.PdbRef):
+        model = Network
+        fields = {"asn": "pdb_id"}
+
+    class HandleRef:
+        tag = "net"
+
+    class Meta:
+        db_table = "ixctl_net"
+        verbose_name_plural = _("Networks")
+        verbose_name = _("Network")
+        unique_together = (
+            ("instance", "asn"),
+        )
+
+    @classmethod
+    def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
+
+        """
+        create instance from peeringdb network
+
+        Argument(s):
+
+        - instance (`Instance`): instance that contains this network
+        - pdb_object (`django_peeringdb.Network`): pdb network
+        - save (`bool`): if True commit to the database, otherwise dont
+
+        Keyword Argument(s):
+
+        Any arguments passed will be used to set properties on the
+        object before creation
+
+        Returns:
+
+        - `Network` instance
+        """
+
+        net = super().create_from_pdb(pdb_object, save=save, instance=instance, name=pdb_object.name, asn=pdb_object.asn, **fields)
+
+        return net
+
+    @property
+    def display_name(self):
+        """
+        Will return the exchange name if specified.
+
+        If self.name is not specified and pdb reference is set return
+        the name of the peeringdb ix instead
+
+        If peeringdb reference is not specified either, return
+        generic "Nameless Exchange ({id})"
+        """
+
+        if self.name:
+            return self.name
+        if self.pdb_id:
+            return self.pdb.name
+        return f"Unknown Network (AS{self.asn})"
+
+    @property
+    def org(self):
+        return self.instance.org
+
+    @property
+    def members(self):
+        if not hasattr(self, "_members"):
+            self._members = [
+                member for member in
+                InternetExchangeMember.objects.filter(
+                    asn = self.asn
+                )
+            ]
+        return self._members
+
+    def __str__(self):
+        return f"{self.name} (AS{self.asn})"
+
+

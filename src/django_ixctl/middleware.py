@@ -1,9 +1,9 @@
+from django.contrib.auth import get_user_model
+from django.conf import settings
+
 from django.http import Http404
 from django_ixctl.models import Organization, OrganizationUser
 from django_ixctl.auth import permissions
-
-from django.contrib.auth import get_user_model
-from django.conf import settings
 
 
 class RequestAugmentation:
@@ -30,29 +30,14 @@ class RequestAugmentation:
             not hasattr(request.user, "org_set") or not request.user.org_set.exists()
         ) and "org_tag" not in kwargs:
 
-            if not settings.MANAGED_BY_OAUTH:
+            if not settings.MANAGED_BY_OAUTH and request.user.is_authenticated:
 
-                # organizations are not managed by oauth
-                # so for now we just ensure that each user
-                # has a personal org
+                from django_ixctl.util import create_personal_org
 
-                if request.user.is_authenticated:
-
-                    request.org, _ = Organization.objects.get_or_create(
-                        name=f"{request.user.username} personal org",
-                        slug=request.user.username,
-                        personal=True,
-                    )
-
-                    OrganizationUser.objects.create(
-                        org=request.org, user=request.user,
-                    )
-
-                    request.user.grainy_permissions.add_permission(f"*.{request.org.id}", "crud")
-                    request.perms = permissions(request.user)
-
-                    request.orgs = [request.org]
-                    return
+                org = create_personal_org(request.user)
+                request.perms = permissions(request.user)
+                request.orgs = [org]
+                return
 
             if not request.user.is_authenticated:
 

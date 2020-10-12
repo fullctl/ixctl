@@ -1,9 +1,11 @@
 .templates,
+.hidden,
 div[data-element="templates"],
 #templates {
   display: none;
 }
 
+a,
 a[data-action],
 .action {
   cursor: pointer;
@@ -367,6 +369,9 @@ div.toolbar .button {
   padding: 12px 18px 12px 18px;
   font-size: 16px;
   line-height: 16px;
+  border: none;
+  :0
+  outline: none;
 }
 
 div.menu .button .icon,
@@ -374,6 +379,15 @@ div.toolbar .button .icon {
   width: 16px;
   height: 16px;
   vertical-align: bottom;
+}
+
+div.menu div.section.tabs h5 {
+  cursor: pointer;
+}
+
+div.menu div.section.tabs h5.active {
+  cursor: default;
+  text-decoration: underline;
 }
 
 /**
