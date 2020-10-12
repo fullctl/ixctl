@@ -181,6 +181,11 @@ fullctl.application.Tool = $tc.extend(
         this.sync();
     },
 
+    apply_ordering : function() {
+        this.$w.list.ordering = this.return_ordering();
+        this.format_headings();
+    },
+
     return_ordering: function() {
       if ( this.sortAsc ){
         return this.sortHeading
@@ -209,12 +214,6 @@ fullctl.application.Tool = $tc.extend(
         }
       })
     },
-
-    apply_ordering : function() {
-        this.$w.list.ordering = this.return_ordering();
-        this.format_headings();
-    },
-
   },
   fullctl.application.Component
 );
