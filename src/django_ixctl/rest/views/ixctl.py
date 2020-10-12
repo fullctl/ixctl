@@ -168,7 +168,7 @@ class InternetExchange(viewsets.GenericViewSet):
 
     def list_members(self, request, org, instance, pk, *args, **kwargs):
         ordering_filter = OrderingFilter()
-        ordering_filter.ordering_fields = ["name", "asn", "speed"]
+        ordering_filter.ordering_fields = ["name", "asn", "ipaddr4", "ipaddr6", "speed"]
 
         queryset = models.InternetExchangeMember.objects.filter(
                 ix_id=pk,
