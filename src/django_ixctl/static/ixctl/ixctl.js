@@ -7,24 +7,36 @@ $ctl.application.Ixctl = $tc.extend(
       this.Application("ixctl");
 
       this.urlkeys = {}
+      this.exchanges = {}
+      this.initial_load = false
 
       this.$c.header.app_slug = "ix";
       this.$c.toolbar.widget("select_ix", ($e) => {
         var w = new twentyc.rest.Select($e.select_ix);
         $(w).on("load:after", (event, element, data) => {
           var i;
-          for(i = 0; i < data.length; i++)
+          for(i = 0; i < data.length; i++) {
             this.urlkeys[data[i].id] = data[i].urlkey;
-          if(data.length == 0)
-            this.prompt_import(true);
+            this.exchanges[data[i].id] = data[i];
+          }
+          if(data.length == 0) {
+            $e.select_ix.attr('disabled', true)
+          } else {
+            $e.select_ix.attr('disabled', false)
+          }
         });
         return w
 
       });
 
-      // console.log(this.$c.toolbar)
       $(this.$c.toolbar.$w.select_ix).one("load:after", () => {
-        this.sync();
+        params = new URLSearchParams(window.location.search)
+        var preselect_ix = params.get("ix")
+        if(preselect_ix) {
+          this.select_ix(preselect_ix)
+        } else {
+          this.sync();
+        }
       });
 
       this.tool("members", () => {
@@ -34,6 +46,9 @@ $ctl.application.Ixctl = $tc.extend(
       this.tool("routeservers", () => {
         return new $ctl.application.Ixctl.Routeservers();
       });
+
+
+      $($ctl).trigger("init_tools", [this]);
 
 
       $(this.$c.toolbar.$e.select_ix).on("change", () => {
@@ -165,6 +180,15 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
         form.method = "PUT"
         form.form_action = "members/"+member.id;
         form.fill(member);
+
+
+        form.element.find('input[type="text"],select,input[type="checkbox"]').each(function() {
+          if(!grainy.check(member.grainy+"."+$(this).attr("name"), "u")) {
+            $(this).attr("disabled", true)
+          }
+        });
+
+
         $(this.form).on("api-write:before", (ev, e, payload) => {
           payload["ix"] = member.ix;
           payload["id"] = member.id;
@@ -201,7 +225,15 @@ $ctl.application.Ixctl.Members = $tc.extend(
         row.find('a[data-action="edit_member"]').click(() => {
           var member = row.data("apiobject");
           new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix(), member);
+        }).each(function() {
+          if(!grainy.check(data.grainy+".?", "u")) {
+            $(this).hide()
+          }
         });
+
+        if(!grainy.check(data.grainy, "d")) {
+          row.find('a[data-api-method="DELETE"]').hide();
+        }
       };
 
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
@@ -225,19 +257,37 @@ $ctl.application.Ixctl.Members = $tc.extend(
     },
 
     sync : function() {
-      if($ctl.ixctl.ix()) {
-        this.apply_ordering();
-        this.$w.list.load();
-        this.$e.menu.find('[data-element="button_ixf_export"]').attr(
-          "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
-        )
+      var ix_id = $ctl.ixctl.ix()
+      if(ix_id) {
+        var exchange = $ctl.ixctl.exchanges[ix_id]
+        console.log(exchange.grainy)
+        if(grainy.check(exchange.grainy, "r")) {
+          this.show();
+          this.$w.list.load().then(()=>{this.apply_ordering()})
+          this.$e.menu.find('[data-element="button_ixf_export"]').attr(
+            "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
+          )
 
-        this.$e.menu.find('[data-element="button_api_view"]').attr(
-          "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
-        )
+          this.$e.menu.find('[data-element="button_api_view"]').attr(
+            "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
+          )
 
+          if(grainy.check(exchange.grainy, "c")) {
+            this.$e.menu.find('[data-element="button_add_member"]').show();
+            this.$e.menu.find('[data-element="button_ixf_export"]').show();
+          } else {
+            this.$e.menu.find('[data-element="button_add_member"]').hide();
+            this.$e.menu.find('[data-element="button_ixf_export"]').hide();
+          }
+
+        } else {
+          this.hide();
+        }
+      } else {
+        // no exchange exists - hide members tool
+        this.hide();
       }
-    },    
+    },
   },
   $ctl.application.Tool
 );
@@ -325,12 +375,23 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
     },
 
     sync : function() {
-      if($ctl.ixctl.ix()) {
-        this.$w.list.load();
-        this.$e.menu.find('[data-element="button_api_view"]').attr(
-          "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
-        )
+      var ix_id = $ctl.ixctl.ix()
+      if(ix_id) {
+        var exchange = $ctl.ixctl.exchanges[ix_id]
+        var rs_namespace =exchange.grainy.replace(/^ix\./, "rs.")+".?"
+        if(grainy.check(rs_namespace, "r")) {
+          this.show();
+          this.$w.list.load();
+          this.$e.menu.find('[data-element="button_api_view"]').attr(
+            "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
+          )
+        } else {
+          this.hide();
+        }
 
+      } else {
+        // no exchanges exist - hide route-servers tool
+        this.hide();
       }
     }
   },

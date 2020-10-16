@@ -1,7 +1,9 @@
 (function($, $tc) {
 
 
-fullctl = {}
+fullctl = {
+  urlparam : new URLSearchParams(window.location.search)
+}
 
 fullctl.template = function(name) {
   return $('[data-template="'+name+'"]').clone().attr("data-template",null);
@@ -131,6 +133,14 @@ fullctl.application.Tool = $tc.extend(
 
     },
 
+    hide : function() {
+      this.$e.body.parents(".tool").hide();
+    },
+
+    show : function() {
+      this.$e.body.parents(".tool").show();
+    },
+
     menu : function() {
       var menu = this.template("menu")
       console.log(this);
@@ -216,6 +226,61 @@ fullctl.application.Tool = $tc.extend(
     },
   },
   fullctl.application.Component
+);
+
+fullctl.application.TabbedTool = $tc.extend(
+  "TabbedTool",
+  {
+    "TabbedTool" : function(name) {
+      this.Tool(name)
+    },
+
+    menu : function() {
+      var menu = this.Tool_menu()
+
+      var tool = this;
+      var urlparam = this.urlparam
+
+      if(urlparam) {
+        var preselect = fullctl.urlparam.get(urlparam)
+      } else {
+        var preselect = false;
+      }
+
+      console.log(urlparam, preselect)
+
+
+      this.widget('tabs_fetcher', ($e) => {
+        var w = new twentyc.rest.List(menu)
+
+        w.formatters.row = (row, data) => {
+          if(!w.element.find(".active").length) {
+            if(!preselect || preselect == ""+data[urlparam])
+              tool.tab(row, data);
+          }
+
+          row.click(function() {
+            tool.tab(row, data);
+            if(urlparam)
+              window.history.replaceState({}, document.title, "?"+urlparam+"="+data[urlparam])
+          });
+        }
+
+        w.load()
+        return w;
+      })
+
+      return menu
+    },
+
+    tab : function(tab, data) {
+      tab.siblings().removeClass("active")
+      tab.addClass("active")
+    }
+
+
+  },
+  fullctl.application.Tool
 );
 
 fullctl.application.Header = $tc.extend(

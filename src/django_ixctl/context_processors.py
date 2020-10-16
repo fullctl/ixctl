@@ -1,5 +1,6 @@
 from django.conf import settings
-
+from django_ixctl.models import InternetExchange
+from django_peeringdb.models.concrete import Network
 
 def account_service(request):
 
@@ -18,6 +19,7 @@ def account_service(request):
             oauth_manages_org=settings.MANAGED_BY_OAUTH,
         )
 
+
     return context
 
 
@@ -27,20 +29,13 @@ def permissions(request):
     instances = [request.org]
     ops = [("c", "create"), ("r", "read"), ("u", "update"), ("d", "delete")]
 
-    if hasattr(request, "app_id"):
-        for op, name in ops:
-            key = f"{name}_instance"
-            context[key] = request.perms.check([request.org, request.app_id], op)
+    is_accessible = request.org in request.org.accessible(request.user)
 
-    for instance in instances:
-        if not instance:
-            continue
-        for namespace in instance.permission_namespaces:
-            for op, name in ops:
-                key = "{}_{}_{}".format(
-                    name, instance.HandleRef.tag, namespace.replace(".", "__")
-                )
-                context[key] = request.perms.check([instance, namespace], op)
+    for op, name in ops:
+        key = f"{name}_instance"
+        if name == "read":
+            context[key] = is_accessible
+        else:
+            context[key] = request.perms.check(request.org, op)
 
-    print(context)
     return {"permissions": context}

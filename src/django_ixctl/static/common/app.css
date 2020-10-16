@@ -1,9 +1,11 @@
 .templates,
+.hidden,
 div[data-element="templates"],
 #templates {
   display: none;
 }
 
+a,
 a[data-action],
 .action {
   cursor: pointer;
@@ -367,6 +369,9 @@ div.toolbar .button {
   padding: 12px 18px 12px 18px;
   font-size: 16px;
   line-height: 16px;
+  border: none;
+  :0
+  outline: none;
 }
 
 div.menu .button .icon,
@@ -374,6 +379,15 @@ div.toolbar .button .icon {
   width: 16px;
   height: 16px;
   vertical-align: bottom;
+}
+
+div.menu div.section.tabs h5 {
+  cursor: pointer;
+}
+
+div.menu div.section.tabs h5.active {
+  cursor: default;
+  text-decoration: underline;
 }
 
 /**
@@ -730,6 +744,15 @@ div.controls select {
   appearance: none;
   border-radius: 0;
 }
+
+div.controls .select2-container--default .select2-selection--single:disabled,
+div.controls textarea:disabled,
+div.controls input[type="text"]:disabled,
+div.controls input[type="password"]:disabled,
+div.controls select:disabled {
+  padding: 0px;
+}
+
 
 div.controls input[type="text"],
 div.controls input[type="password"] {
