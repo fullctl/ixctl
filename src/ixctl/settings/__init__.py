@@ -253,7 +253,7 @@ INSTALLED_APPS += (
     "rest_framework",
     "social_django",
     "reversion",
-    "django_ixctl",
+    "django_ixctl.apps.DjangoIxctlConfig",
 )
 
 TEMPLATES[0]["OPTIONS"]["context_processors"] += [
@@ -267,11 +267,34 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login"
 LOGIN_URL = "/login"
 
+# SINGLE - exchanges are operated by single organization
+# Organizations are not automatically permissioned to be
+# allowed to create their own exchanges.
+#
+# MANY - any organization may maintain and create their
+# own exchange data
+
+set_option("IXCTL_MODE", "MANY")
+
+
 # OAUTH
 
 # controls whether or not orgs, users and permissions
 # are managed by oauth
 set_option("MANAGED_BY_OAUTH", False)
+
+# PeeringDB
+
+set_option("OAUTH_PDB_HOST", "https://www.peeringdb.com")
+OAUTH_PDB_ACCESS_TOKEN_URL = f"{OAUTH_PDB_HOST}/oauth2/token/"
+OAUTH_PDB_AUTHORIZE_URL = f"{OAUTH_PDB_HOST}/oauth2/authorize/"
+OAUTH_PDB_PROFILE_URL = f"{OAUTH_PDB_HOST}/profile/v1"
+
+set_option("OAUTH_PDB_KEY", "")
+set_option("OAUTH_PDB_SECRET", "")
+OAUTH_PDB = (OAUTH_PDB_KEY and OAUTH_PDB_SECRET)
+
+# 20C
 
 set_option("OAUTH_TWENTYC_HOST", "https://account.20c.com")
 OAUTH_TWENTYC_ACCESS_TOKEN_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/token/"
@@ -282,7 +305,9 @@ set_option("OAUTH_TWENTYC_KEY", "")
 set_option("OAUTH_TWENTYC_SECRET", "")
 set_option("OAUTH_TWENTYC", False)
 
+
 if OAUTH_TWENTYC or MANAGED_BY_OAUTH:
+    print("oAuth enabled: 20C")
     SOCIAL_AUTH_TWENTYC_KEY = OAUTH_TWENTYC_KEY
     SOCIAL_AUTH_TWENTYC_SECRET = OAUTH_TWENTYC_SECRET
     AUTHENTICATION_BACKENDS = [
@@ -292,8 +317,18 @@ if OAUTH_TWENTYC or MANAGED_BY_OAUTH:
     if MANAGED_BY_OAUTH:
         GRAINY_REMOTE = {
             "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
-            "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
+            #"url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
         }
+
+if OAUTH_PDB:
+    print("oAuth enabled: PeeringDB")
+    SOCIAL_AUTH_PEERINGDB_KEY = OAUTH_PDB_KEY
+    SOCIAL_AUTH_PEERINGDB_SECRET = OAUTH_PDB_SECRET
+    AUTHENTICATION_BACKENDS = [
+        "django_ixctl.social.backends.peeringdb.PeeringDBOAuth2",
+    ] + AUTHENTICATION_BACKENDS
+
+
 
 
 set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
@@ -308,6 +343,7 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.social_auth.load_extra_data",
     "django_ixctl.social.pipelines.sync_organizations",
     "django_ixctl.social.pipelines.sync_api_keys",
+    "django_ixctl.social.pipelines.sync_peeringdb",
     "social_core.pipeline.user.user_details",
 )
 
@@ -342,6 +378,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {"email": "1/minute"},
     "DEFAULT_SCHEMA_CLASS": "django_ixctl.api_schema.BaseSchema",
 }
+
 
 # FINALIZE
 

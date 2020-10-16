@@ -2,6 +2,7 @@ from django.conf import settings
 
 from rest_framework import exceptions
 from rest_framework.response import Response
+from rest_framework import serializers
 
 import reversion
 
@@ -14,21 +15,56 @@ from django_ixctl.models import Organization, APIKey
 from django_ixctl.auth import Permissions, RemotePermissions
 
 
-class patched_grainy_rest_viewset_response(grainy_rest_viewset_response):
-    def apply_perms(self, request, response, view_function, view):
-        return response
-        response.data = self._apply_perms(request, response.data, view_function, view)
-        return response
+class load_object:
+
+    """
+    Will load an object and pass it to the view handler
+    for `model` Model as argument `argname`
+
+    **Arguments**
+
+    - argname (`str`): will be passed as this keyword argument
+    - model (`Model`): django model class
+
+    **Keyword Arguments**
+
+    Any keyword argument will be passed as a filter to the
+    `get` query
+    """
+
+    def __init__(self, argname, model, **filters):
+        self.argname = argname
+        self.model = model
+        self.filters = filters
+
+    def __call__(self, fn):
+
+        decorator = self
+
+        def wrapped(self, request, *args, **kwargs):
+            filters = {}
+            for field, key in decorator.filters.items():
+                filters[field] = kwargs.get(key)
+
+            try:
+                kwargs[decorator.argname] = decorator.model.objects.get(**filters)
+            except decorator.model.DoesNotExist:
+                return Response(status=404)
+            return fn(self, request, *args, **kwargs)
+        wrapped.__name__ = fn.__name__
+        return wrapped
 
 
 class grainy_endpoint:
     def __init__(
-        self, namespace=None, require_auth=True, explicit=True, instance_class=None
+        self, namespace=None, require_auth=True, explicit=True, instance_class=None,
+        **kwargs
     ):
-        self.namespace = namespace or ["account", "org", "{request.org.permission_id}"]
+        self.namespace = namespace or ["org", "{request.org.permission_id}"]
         self.require_auth = require_auth
         self.explicit = explicit
         self.instance_class = instance_class
+        self.kwargs = kwargs
 
     def __call__(self, fn):
         decorator = self
@@ -38,19 +74,17 @@ class grainy_endpoint:
         else:
             permissions_cls = Permissions
 
-        @patched_grainy_rest_viewset_response(
+        @grainy_rest_viewset_response(
             namespace=decorator.namespace,
             namespace_instance=decorator.namespace,
             explicit=decorator.explicit,
             ignore_grant_all=True,
             permissions_cls=permissions_cls,
+            **decorator.kwargs,
         )
         def wrapped(self, request, *args, **kwargs):
 
             request.org = Organization.objects.get(slug=request.nsparam["org_tag"])
-
-            if not request.perms.check(request.org, "r"):
-                return Response(status=403)
 
             if decorator.require_auth and not request.user.is_authenticated:
                 return Response(status=401)
@@ -77,7 +111,7 @@ def serializer_registry():
     def register(cls):
         if not hasattr(cls, "ref_tag"):
             cls.ref_tag = cls.Meta.model.HandleRef.tag
-            cls.Meta.fields += HANDLEREF_FIELDS
+            cls.Meta.fields += ["grainy"] + HANDLEREF_FIELDS
         setattr(Serializers, cls.ref_tag, cls)
         return cls
 

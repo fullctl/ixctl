@@ -29,6 +29,11 @@ class RemotePermissions(django_grainy.remote.Permissions):
 
 
 def permissions(user):
+    if hasattr(user, "_ixctl_permissions"):
+        return user._ixctl_permissions
     if settings.MANAGED_BY_OAUTH:
-        return RemotePermissions(user)
-    return Permissions(user)
+        perms = RemotePermissions(user)
+    perms = Permissions(user)
+    user._ixctl_permissions = perms
+    return perms
+

@@ -5,7 +5,10 @@ from django_ixctl.models import (
     Organization,
     OrganizationUser,
     APIKey,
+    Network,
 )
+
+import django_peeringdb.models.concrete as pdb_models
 
 
 def sync_api_keys(backend, details, response, uid, user, *args, **kwargs):
@@ -38,3 +41,25 @@ def sync_organizations(backend, details, response, uid, user, *args, **kwargs):
     if social and settings.MANAGED_BY_OAUTH:
         organizations = social.extra_data.get("organizations", [])
         Organization.sync(organizations, user, backend.name)
+
+
+def sync_peeringdb(backend, details, response, uid, user, *args, **kwargs):
+
+    if backend.name  != "peeringdb" or settings.MANAGED_BY_OAUTH:
+        return
+
+    social = kwargs.get("social") or backend.strategy.storage.user.get_social_auth(
+        backend.name, uid
+    )
+
+    if social:
+        # TODO: remove old permissions
+        for network in social.extra_data.get("networks", []):
+            asn = network["asn"]
+            perms = network["perms"]
+            user.grainy_permissions.add_permission(f"verified.asn.{asn}", perms)
+
+
+
+
+

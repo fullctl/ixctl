@@ -17,7 +17,8 @@ import django_ixctl.models as models
 import django_peeringdb.models.concrete as pdb_models
 
 from django_ixctl.rest.decorators import serializer_registry
-from django_ixctl.rest.serializers import RequireContext
+from django_ixctl.rest.serializers import RequireContext, ModelSerializer
+
 from django_inet.rest import IPAddressField
 
 from django_ixctl.peeringdb import (
@@ -123,14 +124,23 @@ class ImportExchange(RequireContext, serializers.Serializer):
 
 
 @register
-class InternetExchange(serializers.ModelSerializer):
+class PermissionRequest(ModelSerializer):
+
+    class Meta:
+        model = models.PermissionRequest
+        fields = ["user", "type", "org"]
+
+
+
+@register
+class InternetExchange(ModelSerializer):
     class Meta:
         model = models.InternetExchange
         fields = ["pdb_id", "urlkey", "name"]
 
 
 @register
-class InternetExchangeMember(serializers.ModelSerializer):
+class InternetExchangeMember(ModelSerializer):
 
     ipaddr4 = IPAddressField(
         version=4, allow_blank=True, allow_null=True, required=False, default=None
@@ -199,7 +209,7 @@ class InternetExchangeMember(serializers.ModelSerializer):
 
 
 @register
-class Routeserver(serializers.ModelSerializer):
+class Routeserver(ModelSerializer):
 
     router_id = IPAddressField(version=4,)
 
@@ -232,7 +242,7 @@ class Routeserver(serializers.ModelSerializer):
 
 
 @register
-class RouteserverConfig(serializers.ModelSerializer):
+class RouteserverConfig(ModelSerializer):
     class Meta:
         model = models.RouteserverConfig
         fields = [
@@ -242,7 +252,74 @@ class RouteserverConfig(serializers.ModelSerializer):
 
 
 @register
-class OrganizationUser(serializers.ModelSerializer):
+class Network(ModelSerializer):
+    class Meta:
+        model = models.Network
+        fields = ["pdb_id", "asn", "name", "display_name"]
+
+
+@register
+class NetworkPresence(InternetExchangeMember):
+    org = serializers.SerializerMethodField()
+    org_name = serializers.SerializerMethodField()
+    access = serializers.SerializerMethodField()
+    ref_tag = "presence"
+
+    class Meta(InternetExchangeMember.Meta):
+        fields = InternetExchangeMember.Meta.fields + [
+            "org",
+            "org_name",
+            "ix_name",
+            "access",
+        ]
+
+    @property
+    def permrequest(self):
+        user = self.context.get("user")
+        if not hasattr(self, "_permrequest"):
+            self._permrequest = {
+                pr.org_id : True for pr in
+                models.PermissionRequest.objects.filter(
+                    user=user
+                )
+            }
+        return self._permrequest
+
+    def get_org(self, obj):
+        return obj.org.slug
+
+    def get_org_name(self, obj):
+        return obj.org.name
+
+    def get_access(self, obj):
+        perms = self.context.get("perms")
+        if not perms:
+            return False
+
+        namespace = self.get_grainy(obj)
+
+        access_u = perms.check(f"{namespace}.?", "u")
+        access_r = perms.check(f"{namespace}", "r")
+
+        if access_u:
+            return "manage"
+
+        if access_r:
+            return "view"
+
+        if self.get_access_pending(obj):
+            return "pending"
+
+        return "denied"
+
+
+
+    def get_access_pending(self, obj):
+        return self.permrequest.get(obj.org.id, False)
+
+
+@register
+class OrganizationUser(ModelSerializer):
     ref_tag = "orguser"
 
     name = serializers.SerializerMethodField()

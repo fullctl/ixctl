@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 import django_ixctl.models as models
+from django_ixctl.rest import BadRequest
 
 from django_ixctl.rest.serializers.account import Serializers
 from django_ixctl.rest.route.account import route
@@ -23,12 +24,34 @@ class Organization(viewsets.GenericViewSet):
 
         """
         list the organizations that the user belongs
-        to
+        to or has permissions to
         """
 
+
         serializer = Serializers.org(
-            instance=[o.org for o in request.user.org_set.all()],
+            instance=models.Organization.accessible(request.user),
             many=True,
             context={"user": request.user},
         )
         return Response(serializer.data)
+
+
+
+@route
+class User(viewsets.GenericViewSet):
+
+    ref_tag = "user"
+
+
+    @action(detail=False, methods=["GET"])
+    @grainy_endpoint()
+    def asns(self, request, org, *args, **kwargs):
+        serializer = Serializers.asn(
+            verified_asns(request.perms),
+            many=True
+        )
+        return Response(serializer.data)
+
+
+
+

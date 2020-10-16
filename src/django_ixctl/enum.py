@@ -17,3 +17,7 @@ ARS_NO_EXPORT_ACTIONS = (
     ("pass", _("Pass (Treat as transitive)")),
     ("strip", _("Strip (Treat as non-transitive)")),
 )
+
+PERMISSION_REQUEST_TYPES = (
+    ("net_ix", _("Manage network at exchange")),
+)
