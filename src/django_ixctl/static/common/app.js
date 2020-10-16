@@ -154,7 +154,76 @@ fullctl.application.Tool = $tc.extend(
 
     deactivate : function() {
       this.active = false
-    }
+    },
+
+    initialize_sortable_headers: function(intialSortedHeading) {
+      const list = this.$w.list
+
+      // Add click function to headings to sort
+      const table = list.element[0];
+      this.tableHeadings = $(table).first().find("th[data-sort-target]");
+      this.tableHeadings.click( function(event) {
+        let button = event.currentTarget;
+        this.handle_click( $(button) );
+      }.bind(this))
+
+      // Initial conditions for sorting
+      this.sortHeading = intialSortedHeading || this.tableHeadings.first().data("sort-target");
+      this.sortAsc = true;
+      this.ordering = "";
+
+      /* 
+      Specific to django-rest-framework: we add "ordering" as a query
+      parameter to the API calls
+      */
+      list.payload = function(){return {ordering: this.ordering}}
+    },
+
+    handle_click: function(button) {
+        let sortTarget = button.data("sort-target");
+
+        if ( sortTarget == this.sortHeading ){
+          this.sortAsc = !this.sortAsc;
+        } else {
+          this.sortHeading = sortTarget;
+          this.sortAsc = true;
+        };
+        this.sync();
+    },
+
+    apply_ordering : function() {
+        this.$w.list.ordering = this.return_ordering();
+        this.format_headings();
+    },
+
+    return_ordering: function() {
+      if ( this.sortAsc ){
+        return this.sortHeading
+      }
+      return "-" + this.sortHeading
+    },
+
+
+    format_headings : function() {
+      let heading = this.sortHeading;
+      let asc = this.sortAsc;
+
+      $(this.tableHeadings).each( function() {
+        $(this).find("span").remove();
+        if ( $(this).data("sort-target") == heading ){
+          if ( asc ){
+            $(this).removeClass("selected-order-header-desc")
+            $(this).addClass("selected-order-header-asc");
+          } else {
+            $(this).removeClass("selected-order-header-asc")
+            $(this).addClass("selected-order-header-desc");
+          }
+        } else {
+            $(this).removeClass("selected-order-header-asc");
+            $(this).removeClass("selected-order-header-desc");
+        }
+      })
+    },
   },
   fullctl.application.Component
 );

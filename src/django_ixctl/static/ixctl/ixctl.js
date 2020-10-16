@@ -136,16 +136,16 @@ $ctl.application.Ixctl.ModalCreateIX = $tc.extend(
   "ModalCreateIX",
   {
     ModalCreateIX : function() {
-      console.log($ctl.template("form_create_ix"));
+      // console.log($ctl.template("form_create_ix"));
       var form = this.form = new twentyc.rest.Form(
         $ctl.template("form_create_ix")
       );
 
-      console.log(form);
+      // console.log(form);
       var modal = this;
 
       $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
-        console.log(response.content.data)
+        // console.log(response.content.data)
         $ctl.ixctl.refresh().then(
           () => { $ctl.ixctl.select_ix(response.content.data[0].id) }
         );
@@ -237,14 +237,15 @@ $ctl.application.Ixctl.Members = $tc.extend(
       };
 
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
-      this.$w.list.base
 
-      $(this.$w.list).on("api-read:before",function()  {
+      $(this.$w.list).on("api-read:before",function(endpoint)  {
         this.base_url = this.base_url.replace(
           /\/ix\/\d+$/,
-          "/ix/"+$ctl.ixctl.ix()
+          "/ix/" + $ctl.ixctl.ix()
         )
       })
+
+      this.initialize_sortable_headers("name")
     },
 
     menu : function() {
@@ -262,7 +263,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
         console.log(exchange.grainy)
         if(grainy.check(exchange.grainy, "r")) {
           this.show();
-          this.$w.list.load();
+          this.$w.list.load().then(()=>{this.apply_ordering()})
           this.$e.menu.find('[data-element="button_ixf_export"]').attr(
             "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
           )
@@ -286,7 +287,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
         // no exchange exists - hide members tool
         this.hide();
       }
-    }
+    },
   },
   $ctl.application.Tool
 );
@@ -358,7 +359,6 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       this.$w.list.base
 
       $(this.$w.list).on("api-read:before",function()  {
-        console.log(this.base_url)
         this.base_url = this.base_url.replace(
           /\/ix\/\d+$/,
           "/ix/"+$ctl.ixctl.ix()
