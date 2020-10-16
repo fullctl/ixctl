@@ -245,7 +245,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
         )
       })
 
-      this.initialize_sortable_headers("name")
+      this.initialize_sortable_headers("name");
     },
 
     menu : function() {
@@ -263,7 +263,8 @@ $ctl.application.Ixctl.Members = $tc.extend(
         console.log(exchange.grainy)
         if(grainy.check(exchange.grainy, "r")) {
           this.show();
-          this.$w.list.load().then(()=>{this.apply_ordering()})
+          this.apply_ordering();
+          this.$w.list.load();
           this.$e.menu.find('[data-element="button_ixf_export"]').attr(
             "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
           )
