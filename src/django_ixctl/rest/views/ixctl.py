@@ -375,6 +375,7 @@ class PermissionRequest(viewsets.GenericViewSet):
         return Response(serializer.data)
 
 
+    """
     @grainy_endpoint(namespace="?.?")
     def create(self, request, org, instance, *args, **kwargs):
         data = request.data
@@ -387,7 +388,7 @@ class PermissionRequest(viewsets.GenericViewSet):
 
         permreq = serializer.save()
         return Response(serializer.data)
-
+    """
 
 
 @route

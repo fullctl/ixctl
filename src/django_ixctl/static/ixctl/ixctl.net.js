@@ -50,6 +50,7 @@ $ctl.application.Ixctl.Networks = $tc.extend(
     },
 
     request_access : function(presence) {
+      return alert("Feature not implemented")
       return new $ctl.application.Ixctl.ModalPermissionRequest(presence)
     },
 
