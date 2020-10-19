@@ -23,13 +23,14 @@ class RemotePermissions(django_grainy.remote.Permissions):
     def prepare_request(self, params, headers):
         try:
             key = self.obj.key_set.first().key
+            print("KEY", key)
             headers.update(Authorization=f"Bearer {key}")
         except AttributeError:
             pass
 
 
-def permissions(user):
-    if hasattr(user, "_ixctl_permissions"):
+def permissions(user, refresh=False):
+    if hasattr(user, "_ixctl_permissions") and not refresh:
         return user._ixctl_permissions
     if settings.MANAGED_BY_OAUTH:
         perms = RemotePermissions(user)

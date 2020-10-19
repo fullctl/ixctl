@@ -30,12 +30,19 @@ def verified_asns(perms):
 
 def create_networks_from_verified_asns(user):
 
-    instance = user.org_set.filter(org__personal=True).first().org.instance
+    try:
+        instance = user.org_set.filter(org__personal=True).first().org.instance
+    except AttributeError:
+        # users that dont have an org (manually created superusers)
+        return
+
     perms = permissions(user)
+    perms.load()
+
 
     asns = [
         namespace[2] for namespace in
-        perms.pset.expand("verified.asn.?", exact=True, explicit=True)
+        perms.pset.expand("verified.asn.?.?", exact=True, explicit=True)
     ]
 
     for asn in asns:

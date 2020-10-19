@@ -57,7 +57,7 @@ def sync_peeringdb(backend, details, response, uid, user, *args, **kwargs):
         for network in social.extra_data.get("networks", []):
             asn = network["asn"]
             perms = network["perms"]
-            user.grainy_permissions.add_permission(f"verified.asn.{asn}", perms)
+            user.grainy_permissions.add_permission(f"verified.asn.{asn}.peeringdb", perms)
 
 
 
