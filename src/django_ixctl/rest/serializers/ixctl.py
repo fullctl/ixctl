@@ -172,6 +172,7 @@ class InternetExchangeMember(ModelSerializer):
             "ipaddr4",
             "ipaddr6",
             "macaddr",
+            "as_macro",
             "is_rs_peer",
             "speed",
         ]
