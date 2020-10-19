@@ -33,7 +33,8 @@ def permissions(user):
         return user._ixctl_permissions
     if settings.MANAGED_BY_OAUTH:
         perms = RemotePermissions(user)
-    perms = Permissions(user)
+    else:
+        perms = Permissions(user)
     user._ixctl_permissions = perms
     return perms
 
