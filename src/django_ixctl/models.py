@@ -34,7 +34,7 @@ import reversion
 from django_handleref.models import HandleRefModel as SoftDeleteHandleRefModel
 from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network
 from django_ixctl.inet.util import pdb_lookup
-from django_ixctl.inet.validators import validate_ip4, validate_ip6
+from django_ixctl.inet.validators import validate_ip4, validate_ip6, validate_as_set
 from django_ixctl.peeringdb import get_as_set
 from django_ixctl.auth import permissions
 
@@ -529,6 +529,9 @@ class InternetExchangeMember(PdbRefModel):
         max_length=255, blank=True, null=True, validators=[validate_ip6]
     )
     macaddr = MacAddressField(null=True, blank=True)
+    as_macro = models.CharField(
+        max_length=255, blank=True, null=True, validators=[validate_as_set]
+    )
     is_rs_peer = models.BooleanField(default=False)
     speed = models.PositiveIntegerField()
     asn = models.PositiveIntegerField()
