@@ -2,8 +2,40 @@ import re
 
 import ipaddress
 
+from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 
+# valid IRR source identifiers
+
+IRR_SOURCE = (
+    "AFRINIC",
+    "ALTDB",
+    "AOLTW",
+    "APNIC",
+    "ARIN",
+    "ARIN-NONAUTH",
+    "BELL",
+    "BBOI",
+    "CANARIE",
+    "EASYNET",
+    "EPOCH",
+    "HOST",
+    "JPIRR",
+    "LACNIC",
+    "LEVEL3",
+    "NESTEGG",
+    "NTTCOM",
+    "OPENFACE",
+    "OTTIX",
+    "PANIX",
+    "RADB",
+    "REACH",
+    "RGNET",
+    "RIPE",
+    "RISQ",
+    "ROGERS",
+    "TC",
+)
 
 def validate_ip4(value):
     try:
@@ -31,4 +63,85 @@ def validate_masklength_range(value):
         raise ValidationError("Needs to be [0-9]+..[0-9]+ or 'exact'")
 
 def validate_as_set(value):
-    return f"{value}"
+    """
+    Validates irr as-set string
+    - the as-set/rs-set name has to conform to RFC 2622 (5.1 and 5.2)
+    - the source may be specified by SOURCE::AS-SET
+    - multiple values must be separated by either comma, space or comma followed by space
+    Arguments:
+    - value: irr as-set string
+    Returns:
+    - str: validated irr as-set string
+    """
+
+    if not isinstance(value, str):
+        raise ValueError(_("IRR AS-SET value must be string type"))
+
+    # split multiple values
+
+    # normalize value separation to commas
+    value = value.replace(", ", ",")
+    value = value.replace(" ", ",")
+
+    validated = []
+
+    # validate
+    for item in value.split(","):
+        item = item.upper()
+        source = None
+        as_set = None
+
+        # <source>::<name>
+        parts_match = re.match(r"^(\w+)::([\w\d\-:]+)$", item)
+        if parts_match:
+            source = parts_match.group(1)
+            as_set = parts_match.group(2)
+        else:
+            sourceless_match = re.match(r"^([\w\d\-:]+)$", item)
+            if not sourceless_match:
+                raise ValidationError(
+                    _(
+                        "Invalid formatting: {} - should be AS-SET, ASx, SOURCE::AS-SET"
+                    ).format(item)
+                )
+            as_set = sourceless_match.group(1)
+
+        if source and source not in IRR_SOURCE:
+            raise ValidationError(_("Unknown IRR source: {}").format(source))
+
+        # validate set name and as hierarchy
+        as_parts = as_set.split(":")
+
+        set_found = False
+        typ = None
+        types = []
+
+        for part in as_parts:
+            match_set = re.match(r"^(AS|RS)-[\w\d\-]+$", part)
+            match_as = re.match(r"^(AS)[\d]+$", part)
+
+            # set name found
+
+            if match_set:
+                set_found = True
+                types.append(match_set.group(1))
+            elif not match_as:
+                raise ValidationError(
+                    _(
+                        "Invalid formatting: {} - should be RS-SET, AS-SET or AS123"
+                    ).format(part)
+                )
+
+        if len(list(set(types))) > 1:
+            raise ValidationError(
+                _("All parts of an hierarchical name have to be of the same type")
+            )
+
+        if not set_found and len(as_parts) > 1:
+            raise ValidationError(
+                _("At least one component must be an actual set name")
+            )
+
+        validated.append(item)
+
+    return ", ".join(validated)
