@@ -594,6 +594,13 @@ class InternetExchangeMember(PdbRefModel):
     def ix_name(self):
         return self.ix.name
 
+    @property
+    def as_sets(self):
+        if not self.as_macro:
+            return []
+
+        return [as_set.strip() for as_set in self.as_macro.split(",")]
+
 
 @reversion.register
 @grainy_model(
@@ -732,13 +739,22 @@ class Routeserver(HandleRefModel):
                         asns[asn] = {"as_sets": [as_set]}
 
             if member.asn not in clients:
-                clients[member.asn] = {"asn": member.asn, "ip": []}
+                clients[member.asn] = {"asn": member.asn, "ip": [], "cfg": {}}
 
             if member.ipaddr4:
                 clients[member.asn]["ip"].append(f"{member.ipaddr4}")
 
             if member.ipaddr6:
                 clients[member.asn]["ip"].append(f"{member.ipaddr6}")
+
+            if member.as_macro:
+                clients[member.asn]["cfg"].update(
+                    filtering={
+                        "irrdb": {
+                            "as_sets": member.as_sets,
+                        }
+                    }
+                )
 
         return {"asns": asns, "clients": list(clients.values())}
 
