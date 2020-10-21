@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.filters import OrderingFilter
 from rest_framework.schemas.openapi import AutoSchema
 
 from django_ixctl.rest import BadRequest
@@ -13,11 +12,11 @@ import django_ixctl.models as models
 from django_ixctl.rest.route.ixctl import route
 
 from django_ixctl.rest.serializers.ixctl import Serializers
+from django_ixctl.rest.filters import CaseInsensitiveOrderingFilter
 from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint, load_object
 from django_ixctl.rest.renderers import PlainTextRenderer
 from django_ixctl.peeringdb import import_org
 from django_ixctl.util import verified_asns
-
 
 class grainy_endpoint(_grainy_endpoint):
     def __init__(self, *args, **kwargs):
@@ -176,8 +175,9 @@ class InternetExchange(viewsets.GenericViewSet):
             )
 
     def _list_members(self, request, org, instance, pk, *args, **kwargs):
-        ordering_filter = OrderingFilter()
-        ordering_filter.ordering_fields = ["name", "asn", "ipaddr4", "ipaddr6", "speed"]
+        ordering_filter = CaseInsensitiveOrderingFilter(
+            ["name", "asn", "ipaddr4", "ipaddr6", "speed"]
+        )
 
         queryset = models.InternetExchangeMember.objects.filter(
                 ix_id=pk,

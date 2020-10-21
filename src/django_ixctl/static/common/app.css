@@ -38,6 +38,9 @@ a[data-action]:hover,
   font-weight: bold;
 }
 
+.sortable-button {
+  cursor: pointer;
+}
 a{
   text-decoration: underline;
 }
