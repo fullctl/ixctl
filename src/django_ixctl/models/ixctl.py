@@ -949,5 +949,3 @@ class Network(PdbRefModel):
 
     def __str__(self):
         return f"{self.name} (AS{self.asn})"
-
-

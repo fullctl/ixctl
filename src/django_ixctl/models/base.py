@@ -26,5 +26,3 @@ class HandleRefModel(SoftDeleteHandleRefModel):
 
     def delete(self):
         return super().delete(hard=True)
-
-
