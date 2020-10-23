@@ -31,12 +31,12 @@ from django_inet.models import (
 
 import reversion
 
-from django_handleref.models import HandleRefModel as SoftDeleteHandleRefModel
 from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network
 from django_ixctl.inet.util import pdb_lookup
 from django_ixctl.inet.validators import validate_ip4, validate_ip6, validate_as_set
 from django_ixctl.peeringdb import get_as_set
 from django_ixctl.auth import permissions
+from django_ixctl.models.base import HandleRefModel
 
 import django_ixctl.enum
 
@@ -44,30 +44,6 @@ import django_ixctl.enum
 def generate_secret():
     return token_urlsafe()
 
-
-class HandleRefModel(SoftDeleteHandleRefModel):
-    """
-    Like handle ref, but with hard delete
-    and extended status types
-    """
-
-    status = models.CharField(
-        max_length=12,
-        default="ok",
-        choices=(
-            ("ok", _("Ok")),
-            ("pending", _("Pending")),
-            ("deactivated", _("Deactivated")),
-            ("failed", _("Failed")),
-            ("expired", _("Expired")),
-        ),
-    )
-
-    class Meta:
-        abstract = True
-
-    def delete(self):
-        return super().delete(hard=True)
 
 
 class PdbRefModel(HandleRefModel):
