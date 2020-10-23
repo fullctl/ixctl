@@ -1,3 +1,7 @@
+import subprocess
+
+from django_ixctl.models.base import HandleRefModel
+
 class Task(HandleRefModel):
 
     """
