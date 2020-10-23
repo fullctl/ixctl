@@ -172,7 +172,7 @@ fullctl.application.Tool = $tc.extend(
       this.sortAsc = true;
       this.ordering = "";
 
-      /* 
+      /*
       Specific to django-rest-framework: we add "ordering" as a query
       parameter to the API calls
       */
@@ -247,9 +247,6 @@ fullctl.application.TabbedTool = $tc.extend(
         var preselect = false;
       }
 
-      console.log(urlparam, preselect)
-
-
       this.widget('tabs_fetcher', ($e) => {
         var w = new twentyc.rest.List(menu)
 
@@ -265,6 +262,17 @@ fullctl.application.TabbedTool = $tc.extend(
               window.history.replaceState({}, document.title, "?"+urlparam+"="+data[urlparam])
           });
         }
+
+        $(w).on("api-read:success", (event, endpoint, payload, response) => {
+          if(!response.content.data.length) {
+            this.hide();
+          } else {
+            this.show();
+          }
+        });
+        $(w).on("api-read:error", ()=> {
+          this.hide();
+        })
 
         w.load()
         return w;
