@@ -23,6 +23,7 @@ django-grainy = ">=1.8.0,<2"
 pyyaml = "*"
 pip = "*"
 arouteserver = "*"
+celery = "<6,>=5"
 
 [requires]
 python_version = "3.7"
