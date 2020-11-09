@@ -1,0 +1,39 @@
+version: "3"
+services:
+  postgres:
+    image: "postgres:12"
+    environment:
+      POSTGRES_DB: ixctl
+      POSTGRES_USER: ixctl
+      POSTGRES_PASSWORD: devPASSWORD
+    logging:
+      options:
+        max-size: 100m
+        max-file: "3"
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: runserver 0.0.0.0:8000
+    environment:
+      DATABASE_HOST: 'host.docker.internal'
+      DATABASE_USER: ixctl
+      DATABASE_PASSWORD: devPASSWORD
+      PYTHONUNBUFFERED: 1
+
+    ports:
+      - "8000:8000"
+    logging:
+      options:
+        max-size: 100m
+        max-file: "3"
+    volumes:
+      - ./src:/srv/ixctl/main
+
+volumes:
+  postgres_data:
