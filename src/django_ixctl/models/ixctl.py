@@ -31,299 +31,28 @@ from django_inet.models import (
 
 import reversion
 
-from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network
-from django_ixctl.inet.util import pdb_lookup
-from django_ixctl.inet.validators import validate_ip4, validate_ip6, validate_as_set
-from django_ixctl.peeringdb import get_as_set
-from django_ixctl.auth import permissions
-from django_ixctl.models.base import HandleRefModel
 
+from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network
+from fullctl.django.models.concrete import (
+    Organization,
+    OrganizationUser,
+    Instance,
+    APIKey,
+)
+from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
+
+from fullctl.django.auth import permissions
+from fullctl.django.inet.util import pdb_lookup
+from fullctl.django.inet.validators import validate_ip4, validate_ip6, validate_as_set
+
+
+from django_ixctl.peeringdb import get_as_set
 import django_ixctl.enum
 
 
 def generate_secret():
     return token_urlsafe()
 
-
-
-class PdbRefModel(HandleRefModel):
-
-    """
-    Base class for models that reference a peeringdb model
-    """
-
-    # id of the peeringdb instance that is referenced by
-    # this model
-    pdb_id = models.PositiveIntegerField(blank=True, null=True)
-
-    # if object was creates from it's pdb reference, the version
-    # at the time of the creation should be stored here
-    pdb_version = models.PositiveIntegerField(blank=True, null=True)
-
-    class Meta:
-        abstract = True
-
-    class PdbRef:
-        """ defines which peeringdb model is referenced """
-
-        model = NetworkIXLan
-        fields = {"pk": "pdb_id"}
-
-    @classmethod
-    def create_from_pdb(cls, pdb_object, save=True, **fields):
-        """ create object from peeringdb instance """
-
-        if not isinstance(pdb_object, cls.PdbRef.model):
-            raise ValueError(_(f"Expected {cls.PdbRef.model} instance"))
-
-        for k, v in cls.PdbRef.fields.items():
-            fields[v] = getattr(pdb_object, k, k)
-
-        instance = cls(status="ok", **fields)
-        if save:
-            instance.save()
-        return instance
-
-    @property
-    def pdb(self):
-        """ returns PeeringDB object """
-        if not hasattr(self, "_pdb"):
-            filters = {}
-            for k, v in self.PdbRef.fields.items():
-                if v and hasattr(self, v):
-                    v = getattr(self, v)
-                filters[k] = v
-            self._pdb = pdb_lookup(self.PdbRef.model, **filters)
-        return self._pdb
-
-
-@reversion.register()
-@grainy_model(
-    namespace="org", namespace_instance="org.{instance.permission_id}"
-)
-class Organization(HandleRefModel):
-
-    """
-    Describes an organization
-    """
-
-    name = models.CharField(max_length=255)
-    slug = models.CharField(max_length=64, unique=True)
-    personal = models.BooleanField(default=False)
-
-    # if oauth manages organizations these will describe a reference
-    # to the backend that created the organization
-
-    backend = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text=_("Authentication service that created this org"),
-    )
-    remote_id = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        unique=True,
-        help_text=_(
-            "If the authentication service is in control of the organizations this field will hold a reference to the id at the auth service"
-        ),
-    )
-
-    manages_ix = models.BooleanField(default=True)
-    manages_net = models.BooleanField(default=True)
-
-    permission_namespaces = [
-        "management",
-    ]
-
-    class HandleRef:
-        tag = "org"
-
-    @property
-    def instance(self):
-        return self.instance_set.first()
-
-    @property
-    def permission_id(self):
-        if self.remote_id:
-            return self.remote_id
-        return self.id
-
-    @classmethod
-    def accessible(cls, user):
-
-        """
-        Returns a list of organizations that are accessible by the
-        user.
-
-        Accessible here means they either have direct read permissions
-        to the organization or to an object inside the organization
-
-        **Arguments**
-
-        - user (`User`)
-
-        **Returns**
-
-        - `list`
-        """
-
-        perms = permissions(user)
-
-        # user is a member of these orgs
-        if hasattr(user, "org_set"):
-            related_orgs = [o.org for o in user.org_set.all()]
-        else:
-            related_orgs = []
-
-        # user has permissions to these orgs (customer of)
-        permissioned_orgs = []
-
-        perms.load()
-        org_namespaces = perms.pset.expand("?.?", exact=True)
-
-        for ns in org_namespaces:
-
-            try:
-                int(ns[1])
-            except (ValueError, IndexError):
-                continue
-
-            try:
-                if settings.MANAGED_BY_OAUTH:
-                    org = cls.objects.get(remote_id=ns[1])
-                else:
-                    org = cls.objects.get(id=ns[1])
-                if org not in related_orgs:
-                    permissioned_orgs.append(org)
-            except cls.DoesNotExist:
-                pass
-
-        return list(set(related_orgs + permissioned_orgs))
-
-
-    @classmethod
-    def sync(cls, orgs, user, backend):
-        synced = []
-        with reversion.create_revision():
-            reversion.set_user(user)
-            for org_data in orgs:
-                org = cls.sync_single(org_data, user, backend)
-                synced.append(org)
-
-            for org in user.org_set.exclude(org__remote_id__in=[o["id"] for o in orgs]):
-                org.delete()
-        return synced
-
-    @classmethod
-    def sync_single(cls, data, user, backend):
-        try:
-            changed = False
-            org = cls.objects.get(remote_id=data["id"], backend=backend)
-            if data["slug"] != org.slug:
-                org.slug = data["slug"]
-                changed = True
-            if data["name"] != org.name:
-                org.name = data["name"]
-                changed = True
-            if data["personal"] != org.personal:
-                org.personal = data["personal"]
-                changed = True
-            if changed:
-                org.save()
-        except cls.DoesNotExist:
-            org = cls.objects.create(
-                remote_id=data["id"],
-                backend=backend,
-                name=data["name"],
-                slug=data["slug"],
-                personal=data["personal"],
-            )
-
-        if not user.org_set.filter(org=org).exists():
-            OrganizationUser.objects.create(org=org, user=user)
-
-        return org
-
-    @property
-    def tag(self):
-        return self.slug
-
-    @property
-    def display_name(self):
-        if self.personal:
-            return _("Personal")
-        return self.name
-
-    def __str__(self):
-        return f"{self.name} ({self.slug})"
-
-
-@grainy_model(namespace="org")
-class Instance(HandleRefModel):
-
-    """
-    app instance, one per org per app
-
-    Needs to specify an `org` ForeignKey pointing to
-    Organization
-    """
-
-    org = models.ForeignKey(
-        Organization, help_text=_("owned by org"), on_delete=models.CASCADE
-    )
-    secret = models.CharField(max_length=255, default=generate_secret)
-    app_id = "ixctl"
-
-    class Meta:
-        db_table = "ixctl_instance"
-
-    class HandleRef:
-        tag = "instance"
-
-    @classmethod
-    def get_or_create(cls, org):
-        """
-        Returns an organization's instance
-
-        Will create a new instance if it does not exist
-        """
-
-        try:
-            instance = cls.objects.get(org=org)
-        except cls.DoesNotExist:
-            instance = cls.objects.create(org=org, status="ok")
-        return instance
-
-    def __str__(self):
-        return f"{self.org} ({self.id})"
-
-
-@reversion.register()
-@grainy_model(namespace="org")
-class OrganizationUser(HandleRefModel):
-
-    """
-    Describes a user -> organization relationship
-    """
-
-    org = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="user_set"
-    )
-    user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="org_set"
-    )
-
-    class HandleRef:
-        tag = "orguser"
-
-    class Meta:
-        db_table = "ixctl_org_user"
-        verbose_name = _("Organization User")
-        verbose_name = _("Organization Users")
-
-    def __str__(self):
-        return f"{self.user.username} <{self.user.email}>"
 
 @reversion.register
 @grainy_model(namespace="org")
@@ -350,31 +79,6 @@ class PermissionRequest(HandleRefModel):
 
     def __str__(self):
         return f"Permission Request: {self.user} -> {self.org}"
-
-
-@reversion.register
-@grainy_model(namespace="org")
-class APIKey(HandleRefModel):
-    """
-    Describes an APIKey
-
-    These are managed in account.20c.com, but will also be cached here
-
-    Creation should always happen at account.20c.com
-    """
-
-    key = models.CharField(max_length=255, unique=True)
-    user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="key_set"
-    )
-
-    class Meta:
-        db_table = "ixctl_api_key"
-        verbose_name = _("API Key")
-        verbose_name_plural = _("API Keys")
-
-    class HandleRef:
-        tag = "key"
 
 
 @reversion.register()

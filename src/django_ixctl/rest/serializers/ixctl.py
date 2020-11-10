@@ -12,15 +12,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
-import django_ixctl.models as models
-
+from django_inet.rest import IPAddressField
 import django_peeringdb.models.concrete as pdb_models
 
-from django_ixctl.rest.decorators import serializer_registry
-from django_ixctl.rest.serializers import RequireContext, ModelSerializer
+from fullctl.django.rest.decorators import serializer_registry
+from fullctl.django.rest.serializers import RequireContext, ModelSerializer, SoftRequiredValidator
 
-from django_inet.rest import IPAddressField
 
+import django_ixctl.models as models
 from django_ixctl.peeringdb import (
     import_exchange,
     import_org,
@@ -29,31 +28,6 @@ from django_ixctl.peeringdb import (
 Serializers, register = serializer_registry()
 
 
-class SoftRequiredValidator:
-    """
-    A validator that allows us to require that at least
-    one of the specified fields is set
-    """
-
-    message = _("This field is required")
-    requires_context = True
-
-    def __init__(self, fields, message=None):
-        self.fields = fields
-        self.message = message or self.message
-
-    def set_context(self, serializer):
-        self.instance = getattr(serializer, "instance", None)
-
-    def __call__(self, attrs, serializer):
-        missing = {
-            field_name: self.message
-            for field_name in self.fields
-            if not attrs.get(field_name)
-        }
-        valid = len(self.fields) != len(missing.keys())
-        if not valid:
-            raise ValidationError(missing)
 
 
 @register
@@ -125,7 +99,6 @@ class ImportExchange(RequireContext, serializers.Serializer):
 
 @register
 class PermissionRequest(ModelSerializer):
-
     class Meta:
         model = models.PermissionRequest
         fields = ["user", "type", "org"]
@@ -318,24 +291,3 @@ class NetworkPresence(InternetExchangeMember):
     def get_access_pending(self, obj):
         return self.permrequest.get(obj.org.id, False)
 
-
-@register
-class OrganizationUser(ModelSerializer):
-    ref_tag = "orguser"
-
-    name = serializers.SerializerMethodField()
-    email = serializers.SerializerMethodField()
-    you = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.OrganizationUser
-        fields = ["id", "name", "email", "you"]
-
-    def get_name(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}"
-
-    def get_email(self, obj):
-        return obj.user.email
-
-    def get_you(self, obj):
-        return obj.user == self.context.get("user")

@@ -16,7 +16,7 @@ django-peeringdb = "*"
 peeringdb = {file = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
 django-reversion = "<4"
 django-inet = "*"
-django-autocomplete-light = ">=3,<=4"
+django-autocomplete-light = ">=3,<=3.8"
 social-auth-app-django = "<4"
 grainy = ">=1.5.0,<2"
 django-grainy = ">=1.8.0,<2"

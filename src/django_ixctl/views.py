@@ -5,15 +5,15 @@ from django.shortcuts import render, redirect
 import django_ixctl.forms
 import django_ixctl.exporters.ixf
 
+from fullctl.django.decorators import (
+    load_instance,
+    require_auth,
+)
+
 from django_ixctl.models import (
     Instance,
     InternetExchange,
     Organization,
-)
-
-from django_ixctl.decorators import (
-    load_instance,
-    require_auth,
 )
 
 # Create your views here.
