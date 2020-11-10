@@ -129,11 +129,13 @@ set_from_env("SECRET_KEY")
 
 # database
 set_option("DATABASE_ENGINE", "postgresql_psycopg2")
-set_option("DATABASE_HOST", "127.0.0.1")
-set_option("DATABASE_PORT", "")
-set_option("DATABASE_NAME", "ixctl")
-set_option("DATABASE_USER", "ixctl")
-set_option("DATABASE_PASSWORD", "devPassword")
+
+set_from_env("DATABASE_HOST")
+set_from_env("DATABASE_PORT")
+set_from_env("DATABASE_NAME")
+set_from_env("DATABASE_USER")
+set_from_env("DATABASE_PASSWORD")
+
 
 # Django config
 ALLOWED_HOSTS = ["*"]
