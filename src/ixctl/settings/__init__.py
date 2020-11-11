@@ -116,9 +116,6 @@ try_include(env_file)
 
 print_debug(f"Release env is '{RELEASE_ENV}'")
 
-# Location when running outside of Docker
-# set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "etc/VERSION")).strip())
-# Location within Docker container
 set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "etc/VERSION")).strip())
 
 # Contact email, from address, support email

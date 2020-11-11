@@ -2,29 +2,32 @@
 
 ## Quickstart
 
-Ixctl requires `pipenv` to manage the python environment
-
-```sh
-pip install pipenv
-```
-
+To get a local repo and change into the directory:
 ```sh
 git clone git@github.com:20c/ixctl
 cd ixctl
-pipenv install --dev
-pipenv shell
-cd src
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py createcachetable
-python manage.py ixctl_peeringdb_sync
-python manage.py runserver 0.0.0.0:8000
+```
+Ixctl is containerized with Docker. First we want to copy the example environment file:
+```sh
+cp Ctl/dev/example.env Ctl/dev/.env
+```
+Any of the env variables can be changed, and you should set your own secret key. If you change any of the Postgres variables, you also must configure the Postgres service in the `docker-compose.yml` file to match your changes. Then you can launch the app via: 
+```sh
+Ctl/dev/compose.sh build
+Ctl/dev/compose.sh up
+```
+The compose script will automatically perform migrations. If you're starting up the app for the first time, you will want to `ssh` into the django Docker container and run a few additional commands (Do this **without** the services currently running. The best way to stop the Docker containers is `Ctl/dev/compose.sh down`).
+```sh
+Ctl/dev/run.sh /bin/sh
+cd main
+manage createsuperuser
+manage createcachetable
+manage ixctl_peeringdb_sync
 ```
 
 ## Notable env variables
 
 - `SECRET_KEY`
-- `DATABASE_ENGINE`
 - `DATABASE_HOST`
 - `DATABASE_NAME`
 - `DATABASE_USER`
@@ -38,12 +41,14 @@ Pipenv will have installed all the necessary libraries, but you still need to ru
 initial setup for it.
 
 ```sh
+Ctl/dev/run.sh /bin/sh
 arouteserver setup
 ```
 
 Afterwards you can run the following command regenerate the routeserver config for any ixctl routeserver entries that have outdated configs.
 
 ```sh
+cd main
 python manage.py ixctl_rsconf_generate
 ```
 
