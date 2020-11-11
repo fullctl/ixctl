@@ -116,8 +116,10 @@ try_include(env_file)
 
 print_debug(f"Release env is '{RELEASE_ENV}'")
 
-# set version, default from /srv/service/etc/VERSION
-set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "Ctl/VERSION")).strip())
+# Location when running outside of Docker
+# set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "etc/VERSION")).strip())
+# Location within Docker container
+set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "etc/VERSION")).strip())
 
 # Contact email, from address, support email
 set_from_env("SERVER_EMAIL")
@@ -126,12 +128,14 @@ set_from_env("SERVER_EMAIL")
 set_from_env("SECRET_KEY")
 
 # database
-set_option("DATABASE_ENGINE", "sqlite3")
-set_option("DATABASE_HOST", "")
-set_option("DATABASE_PORT", "")
-set_option("DATABASE_NAME", os.path.join(BASE_DIR, "db.sqlite3"))
-set_option("DATABASE_USER", "")
-set_option("DATABASE_PASSWORD", "")
+set_option("DATABASE_ENGINE", "postgresql_psycopg2")
+
+set_from_env("DATABASE_HOST")
+set_from_env("DATABASE_PORT")
+set_from_env("DATABASE_NAME")
+set_from_env("DATABASE_USER")
+set_from_env("DATABASE_PASSWORD")
+
 
 # Django config
 ALLOWED_HOSTS = ["*"]

@@ -14,6 +14,7 @@ djangorestframework = ">=3.11,<4"
 Django = ">=2.2,<3"
 django-peeringdb = "*"
 peeringdb = {file = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
+psycopg2-binary = ">2.8,<3"
 django-reversion = "<4"
 django-inet = "*"
 django-autocomplete-light = ">=3,<=3.8"
