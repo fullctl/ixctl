@@ -30,6 +30,8 @@ services:
         max-file: "3"
     volumes:
       - ../../src:/srv/ixctl/main
+    depends_on: 
+      - ixctl_postgres
 
 volumes:
   postgres_data:
