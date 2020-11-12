@@ -281,16 +281,17 @@ class InternetExchange(viewsets.GenericViewSet):
 class RouteserverConfig(viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
-    lookup_value_regex = "[0-9.]+"
-    lookup_url_kwarg = "router_id"
+    lookup_value_regex = "[^\/]+"
+    lookup_url_kwarg = "name"
+    lookup_field = "rs__name"
 
     @grainy_endpoint(
-        namespace = "rsconf.{request.org.permission_id}.{pk}",
+        namespace = "rsconf.{request.org.permission_id}",
     )
-    def retrieve(self, request, org, instance, pk, *args, **kwargs):
+    def retrieve(self, request, org, instance, name, *args, **kwargs):
         serializer = Serializers.rsconf(
             instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__router_id=pk
+                rs__ix__instance=instance, rs__name=name
             ),
             many=False,
         )
@@ -298,12 +299,12 @@ class RouteserverConfig(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
     @grainy_endpoint(
-        namespace = "rsconf.{request.org.permission_id}.{pk}",
+        namespace = "rsconf.{request.org.permission_id}",
     )
-    def plain(self, request, org, instance, pk, *args, **kwargs):
+    def plain(self, request, org, instance, name, *args, **kwargs):
         serializer = Serializers.rsconf(
             instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__router_id=pk
+                rs__ix__instance=instance, rs__name=name
             ),
             many=False,
         )
