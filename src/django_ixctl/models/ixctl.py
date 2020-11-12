@@ -32,7 +32,7 @@ from django_inet.models import (
 import reversion
 
 
-from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network
+from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network as PeeringdbNetwork
 from fullctl.django.models.concrete import (
     Organization,
     OrganizationUser,
@@ -221,6 +221,9 @@ class InternetExchangeMember(PdbRefModel):
     ixf_member_type = models.CharField(
         max_length=255, choices=django_ixctl.enum.IXF_MEMBER_TYPE, default="peering"
     )
+
+    class PdbRef(PdbRefModel.PdbRef):
+        model = NetworkIXLan
 
     class HandleRef:
         tag = "member"
@@ -578,7 +581,7 @@ class Network(PdbRefModel):
     )
 
     class PdbRef(PdbRefModel.PdbRef):
-        model = Network
+        model = PeeringdbNetwork
         fields = {"asn": "pdb_id"}
 
     class HandleRef:
