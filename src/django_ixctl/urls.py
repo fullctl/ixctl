@@ -3,9 +3,14 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from django.conf import settings
 
+import fullctl.django.rest.urls.proxy
 import django_ixctl.views as views
 
-urlpatterns = [
+# wire proxied apis
+urlpatterns = fullctl.django.rest.urls.proxy.urlpatterns(["devicectl"])
+
+# wire ixctl urls
+urlpatterns += [
     path(
         "api/<str:org_tag>/",
         include(("django_ixctl.rest.urls.ixctl", "ixctl_api"), namespace="ixctl_api"),
