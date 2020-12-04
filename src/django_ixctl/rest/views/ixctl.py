@@ -6,17 +6,19 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.schemas.openapi import AutoSchema
 
-from django_ixctl.rest import BadRequest
 
+from fullctl.django.rest.core import BadRequest
+from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
+from fullctl.django.rest.decorators import grainy_endpoint as _grainy_endpoint, load_object
+from fullctl.django.rest.renderers import PlainTextRenderer
+from fullctl.django.rest.api_schema import PeeringDBImportSchema
+from fullctl.django.util import verified_asns
+
+from django_ixctl.peeringdb import import_org
+from django_ixctl.rest.serializers.ixctl import Serializers
 import django_ixctl.models as models
 from django_ixctl.rest.route.ixctl import route
 
-from django_ixctl.rest.serializers.ixctl import Serializers
-from django_ixctl.rest.filters import CaseInsensitiveOrderingFilter
-from django_ixctl.rest.decorators import grainy_endpoint as _grainy_endpoint, load_object
-from django_ixctl.rest.renderers import PlainTextRenderer
-from django_ixctl.peeringdb import import_org
-from django_ixctl.util import verified_asns
 
 class grainy_endpoint(_grainy_endpoint):
     def __init__(self, *args, **kwargs):
@@ -28,34 +30,6 @@ class grainy_endpoint(_grainy_endpoint):
         )
         if "namespace" not in kwargs:
             self.namespace += ["ixctl"]
-
-
-class PeeringDBImportSchema(AutoSchema):
-    def __init__(self, *args, **kwargs):
-        super(AutoSchema, self).__init__(*args, **kwargs)
-
-    def get_operation(self, path, method):
-        operation = super().get_operation(path, method)
-        operation["responses"] = self._get_responses(path, method)
-        return operation
-
-    def _get_operation_id(self, path, method):
-        return "ix.import_peeringdb"
-
-    def _get_responses(self, path, method):
-        self.response_media_types = self.map_renderers(path, method)
-        serializer = Serializers.ix()
-        response_schema = self._map_serializer(serializer)
-        status_code = "200"
-
-        return {
-            status_code: {
-                "content": {
-                    ct: {"schema": response_schema} for ct in self.response_media_types
-                },
-                "description": "",
-            }
-        }
 
 
 @route
@@ -307,16 +281,17 @@ class InternetExchange(viewsets.GenericViewSet):
 class RouteserverConfig(viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
-    lookup_value_regex = "[0-9.]+"
-    lookup_url_kwarg = "router_id"
+    lookup_value_regex = "[^\/]+"
+    lookup_url_kwarg = "name"
+    lookup_field = "rs__name"
 
     @grainy_endpoint(
-        namespace = "rsconf.{request.org.permission_id}.{pk}",
+        namespace = "rsconf.{request.org.permission_id}",
     )
-    def retrieve(self, request, org, instance, pk, *args, **kwargs):
+    def retrieve(self, request, org, instance, name, *args, **kwargs):
         serializer = Serializers.rsconf(
             instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__router_id=pk
+                rs__ix__instance=instance, rs__name=name
             ),
             many=False,
         )
@@ -324,12 +299,12 @@ class RouteserverConfig(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
     @grainy_endpoint(
-        namespace = "rsconf.{request.org.permission_id}.{pk}",
+        namespace = "rsconf.{request.org.permission_id}",
     )
-    def plain(self, request, org, instance, pk, *args, **kwargs):
+    def plain(self, request, org, instance, name, *args, **kwargs):
         serializer = Serializers.rsconf(
             instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__router_id=pk
+                rs__ix__instance=instance, rs__name=name
             ),
             many=False,
         )
@@ -399,28 +374,5 @@ class PermissionRequest(viewsets.GenericViewSet):
         permreq = serializer.save()
         return Response(serializer.data)
     """
-
-
-@route
-class User(viewsets.GenericViewSet):
-
-    """
-    List users at the organization
-    """
-
-    serializer_class = Serializers.orguser
-    queryset = models.OrganizationUser.objects.all()
-    ref_tag = "user"
-
-    @grainy_endpoint()
-    def list(self, request, org, *args, **kwargs):
-        serializer = Serializers.orguser(
-            org.user_set.all(),
-            many=True,
-            context={"user": request.user, "perms": request.perms,},
-        )
-        return Response(serializer.data)
-
-
 
 

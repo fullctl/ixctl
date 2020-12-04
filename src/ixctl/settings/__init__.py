@@ -116,8 +116,7 @@ try_include(env_file)
 
 print_debug(f"Release env is '{RELEASE_ENV}'")
 
-# set version, default from /srv/service/etc/VERSION
-set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "Ctl/VERSION")).strip())
+set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "etc/VERSION")).strip())
 
 # Contact email, from address, support email
 set_from_env("SERVER_EMAIL")
@@ -126,12 +125,14 @@ set_from_env("SERVER_EMAIL")
 set_from_env("SECRET_KEY")
 
 # database
-set_option("DATABASE_ENGINE", "sqlite3")
-set_option("DATABASE_HOST", "")
-set_option("DATABASE_PORT", "")
-set_option("DATABASE_NAME", os.path.join(BASE_DIR, "db.sqlite3"))
-set_option("DATABASE_USER", "")
-set_option("DATABASE_PASSWORD", "")
+set_option("DATABASE_ENGINE", "postgresql_psycopg2")
+
+set_from_env("DATABASE_HOST")
+set_from_env("DATABASE_PORT")
+set_from_env("DATABASE_NAME")
+set_from_env("DATABASE_USER")
+set_from_env("DATABASE_PASSWORD")
+
 
 # Django config
 ALLOWED_HOSTS = ["*"]
@@ -242,7 +243,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # IXCTL Base
 
-MIDDLEWARE += ("django_ixctl.middleware.RequestAugmentation",)
+MIDDLEWARE += ("fullctl.django.middleware.RequestAugmentation",)
 
 INSTALLED_APPS += (
     "dal",
@@ -253,14 +254,15 @@ INSTALLED_APPS += (
     "rest_framework",
     "social_django",
     "reversion",
+    "fullctl.django.apps.DjangoFullctlConfig",
     "django_ixctl.apps.DjangoIxctlConfig",
 )
 
 TEMPLATES[0]["OPTIONS"]["context_processors"] += [
     "social_django.context_processors.backends",
     "social_django.context_processors.login_redirect",
-    "django_ixctl.context_processors.account_service",
-    "django_ixctl.context_processors.permissions",
+    "fullctl.django.context_processors.account_service",
+    "fullctl.django.context_processors.permissions",
 ]
 
 LOGIN_REDIRECT_URL = "/"
@@ -276,23 +278,7 @@ LOGIN_URL = "/login"
 
 set_option("IXCTL_MODE", "MANY")
 
-
 # OAUTH
-
-# controls whether or not orgs, users and permissions
-# are managed by oauth
-set_option("MANAGED_BY_OAUTH", False)
-
-# PeeringDB
-
-set_option("OAUTH_PDB_HOST", "https://www.peeringdb.com")
-OAUTH_PDB_ACCESS_TOKEN_URL = f"{OAUTH_PDB_HOST}/oauth2/token/"
-OAUTH_PDB_AUTHORIZE_URL = f"{OAUTH_PDB_HOST}/oauth2/authorize/"
-OAUTH_PDB_PROFILE_URL = f"{OAUTH_PDB_HOST}/profile/v1"
-
-set_option("OAUTH_PDB_KEY", "")
-set_option("OAUTH_PDB_SECRET", "")
-OAUTH_PDB = (OAUTH_PDB_KEY and OAUTH_PDB_SECRET)
 
 # 20C
 
@@ -303,33 +289,17 @@ OAUTH_TWENTYC_PROFILE_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/profile/"
 
 set_option("OAUTH_TWENTYC_KEY", "")
 set_option("OAUTH_TWENTYC_SECRET", "")
-set_option("OAUTH_TWENTYC", False)
 
+SOCIAL_AUTH_TWENTYC_KEY = OAUTH_TWENTYC_KEY
+SOCIAL_AUTH_TWENTYC_SECRET = OAUTH_TWENTYC_SECRET
+AUTHENTICATION_BACKENDS = [
+    "fullctl.django.social.backends.twentyc.TwentycOAuth2",
+] + AUTHENTICATION_BACKENDS
 
-if OAUTH_TWENTYC or MANAGED_BY_OAUTH:
-    print("oAuth enabled: 20C")
-    SOCIAL_AUTH_TWENTYC_KEY = OAUTH_TWENTYC_KEY
-    SOCIAL_AUTH_TWENTYC_SECRET = OAUTH_TWENTYC_SECRET
-    AUTHENTICATION_BACKENDS = [
-        "django_ixctl.social.backends.twentyc.TwentycOAuth2",
-    ] + AUTHENTICATION_BACKENDS
-
-    if MANAGED_BY_OAUTH:
-        GRAINY_REMOTE = {
-            "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
-            #"url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
-        }
-
-if OAUTH_PDB:
-    print("oAuth enabled: PeeringDB")
-    SOCIAL_AUTH_PEERINGDB_KEY = OAUTH_PDB_KEY
-    SOCIAL_AUTH_PEERINGDB_SECRET = OAUTH_PDB_SECRET
-    AUTHENTICATION_BACKENDS = [
-        "django_ixctl.social.backends.peeringdb.PeeringDBOAuth2",
-    ] + AUTHENTICATION_BACKENDS
-
-
-
+GRAINY_REMOTE = {
+    "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
+    #"url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
+}
 
 set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
 
@@ -341,11 +311,12 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.user.create_user",
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
-    "django_ixctl.social.pipelines.sync_organizations",
-    "django_ixctl.social.pipelines.sync_api_keys",
-    "django_ixctl.social.pipelines.sync_peeringdb",
+    "fullctl.django.social.pipelines.sync_organizations",
+    "fullctl.django.social.pipelines.sync_api_keys",
     "social_core.pipeline.user.user_details",
 )
+
+SERVICE_TAG = "ixctl"
 
 
 # PEERINGDB
@@ -361,9 +332,9 @@ COUNTRIES_OVERRIDE = {
 # DJANGO REST FRAMEWORK
 
 REST_FRAMEWORK = {
-    "DEFAULT_RENDERER_CLASSES": ("django_ixctl.rest.renderers.JSONRenderer",),
+    "DEFAULT_RENDERER_CLASSES": ("fullctl.django.rest.renderers.JSONRenderer",),
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "django_ixctl.rest.authentication.APIKeyAuthentication",
+        "fullctl.django.rest.authentication.APIKeyAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     # Use hyperlinked styles by default.
@@ -374,9 +345,9 @@ REST_FRAMEWORK = {
     # Handle rest of permissioning via django-namespace-perms
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated",],
     # FIXME: need to somehow allow different drf settings by app
-    "EXCEPTION_HANDLER": "django_ixctl.rest.exception_handler",
+    "EXCEPTION_HANDLER": "fullctl.django.rest.core.exception_handler",
     "DEFAULT_THROTTLE_RATES": {"email": "1/minute"},
-    "DEFAULT_SCHEMA_CLASS": "django_ixctl.api_schema.BaseSchema",
+    "DEFAULT_SCHEMA_CLASS": "fullctl.django.rest.api_schema.BaseSchema",
 }
 
 

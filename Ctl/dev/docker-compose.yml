@@ -1,0 +1,28 @@
+version: "3"
+services:
+  postgres:
+    image: "postgres:12"
+    env_file: .env
+    logging:
+      options:
+        max-size: 100m
+        max-file: "3"
+    volumes:
+      - ../../postgres_data:/var/lib/postgresql/data
+
+  django:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    command: "runserver 0.0.0.0:${DJANGO_PORT:-8080}"
+    env_file: .env
+    ports:
+      - "${DJANGO_PORT}:8080"
+    logging:
+      options:
+        max-size: 100m
+        max-file: "3"
+    volumes:
+      - ../../src:/srv/ixctl/main
+    depends_on: 
+      - postgres
