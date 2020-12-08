@@ -4,7 +4,7 @@
 
 To get a local repo and change into the directory:
 ```sh
-git clone git@github.com:20c/ixctl
+git clone git@github.com:fullctl/ixctl
 cd ixctl
 ```
 Ixctl is containerized with Docker. First we want to copy the example environment file:
@@ -12,6 +12,18 @@ Ixctl is containerized with Docker. First we want to copy the example environmen
 cp Ctl/dev/example.env Ctl/dev/.env
 ```
 Any of the env variables can be changed, and you should set your own secret key. 
+
+### Authentication and accounts
+
+ixctl requires a fullctl aaactl instance to use as an authentication and account management service.
+
+Please checkout and install https://github.com/fullctl/fullctl and once you have done so, set the following environment variables in your `.env` file
+
+- OAUTH_TWENTYC_HOST: the url of your aaactl instance (e.g, https://localhost:8001)
+- OAUTH_TWENTYC_KEY: the oauth application client id
+- OAUTH_TWENTYC_SECRET: the oauth application client secret
+
+### Building and starting
 
 You can launch the app via: 
 ```sh
@@ -28,11 +40,8 @@ Ctl/dev/compose.sh down
 On running `compose.sh up` any subsequent time, the Django app will be able to run migrations properly. Additionally, if you're starting up the app for the first time, you will want to `ssh` into the Django container and run a few additional commands. Do this **without** the services currently running, again stopping your containers with `compose.sh down` if necessary. `Ctl/dev/run.sh /bin/sh` will launch the services properly and ssh into the Django container for you:
 
 ```sh
-Ctl/dev/run.sh /bin/sh
-cd main
-manage createsuperuser
-manage createcachetable
-manage ixctl_peeringdb_sync
+Ctl/dev/run.sh createcachetable
+Ctl/dev/run.sh ixctl_peeringdb_sync
 ```
 
 ## On env variables
