@@ -17,11 +17,21 @@ Any of the env variables can be changed, and you should set your own secret key.
 
 ixctl requires a fullctl aaactl instance to use as an authentication and account management service.
 
-Please checkout and install https://github.com/fullctl/fullctl and once you have done so, set the following environment variables in your `.env` file
+Please checkout and install https://github.com/fullctl/aaactl and once you have done so, set the following environment variables in your `.env` file
 
 - OAUTH_TWENTYC_HOST: the url of your aaactl instance (e.g, https://localhost:8001)
 - OAUTH_TWENTYC_KEY: the oauth application client id
 - OAUTH_TWENTYC_SECRET: the oauth application client secret
+
+Note you will need to give users permissions (in aaactl) to the following namespaces for ixctl to work correctly:
+
+- `org.{org id}`
+- `ix.{org_id}`
+- `net.{org_id}`
+- `rs.{org_id}`
+- `rsconf.{org_id}`
+
+The easiest way to do that by settings the `*.{org_id}` namespace
 
 ### Building and starting
 
