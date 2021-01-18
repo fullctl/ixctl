@@ -5,9 +5,10 @@ from django.core.exceptions import ValidationError
 
 from django_ixctl.inet import validators
 
+
 def test_validate_ip4(ipaddrs):
     validators.validate_ip4(ipaddrs.IPADDRESS4)
-    
+
     with pytest.raises(ValidationError):
         validators.validate_ip4(ipaddrs.IPADDRESS6)
 
@@ -17,27 +18,31 @@ def test_validate_ip4(ipaddrs):
 
 def test_validate_ip6(ipaddrs):
     validators.validate_ip6(ipaddrs.IPADDRESS6)
-    
+
     with pytest.raises(ValidationError):
         validators.validate_ip6(ipaddrs.IPADDRESS4)
 
     with pytest.raises(ValidationError):
         validators.validate_ip6(ipaddrs.INVALID_IPADDRESS6)
 
+
 def test_validate_prefix(ipaddrs):
-    
+
     validators.validate_prefix(ipaddrs.PREFIX)
     validators.validate_prefix(ipaddrs.NETMASK)
 
     with pytest.raises(ValidationError) as execinfo:
         validators.validate_prefix(ipaddrs.INVALID_PREFIX)
-    
+
     assert "Invalid prefix" in str(execinfo.value)
+
 
 @pytest.fixture
 def ipaddrs():
-    Ipaddresses = namedtuple("Ipaddresses", 
-        'IPADDRESS4 IPADDRESS6 INVALID_IPADDRESS4 INVALID_IPADDRESS6 PREFIX NETMASK INVALID_PREFIX INVALID_NETMASK')
+    Ipaddresses = namedtuple(
+        "Ipaddresses",
+        "IPADDRESS4 IPADDRESS6 INVALID_IPADDRESS4 INVALID_IPADDRESS6 PREFIX NETMASK INVALID_PREFIX INVALID_NETMASK",
+    )
     return Ipaddresses(
         "192.168.0.1",
         "2001:db8::1000",
