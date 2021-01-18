@@ -12,7 +12,7 @@ class AccountObjects:
     def __init__(self, handle):
         from django.contrib.auth import get_user_model
         from rest_framework.test import APIClient
-        from django_ixctl.auth import permissions
+        from fullctl.django.auth import permissions
         from django_ixctl.models import Organization, OrganizationUser
 
         self.user = user = get_user_model().objects.create_user(
@@ -20,7 +20,7 @@ class AccountObjects:
             email=f"{handle}@localhost",
             password="test",
             first_name=f"user_{handle}",
-            last_name="last_name"
+            last_name="last_name",
         )
 
         self.other_user = get_user_model().objects.create_user(
@@ -28,17 +28,12 @@ class AccountObjects:
             email=f"other_{handle}@localhost",
             password="test",
             first_name=f"other_user_{handle}",
-            last_name="last_name"
+            last_name="last_name",
         )
 
         self.orgs = Organization.sync(
             [
-                {
-                    "id": 1, 
-                    "name": f"ORG{handle}", 
-                    "slug": handle, 
-                    "personal": True
-                },
+                {"id": 1, "name": f"ORG{handle}", "slug": handle, "personal": True},
                 {
                     "id": 2,
                     "name": f"ORG{handle}-2",
@@ -52,24 +47,26 @@ class AccountObjects:
 
         # add permissions
         user.grainy_permissions.add_permission(self.orgs[0], "crud")
+        user.grainy_permissions.add_permission(f"*.{self.orgs[0].id}", "crud")
         user.grainy_permissions.add_permission(self.orgs[1], "r")
+        user.grainy_permissions.add_permission(f"*.{self.orgs[1].id}", "r")
 
         self.org = self.orgs[0]
 
-        OrganizationUser.objects.create(
-            org=self.org,
-            user=self.other_user
-        )
+        OrganizationUser.objects.create(org=self.org, user=self.other_user)
 
-        self.other_org = Organization.objects.create(name="Other", slug="other", id=3,)
+        self.other_org = Organization.objects.create(
+            name="Other",
+            slug="other",
+            id=3,
+        )
 
         self.api_client = APIClient()
         self.api_client.login(username=user.username, password="test")
 
         self.client = Client()
         self.client.login(username=user.username, password="test")
-
-        self.perms = permissions(user)
+        self.perms = permissions(user, refresh=True)
 
     @property
     def ixctl_instance(self):
@@ -119,6 +116,7 @@ class AccountObjects:
     @property
     def routeserver(self):
         from django_ixctl.models import Routeserver
+
         kwargs = {
             "ix": self.ix,
             "name": "test routeserver",
@@ -126,15 +124,13 @@ class AccountObjects:
             "router_id": "192.168.0.1",
             "rpki_bgp_origin_validation": False,
             "ars_type": "bird",
-            "max_as_path_length": 32
+            "max_as_path_length": 32,
         }
         if not hasattr(self, "_rs"):
             self._rs = Routeserver.objects.create(**kwargs)
         return self._rs
 
 
-
-    
 @pytest.fixture
 def pdb_data():
     """
