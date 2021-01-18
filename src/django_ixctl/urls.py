@@ -7,7 +7,7 @@ import django_ixctl.views as views
 
 urlpatterns = [
     path(
-        "api/<str:org_tag>/",
+        "api/",
         include(("django_ixctl.rest.urls.ixctl", "ixctl_api"), namespace="ixctl_api"),
     ),
     path("<str:org_tag>/export/ixf/<slug:urlkey>", views.export_ixf, name="ixf export"),
