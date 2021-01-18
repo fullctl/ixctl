@@ -1,5 +1,5 @@
 from django.http import HttpRequest
-from django_ixctl import context_processors
+from fullctl.django import context_processors
 
 # Settings fixture allows for safe manipulations of settings inside test
 def test_account_service(db, pdb_data, account_objects, settings):

@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from django.core.exceptions import ValidationError
 
-from django_ixctl.inet import validators
+from fullctl.django import validators
 
 
 def test_validate_ip4(ipaddrs):
