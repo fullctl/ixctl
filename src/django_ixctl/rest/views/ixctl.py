@@ -19,7 +19,8 @@ import django_ixctl.models as models
 from django_ixctl.rest.route.ixctl import route
 
 
-from django_ixctl.rest.decorators import grainy_endpoint, load_object
+from django_ixctl.rest.decorators import grainy_endpoint
+from fullctl.django.rest.decorators import load_object
 
 
 class InternetExchange(viewsets.GenericViewSet):

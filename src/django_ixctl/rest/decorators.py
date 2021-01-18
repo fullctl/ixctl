@@ -14,44 +14,6 @@ import django_ixctl.models as models
 
 from fullctl.django.auth import Permissions, RemotePermissions
 
-class load_object:
-
-    """
-    Will load an object and pass it to the view handler
-    for `model` Model as argument `argname`
-    **Arguments**
-    - argname (`str`): will be passed as this keyword argument
-    - model (`Model`): django model class
-    **Keyword Arguments**
-    Any keyword argument will be passed as a filter to the
-    `get` query
-    """
-
-    def __init__(self, argname, model, **filters):
-        self.argname = argname
-        self.model = model
-        self.filters = filters
-
-    def __call__(self, fn):
-
-        decorator = self
-
-        def wrapped(self, request, *args, **kwargs):
-            filters = {}
-            for field, key in decorator.filters.items():
-                filters[field] = kwargs.get(key)
-
-            try:
-                kwargs[decorator.argname] = decorator.model.objects.get(**filters)
-            except decorator.model.DoesNotExist:
-                return Response(status=404)
-
-            print(kwargs)
-            return fn(self, request, *args, **kwargs)
-
-        wrapped.__name__ = fn.__name__
-        return wrapped
-
 
 class _grainy_endpoint:
     def __init__(
