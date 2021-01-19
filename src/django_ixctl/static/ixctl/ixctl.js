@@ -72,6 +72,13 @@ $ctl.application.Ixctl = $tc.extend(
       return this.$c.toolbar.$w.select_ix.element.val();
     },
 
+    ix_slug : function() {
+      let select = this.$c.toolbar.$w.select_ix.element;
+      let slug = select.find("option:selected").text();
+      slug = slug.toLowerCase().replace("-","_").replace("/","_").replace(" ","_")
+      return slug;
+    },
+
     urlkey : function() {
       return this.urlkeys[this.ix()];
     },
@@ -164,7 +171,7 @@ $ctl.application.Ixctl.ModalCreateIX = $tc.extend(
 $ctl.application.Ixctl.ModalMember = $tc.extend(
   "ModalMember",
   {
-    ModalMember : function(ix_id, member) {
+    ModalMember : function(ix_slug, member) {
       var modal = this;
       var title = "Add Member"
       var form = this.form = new twentyc.rest.Form(
@@ -173,7 +180,7 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
 
       this.member = member;
 
-      form.base_url = form.base_url.replace("/0", "/"+ix_id);
+      form.base_url = form.base_url.replace("/default", "/"+ix_slug);
 
       if(member) {
         title = "Edit "+member.display_name;
@@ -224,7 +231,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
       this.$w.list.formatters.row = (row, data) => {
         row.find('a[data-action="edit_member"]').click(() => {
           var member = row.data("apiobject");
-          new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix(), member);
+          new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug(), member);
         }).each(function() {
           if(!grainy.check(data.grainy+".?", "u")) {
             $(this).hide()
@@ -240,8 +247,8 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
       $(this.$w.list).on("api-read:before",function(endpoint)  {
         this.base_url = this.base_url.replace(
-          /\/ix\/\d+$/,
-          "/ix/" + $ctl.ixctl.ix()
+          "/default",
+          "/" + $ctl.ixctl.ix_slug()
         )
       })
 
@@ -251,7 +258,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
     menu : function() {
       var menu = this.Tool_menu();
       menu.find('[data-element="button_add_member"]').click(() => {
-        return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix());
+        return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug());
       });
       return menu;
     },
@@ -296,7 +303,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
 $ctl.application.Ixctl.ModalRouteserver = $tc.extend(
   "ModalRouteserver",
   {
-    ModalRouteserver : function(ix_id, routeserver) {
+    ModalRouteserver : function(ix_slug, routeserver) {
       var modal = this;
       var title = "Add Routeserver"
       var form = this.form = new twentyc.rest.Form(
@@ -305,7 +312,7 @@ $ctl.application.Ixctl.ModalRouteserver = $tc.extend(
 
       this.routeserver = routeserver;
 
-      form.base_url = form.base_url.replace("/0", "/"+ix_id);
+      form.base_url = form.base_url.replace("/default", "/"+ix_slug);
 
       if(routeserver) {
         title = "Edit "+routeserver.display_name;
@@ -347,7 +354,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       this.$w.list.formatters.row = (row, data) => {
         row.find('a[data-action="edit_routeserver"]').click(() => {
           var routeserver = row.data("apiobject");
-          new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix(), routeserver);
+          new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug(), routeserver);
         });
 
         row.find('a[data-action="view_rsconf"]').mousedown(function() {
@@ -361,16 +368,16 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
       $(this.$w.list).on("api-read:before",function()  {
         this.base_url = this.base_url.replace(
-          /\/ix\/\d+$/,
-          "/ix/"+$ctl.ixctl.ix()
-        )
+          "/default",
+          "/" + $ctl.ixctl.ix_slug()
+        );
       })
     },
 
     menu : function() {
       var menu = this.Tool_menu();
       menu.find('[data-element="button_add_routeserver"]').click(() => {
-        return new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix());
+        return new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug());
       });
       return menu;
     },

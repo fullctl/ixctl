@@ -1,8 +1,8 @@
 {% load static i18n %}
 <table
   class="table"
-  data-api-base="{% url "ixctl_api:ix-detail" org_tag=request.org.slug ix_tag="default" %}"
-  data-api-action="members"
+  data-api-base="{% url "ixctl_api:member-list" org_tag=request.org.slug ix_tag="default" %}"
+  data-api-action=""
   data-template="list">
   <thead>
     <tr>
@@ -30,7 +30,7 @@
           </div>
           <div class="col-xs-12 col-lg-6">
         <a
-          data-api-action="members/{id}"
+          data-api-action="{id}"
           data-api-callback="remove"
           data-confirm="Remove member?"
           data-api-method="DELETE"><span class="icon ixctl icon-delete"></span><span class="ixctl label">{% trans "Delete" %}</span></a>
