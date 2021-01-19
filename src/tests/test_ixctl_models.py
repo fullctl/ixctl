@@ -3,6 +3,7 @@ import ipaddress
 import os
 import pytest
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
 import django_ixctl.models as models
 import django_peeringdb.models.concrete as pdb_models
@@ -123,6 +124,25 @@ def test_ix_display_name(db, pdb_data, account_objects):
     # ix.pdb_id = None
     # ix.save()
     # assert ix.display_name.startswith("Nameless Exchange")
+
+
+def test_ix_slug(db, pdb_data, account_objects):
+    ix = models.InternetExchange.create_from_pdb(
+        account_objects.ixctl_instance, account_objects.pdb_ixlan
+    )
+    assert (
+        ix.slug == ix.name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
+    )
+
+    ix.slug = "new-slug"
+    ix.full_clean()
+    ix.save()
+    assert ix.slug == "new-slug"
+
+    # Slug cannot have spaces in it
+    ix.slug = "new slug"
+    with pytest.raises(ValidationError):
+        ix.full_clean()
 
 
 def test_ix_ixf_export_url(db, pdb_data, account_objects):
