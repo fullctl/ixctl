@@ -101,6 +101,53 @@ def test_ix_create(db, pdb_data, account_objects):
     assert models.InternetExchange.objects.filter(name="test IX new").exists()
 
 
+def test_ix_edit_slug(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    client = account_objects.api_client
+    org = account_objects.org
+
+    data = {
+        "name": ix.name,
+        "pdb_id": ix.pdb_id,
+        "urlkey": ix.urlkey,
+        "slug": "changed-slug",
+    }
+    response = client.put(
+        reverse("ixctl_api:ix-detail", args=(org.slug, ix.slug, )),
+        json.dumps(data),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 200
+    output = response.json()["data"]
+    assert len(output) == 1
+    assert output[0]["slug"] == data["slug"]
+    assert output[0]["name"] == data["name"]
+    assert output[0]["urlkey"] == data["urlkey"]
+    assert output[0]["pdb_id"] == data["pdb_id"]
+
+
+def test_ix_edit_slug_invalid(db, pdb_data, account_objects):
+    ix = account_objects.ix
+    client = account_objects.api_client
+    org = account_objects.org
+
+    data = {
+        "name": ix.name,
+        "pdb_id": ix.pdb_id,
+        "urlkey": ix.urlkey,
+        "slug": "invalid slug",
+    }
+    response = client.put(
+        reverse("ixctl_api:ix-detail", args=(org.slug, ix.slug, )),
+        json.dumps(data),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 400
+    assert "slug" in list(response.json()["errors"].keys())
+
+
 def test_ix_create_invalid(db, pdb_data, account_objects):
     ix = account_objects.ix
     client = account_objects.api_client

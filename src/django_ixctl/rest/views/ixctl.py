@@ -38,13 +38,12 @@ class InternetExchange(viewsets.GenericViewSet):
         Import an internet exhange from Peeringdb.
 
     update:
-        Update a user.
+        Update an intenet exchange.
     """
 
     serializer_class = Serializers.ix
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
-    lookup_field = "slug"
 
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def list(self, request, org, instance, *args, **kwargs):
@@ -53,6 +52,18 @@ class InternetExchange(viewsets.GenericViewSet):
             many=True,
         )
         return Response(serializer.data)
+
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}")
+    def create(self, request, org, instance, *args, **kwargs):
+        data = request.data
+        data["pdb_id"] = None
+        serializer = Serializers.ix(data=data)
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+        ix = serializer.save()
+        ix.instance = instance
+        ix.save()
+        return Response(Serializers.ix(instance=ix).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}")
@@ -63,11 +74,13 @@ class InternetExchange(viewsets.GenericViewSet):
         )
         return Response(serializer.data)
 
-    @grainy_endpoint(namespace="ix.{request.org.permission_id}")
-    def create(self, request, org, instance, *args, **kwargs):
-        data = request.data
-        data["pdb_id"] = None
-        serializer = Serializers.ix(data=data)
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}")
+    def update(self, request, org, ix, instance, *args, **kwargs):
+        serializer = Serializers.ix(
+            ix,
+            data=request.data,
+        )
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
         ix = serializer.save()

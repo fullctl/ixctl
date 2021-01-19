@@ -28,8 +28,6 @@ from django_ixctl.peeringdb import (
 Serializers, register = serializer_registry()
 
 
-
-
 @register
 class ImportOrganization(RequireContext, serializers.Serializer):
 

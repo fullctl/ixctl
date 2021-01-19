@@ -7,6 +7,7 @@ ix_list = InternetExchange.as_view({"get": "list", "post": "create"})
 ix_detail = InternetExchange.as_view(
     {
         "get": "retrieve",
+        "put": "update",
     }
 )
 
