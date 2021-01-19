@@ -96,7 +96,7 @@ class InternetExchange(PdbRefModel):
     updated = models.DateTimeField(auto_now=True)
     urlkey = models.CharField(max_length=255, default=generate_secret, unique=True)
 
-    slug = models.CharField(
+    slug = models.SlugField(
         max_length=64,
         unique=False,
         blank=True,
