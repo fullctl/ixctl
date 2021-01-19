@@ -8,6 +8,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       this.urlkeys = {}
       this.exchanges = {}
+      this.ix_slugs = {}
       this.initial_load = false
 
       this.$c.header.app_slug = "ix";
@@ -18,7 +19,9 @@ $ctl.application.Ixctl = $tc.extend(
           for(i = 0; i < data.length; i++) {
             this.urlkeys[data[i].id] = data[i].urlkey;
             this.exchanges[data[i].id] = data[i];
+            this.ix_slugs[data[i].id] = data[i].slug;
           }
+          
           if(data.length == 0) {
             $e.select_ix.attr('disabled', true)
           } else {
@@ -73,10 +76,7 @@ $ctl.application.Ixctl = $tc.extend(
     },
 
     ix_slug : function() {
-      let select = this.$c.toolbar.$w.select_ix.element;
-      let slug = select.find("option:selected").text();
-      slug = slug.toLowerCase().replace("-","_").replace("/","_").replace(" ","_")
-      return slug;
+      return this.ix_slugs[this.ix()];
     },
 
     urlkey : function() {
