@@ -44,7 +44,7 @@ class InternetExchange(viewsets.GenericViewSet):
     serializer_class = Serializers.ix
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
-    lookup_field = 'slug'
+    lookup_field = "slug"
 
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def list(self, request, org, instance, *args, **kwargs):
@@ -91,7 +91,7 @@ class InternetExchange(viewsets.GenericViewSet):
         return Response(Serializers.ix(instance=ix).data)
 
 
-class Members(viewsets.GenericViewSet):
+class Member(viewsets.GenericViewSet):
     """
     list:
         Return all member instances.
@@ -107,6 +107,7 @@ class Members(viewsets.GenericViewSet):
     """
 
     serializer_class = Serializers.member
+    ref_tag = "member"
     queryset = models.InternetExchangeMember.objects.all()
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -199,6 +200,7 @@ class Members(viewsets.GenericViewSet):
 class Routeserver(viewsets.GenericViewSet):
 
     serializer_class = Serializers.rs
+    ref_tag = "rs"
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
