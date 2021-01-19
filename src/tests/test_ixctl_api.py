@@ -293,7 +293,7 @@ def test_list_routeservers(db, pdb_data, account_objects):
     org = account_objects.org
 
     response = client.get(
-        reverse("ixctl_api:routeserver-list", args=(org.slug, ix.slug))
+        reverse("ixctl_api:rs-list", args=(org.slug, ix.slug))
     )
     assert response.status_code == 200
     data = response.json()["data"]
@@ -318,7 +318,7 @@ def test_create_routeserver(db, pdb_data, account_objects):
         "router_id": "194.168.0.1",
     }
     response = client.post(
-        reverse("ixctl_api:routeserver-list", args=(org.slug, ix.slug)),
+        reverse("ixctl_api:rs-list", args=(org.slug, ix.slug)),
         json.dumps(payload),
         content_type="application/json",
     )
@@ -344,7 +344,7 @@ def test_delete_routeserver(db, pdb_data, account_objects):
     client = account_objects.api_client
     org = account_objects.org
     response = client.delete(
-        reverse("ixctl_api:routeserver-detail", args=(org.slug, ix.slug, rs.id)),
+        reverse("ixctl_api:rs-detail", args=(org.slug, ix.slug, rs.id)),
         content_type="application/json",
     )
 
@@ -378,7 +378,7 @@ def test_update_routeserver(db, pdb_data, account_objects):
         "status": "ok",
     }
     response = client.put(
-        reverse("ixctl_api:routeserver-detail", args=(org.slug, ix.slug, rs.id)),
+        reverse("ixctl_api:rs-detail", args=(org.slug, ix.slug, rs.id)),
         json.dumps(payload),
         content_type="application/json",
     )
