@@ -117,6 +117,9 @@ class InternetExchange(PdbRefModel):
         db_table = "ixctl_ix"
         verbose_name_plural = _("Internet Exchanges")
         verbose_name = _("Internet Exchange")
+        constraints = [
+            models.UniqueConstraint(fields=['instance', 'slug'], name='unique_slug_instance_pair')
+        ]
 
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
