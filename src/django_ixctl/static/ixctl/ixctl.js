@@ -66,6 +66,11 @@ $ctl.application.Ixctl = $tc.extend(
         this.prompt_create_exchange();
       });
 
+      $(this.$c.toolbar.$e.button_update_ix).click(() => {
+        this.prompt_update_exchange();
+      });
+
+
       this.$t.members.activate();
       this.$t.routeservers.activate();
 
@@ -102,6 +107,10 @@ $ctl.application.Ixctl = $tc.extend(
 
     prompt_create_exchange : function() {
       return new $ctl.application.Ixctl.ModalCreateIX();
+    },
+
+    prompt_update_exchange : function() {
+      return new $ctl.application.Ixctl.ModalUpdateIX();
     }
 
   },
@@ -159,6 +168,32 @@ $ctl.application.Ixctl.ModalCreateIX = $tc.extend(
         modal.hide();
       });
       this.Modal("continue", "Create new exchange", form.element);
+      // remove dupe
+      // form.element.find("span.select2").last().detach()
+      form.wire_submit(this.$e.button_submit);
+    }
+  },
+  $ctl.application.Modal
+);
+
+$ctl.application.Ixctl.ModalUpdateIX = $tc.extend(
+  "ModalUpdateIX",
+  {
+    ModalUpdateIX : function() {
+      var form = this.form = new twentyc.rest.Form(
+        $ctl.template("form_update_ix")
+      );
+      form.base_url = form.base_url.replace("/default", "/"+ $ctl.ixctl.ix_slug());
+
+      var modal = this;
+
+      $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
+        $ctl.ixctl.refresh().then(
+          () => { $ctl.ixctl.select_ix(response.content.data[0].id) }
+        );
+        modal.hide();
+      });
+      this.Modal("continue", "Edit exchange", form.element);
       // remove dupe
       // form.element.find("span.select2").last().detach()
       form.wire_submit(this.$e.button_submit);
@@ -227,7 +262,6 @@ $ctl.application.Ixctl.Members = $tc.extend(
           this.template("list", this.$e.body)
         );
       })
-
       this.$w.list.formatters.row = (row, data) => {
         row.find('a[data-action="edit_member"]').click(() => {
           var member = row.data("apiobject");
