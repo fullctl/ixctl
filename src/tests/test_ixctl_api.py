@@ -455,15 +455,16 @@ def test_retrieve_routeserverconfig(db, pdb_data, account_objects):
     org = account_objects.org
 
     response = client.get(
-        reverse("ixctl_api:rsconf-detail", args=(org.slug, rs.router_id))
+        reverse("ixctl_api:rsconf-detail", args=(org.slug, ix.slug, rs.name))
     )
     assert response.status_code == 200
+    print(response.json())
 
     response_plain = client.get(
-        reverse("ixctl_api:rsconf-plain", args=(org.slug, rs.router_id))
+        reverse("ixctl_api:rsconf-plain", args=(org.slug, ix.slug, rs.name))
     )
     assert response_plain.status_code == 200
-
+    print(response.content)
 
 def test_list_users(db, pdb_data, account_objects):
     ix = account_objects.ix

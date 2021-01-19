@@ -277,37 +277,48 @@ class Routeserver(viewsets.GenericViewSet):
         return Response(Serializers.rs(instance=routeserver).data)
 
 
-@route
 class RouteserverConfig(viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
     lookup_value_regex = "[^\/]+"
     lookup_url_kwarg = "name"
     lookup_field = "rs__name"
+    ref_tag = "rsconf"
 
+    def get_renderers(self):
+        if self.action == "plain":
+            return [PlainTextRenderer()]
+        return super().get_renderers()
+
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
         namespace="rsconf.{request.org.permission_id}",
     )
-    def retrieve(self, request, org, instance, name, *args, **kwargs):
+    def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = models.RouteserverConfig.objects.get(
+                rs__ix=ix, rs__name=name
+        )
         serializer = Serializers.rsconf(
-            instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__name=name
-            ),
+            instance=rs_config,
             many=False,
         )
         return Response(serializer.data)
 
-    @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
+    # This renderer class isn't working now that we coerce the viewset to a view
+    # @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
         namespace="rsconf.{request.org.permission_id}",
     )
-    def plain(self, request, org, instance, name, *args, **kwargs):
+    def plain(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = models.RouteserverConfig.objects.get(
+                rs__ix=ix, rs__name=name
+        )
         serializer = Serializers.rsconf(
-            instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__name=name
-            ),
+            instance=rs_config,
             many=False,
         )
+        # return Response(serializer.instance.body)
         return Response(serializer.instance.body)
 
 
