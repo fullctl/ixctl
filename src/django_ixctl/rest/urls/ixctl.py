@@ -40,30 +40,40 @@ rs_detail = Routeserver.as_view(
 )
 
 urlpatterns = [
-    path(f"{InternetExchange.ref_tag}/<str:org_tag>/", ix_list, name="ix-list"),
+    path(
+        f"{InternetExchange.ref_tag}/<str:org_tag>/",
+        ix_list,
+        name=f"{InternetExchange.ref_tag}-list",
+    ),
     path(
         f"{InternetExchange.ref_tag}/<str:org_tag>/import_peeringdb",
         ix_import_peeringdb,
-        name="ix-import-peeringdb",
+        name=f"{InternetExchange.ref_tag}-import-peeringdb",
     ),
     path(
         f"{InternetExchange.ref_tag}/<str:org_tag>/<str:ix_tag>/",
         ix_detail,
-        name="ix-detail",
+        name=f"{InternetExchange.ref_tag}-detail",
     ),
     path(
-        f"{Member.ref_tag}/<str:org_tag>/<str:ix_tag>/", member_list, name="member-list"
+        f"{Member.ref_tag}/<str:org_tag>/<str:ix_tag>/",
+        member_list,
+        name=f"{Member.ref_tag}-list",
     ),
     path(
         f"{Member.ref_tag}/<str:org_tag>/<str:ix_tag>/<int:member_id>",
         member_detail,
-        name="member-detail",
+        name=f"{Member.ref_tag}-detail",
     ),
-    path(f"{Routeserver.ref_tag}/<str:org_tag>/<str:ix_tag>/", rs_list, name="rs-list"),
+    path(
+        f"{Routeserver.ref_tag}/<str:org_tag>/<str:ix_tag>/",
+        rs_list,
+        name=f"{Routeserver.ref_tag}-list",
+    ),
     path(
         f"{Routeserver.ref_tag}/<str:org_tag>/<str:ix_tag>/<int:rs_id>",
         rs_detail,
-        name="rs-detail",
+        name=f"{Routeserver.ref_tag}-detail",
     ),
     path("<str:org_tag>/", include(django_ixctl.rest.route.ixctl.router.urls)),
 ]
