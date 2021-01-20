@@ -23,6 +23,7 @@ from django_ixctl.rest.decorators import grainy_endpoint
 from fullctl.django.rest.decorators import load_object
 
 
+@route
 class InternetExchange(viewsets.GenericViewSet):
     """
     retrieve:
@@ -44,6 +45,8 @@ class InternetExchange(viewsets.GenericViewSet):
     serializer_class = Serializers.ix
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
+    lookup_url_kwarg = "ix_tag"
+    lookup_field = "slug"
 
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def list(self, request, org, instance, *args, **kwargs):
@@ -81,6 +84,7 @@ class InternetExchange(viewsets.GenericViewSet):
             ix,
             data=request.data,
         )
+
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
         ix = serializer.save()
@@ -104,6 +108,7 @@ class InternetExchange(viewsets.GenericViewSet):
         return Response(Serializers.ix(instance=ix).data)
 
 
+@route
 class Member(viewsets.GenericViewSet):
     """
     list:
@@ -122,6 +127,9 @@ class Member(viewsets.GenericViewSet):
     serializer_class = Serializers.member
     ref_tag = "member"
     queryset = models.InternetExchangeMember.objects.all()
+    lookup_url_kwarg = "member_id"
+    lookup_field = "id"
+    ix_tag_needed = True
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
@@ -162,24 +170,6 @@ class Member(viewsets.GenericViewSet):
 
         return Response(Serializers.member(instance=member).data)
 
-    # @load_object("ix", models.InternetExchange, slug="ix_tag")
-    # @load_object("member", models.InternetExchangeMember, id="member_id")
-    # @grainy_endpoint(
-    #     namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}.?",
-    # )
-    # def retrieve(self, request, org, instance, ix, member, *args, **kwargs):
-    #     serializer = serializer.Member(
-    #         instance=instance,
-    #         member=member,
-    #         many=False
-    #     )
-    #     if not serializer.is_valid():
-    #         return BadRequest(serializer.errors)
-
-    #     member = serializer.save()
-
-    #     return Response(Serializers.member(instance=member).data)
-
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @load_object("member", models.InternetExchangeMember, id="member_id")
     @grainy_endpoint(
@@ -210,10 +200,14 @@ class Member(viewsets.GenericViewSet):
         return Response(Serializers.member(instance=member).data)
 
 
+@route
 class Routeserver(viewsets.GenericViewSet):
 
     serializer_class = Serializers.rs
     ref_tag = "rs"
+    ix_tag_needed = True
+    lookup_url_kwarg = "rs_id"
+    lookup_field = "id"
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
@@ -277,6 +271,7 @@ class Routeserver(viewsets.GenericViewSet):
         return Response(Serializers.rs(instance=routeserver).data)
 
 
+@route
 class RouteserverConfig(viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
@@ -284,11 +279,7 @@ class RouteserverConfig(viewsets.GenericViewSet):
     lookup_url_kwarg = "name"
     lookup_field = "rs__name"
     ref_tag = "rsconf"
-
-    def get_renderers(self):
-        if self.action == "plain":
-            return [PlainTextRenderer()]
-        return super().get_renderers()
+    ix_tag_needed = True
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
@@ -304,8 +295,7 @@ class RouteserverConfig(viewsets.GenericViewSet):
         )
         return Response(serializer.data)
 
-    # This renderer class isn't working now that we coerce the viewset to a view
-    # @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
+    @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
         namespace="rsconf.{request.org.permission_id}",
@@ -327,7 +317,8 @@ class Network(viewsets.GenericViewSet):
     serializer_class = Serializers.net
     queryset = models.Network.objects.all()
 
-    lookup_url_kwarfs = "asn"
+    lookup_url_kwarg = "asn"
+    lookup_field = "asn"
 
     @grainy_endpoint(namespace="net.{request.org.permission_id}")
     def list(self, request, org, instance, *args, **kwargs):
