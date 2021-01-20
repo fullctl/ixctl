@@ -280,10 +280,9 @@ $ctl.application.Ixctl.Members = $tc.extend(
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
 
       $(this.$w.list).on("api-read:before",function(endpoint)  {
-        this.base_url = this.base_url.replace(
-          "/default",
-          "/" + $ctl.ixctl.ix_slug()
-        )
+        let url = this.base_url.split("/").slice(0,-1);
+        url.push($ctl.ixctl.ix_slug());
+        this.base_url = url.join("/");
       })
 
       this.initialize_sortable_headers("name");
@@ -401,10 +400,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       this.$w.list.base
 
       $(this.$w.list).on("api-read:before",function()  {
-        this.base_url = this.base_url.replace(
-          "/default",
-          "/" + $ctl.ixctl.ix_slug()
-        );
+        let url = this.base_url.split("/").slice(0,-1);
+        url.push($ctl.ixctl.ix_slug());
+        this.base_url = url.join("/");
       })
     },
 
