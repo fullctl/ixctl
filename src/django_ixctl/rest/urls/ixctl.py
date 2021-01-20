@@ -56,7 +56,7 @@ urlpatterns = [
         name=f"{InternetExchange.ref_tag}-list",
     ),
     path(
-        f"{InternetExchange.ref_tag}/<str:org_tag>/import_peeringdb",
+        f"{InternetExchange.ref_tag}/<str:org_tag>/import_peeringdb/",
         ix_import_peeringdb,
         name=f"{InternetExchange.ref_tag}-import-peeringdb",
     ),
@@ -71,7 +71,7 @@ urlpatterns = [
         name=f"{Member.ref_tag}-list",
     ),
     path(
-        f"{Member.ref_tag}/<str:org_tag>/<str:ix_tag>/<int:member_id>",
+        f"{Member.ref_tag}/<str:org_tag>/<str:ix_tag>/<int:member_id>/",
         member_detail,
         name=f"{Member.ref_tag}-detail",
     ),
@@ -81,17 +81,17 @@ urlpatterns = [
         name=f"{Routeserver.ref_tag}-list",
     ),
     path(
-        f"{Routeserver.ref_tag}/<str:org_tag>/<str:ix_tag>/<int:rs_id>",
+        f"{Routeserver.ref_tag}/<str:org_tag>/<str:ix_tag>/<int:rs_id>/",
         rs_detail,
         name=f"{Routeserver.ref_tag}-detail",
     ),
     path(
-        f"{RouteserverConfig.ref_tag}/<str:org_tag>/<str:ix_tag>/<str:name>",
+        f"{RouteserverConfig.ref_tag}/<str:org_tag>/<str:ix_tag>/<str:name>/",
         rs_config_detail,
         name=f"{RouteserverConfig.ref_tag}-detail",
     ),
     path(
-        f"{RouteserverConfig.ref_tag}/<str:org_tag>/<str:ix_tag>/<str:name>/plain",
+        f"{RouteserverConfig.ref_tag}/<str:org_tag>/<str:ix_tag>/<str:name>/plain/",
         rs_config_detail_plain,
         name=f"{RouteserverConfig.ref_tag}-plain",
     ),
