@@ -23,8 +23,52 @@ from django_ixctl.rest.decorators import grainy_endpoint
 from fullctl.django.rest.decorators import load_object
 
 
+class CachedObjectMixin:
+    def get_object(self):
+        if getattr(self, "_obj", None) is None:
+            self._obj = super().get_object()
+
+        return self._obj
+
+
+class OrgQuerysetMixin:
+    """
+    For objects with URLs that require an "org_tag", this filters
+    the resulting queryset by matching the instance org to the
+    provided slug.
+    """
+    def get_queryset(self):
+        org_tag = self.kwargs["org_tag"]
+        return self.queryset.filter(instance__org__slug=org_tag)
+
+
+class IxOrgQuerysetMixin:
+    """
+    For objects with URLs that require a "ix_tag" and "org_tag", this filters
+    the resulting queryset by matching the org slug and ix slug to the url
+    tags.
+
+    Set the 'ix_lookup_field' attribute on the Viewset if the model for the viewset
+    does not have an IX attribute, but has a related object with a IX attribute.
+
+    E.g., RouteserverConfig.rs.ix
+    """
+
+    def get_queryset(self):
+        org_tag = self.kwargs["org_tag"]
+        ix_tag = self.kwargs["ix_tag"]
+        ix_lookup_field = getattr(self, "ix_lookup_field", "ix")
+
+        filters = {
+            f"{ix_lookup_field}__slug": ix_tag,
+            f"{ix_lookup_field}__instance__org__slug": org_tag,
+        }
+
+        return self.queryset.filter(**filters)
+
+
 @route
-class InternetExchange(viewsets.GenericViewSet):
+class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
     """
     retrieve:
         Return a internet exchange instance.
@@ -109,7 +153,7 @@ class InternetExchange(viewsets.GenericViewSet):
 
 
 @route
-class Member(viewsets.GenericViewSet):
+class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     """
     list:
         Return all member instances.
@@ -141,9 +185,7 @@ class Member(viewsets.GenericViewSet):
             ["name", "asn", "ipaddr4", "ipaddr6", "speed"]
         )
 
-        queryset = models.InternetExchangeMember.objects.filter(
-            ix=ix, ix__instance=instance
-        ).select_related("ix", "ix__instance")
+        queryset = self.get_queryset().select_related("ix", "ix__instance")
 
         queryset = ordering_filter.filter_queryset(request, queryset, self)
 
@@ -190,20 +232,23 @@ class Member(viewsets.GenericViewSet):
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @load_object("member", models.InternetExchangeMember, id="member_id")
     @grainy_endpoint(
-        namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}.?",
+        namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}",
     )
-    def destroy(self, request, org, instance, ix, member_id, *args, **kwargs):
-        ix = models.InternetExchange.objects.get(instance=instance, id=ix.pk)
-        member = models.InternetExchangeMember.objects.get(ix=ix, id=member_id)
+    def destroy(self, request, org, instance, ix, member, *args, **kwargs):
         member.delete()
         member.id = request.data.get("id")
         return Response(Serializers.member(instance=member).data)
 
+    def get_object(self):
+        print("getting object")
+        return None
+
 
 @route
-class Routeserver(viewsets.GenericViewSet):
+class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
     serializer_class = Serializers.rs
+    queryset = models.Routeserver.objects.all()
     ref_tag = "rs"
     ix_tag_needed = True
     lookup_url_kwarg = "rs_id"
@@ -215,11 +260,9 @@ class Routeserver(viewsets.GenericViewSet):
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
     def list(self, request, org, instance, ix, *args, **kwargs):
-
+        queryset = self.get_queryset().order_by("name")
         serializer = Serializers.rs(
-            instance=models.Routeserver.objects.filter(
-                ix_id=ix.pk, ix__instance=instance
-            ).order_by("name"),
+            instance=queryset,
             many=True,
         )
 
@@ -246,9 +289,7 @@ class Routeserver(viewsets.GenericViewSet):
         namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
     )
     def update(self, request, org, instance, ix, rs_id, *args, **kwargs):
-        routeserver = models.Routeserver.objects.get(
-            ix__instance=instance, ix_id=ix.pk, id=rs_id
-        )
+        routeserver = self.get_object()
         serializer = Serializers.rs(
             data=request.data, instance=routeserver, context={"instance": instance}
         )
@@ -264,15 +305,14 @@ class Routeserver(viewsets.GenericViewSet):
         namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
     )
     def destroy(self, request, org, instance, ix, rs_id, *args, **kwargs):
-        ix = models.InternetExchange.objects.get(instance=instance, id=ix.pk)
-        routeserver = models.Routeserver.objects.get(ix=ix, id=rs_id)
+        routeserver = self.get_object()
         routeserver.delete()
         routeserver.id = request.data.get("id")
         return Response(Serializers.rs(instance=routeserver).data)
 
 
 @route
-class RouteserverConfig(viewsets.GenericViewSet):
+class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
     lookup_value_regex = "[^\/]+"
@@ -280,15 +320,14 @@ class RouteserverConfig(viewsets.GenericViewSet):
     lookup_field = "rs__name"
     ref_tag = "rsconf"
     ix_tag_needed = True
+    ix_lookup_field = "rs__ix"
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
         namespace="rsconf.{request.org.permission_id}",
     )
     def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
-        rs_config = models.RouteserverConfig.objects.get(
-                rs__ix=ix, rs__name=name
-        )
+        rs_config = self.get_object()
         serializer = Serializers.rsconf(
             instance=rs_config,
             many=False,
@@ -301,9 +340,7 @@ class RouteserverConfig(viewsets.GenericViewSet):
         namespace="rsconf.{request.org.permission_id}",
     )
     def plain(self, request, org, instance, ix, name, *args, **kwargs):
-        rs_config = models.RouteserverConfig.objects.get(
-                rs__ix=ix, rs__name=name
-        )
+        rs_config = self.get_object()
         serializer = Serializers.rsconf(
             instance=rs_config,
             many=False,
@@ -313,7 +350,7 @@ class RouteserverConfig(viewsets.GenericViewSet):
 
 
 @route
-class Network(viewsets.GenericViewSet):
+class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
     serializer_class = Serializers.net
     queryset = models.Network.objects.all()
 
@@ -341,7 +378,7 @@ class Network(viewsets.GenericViewSet):
 
 
 @route
-class PermissionRequest(viewsets.GenericViewSet):
+class PermissionRequest(CachedObjectMixin, viewsets.GenericViewSet):
 
     serializer_class = Serializers.permreq
     queryset = models.PermissionRequest.objects.all()

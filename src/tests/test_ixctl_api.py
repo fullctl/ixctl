@@ -197,8 +197,8 @@ def test_ix_delete_member(db, pdb_data, account_objects):
 
     response = client.delete(
         reverse("ixctl_api:member-detail", args=(org.slug, ix.slug, ixmember.id)),
+        content_type="application/json",
     )
-
     assert response.status_code == 200
 
     assert (
@@ -458,13 +458,11 @@ def test_retrieve_routeserverconfig(db, pdb_data, account_objects):
         reverse("ixctl_api:rsconf-detail", args=(org.slug, ix.slug, rs.name))
     )
     assert response.status_code == 200
-    print(response.json())
 
     response_plain = client.get(
         reverse("ixctl_api:rsconf-plain", args=(org.slug, ix.slug, rs.name))
     )
     assert response_plain.status_code == 200
-    print(response.content)
 
 def test_list_users(db, pdb_data, account_objects):
     ix = account_objects.ix
