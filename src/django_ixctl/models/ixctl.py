@@ -95,6 +95,9 @@ class InternetExchange(PdbRefModel):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     urlkey = models.CharField(max_length=255, default=generate_secret, unique=True)
+    ixf_export_privacy = models.CharField(
+        max_length=32, choices=django_ixctl.enum.IXF_EXPORT_PRIVACY_TYPES, default="public",
+    )
 
     slug = models.SlugField(
         max_length=64,
