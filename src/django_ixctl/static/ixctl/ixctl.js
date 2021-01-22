@@ -84,9 +84,14 @@ $ctl.application.Ixctl = $tc.extend(
       return this.ix_slugs[this.ix()];
     },
 
+    ix_object: function() {
+      return this.exchanges[this.ix()]
+    },
+
     urlkey : function() {
       return this.urlkeys[this.ix()];
     },
+
 
     select_ix : function(id) {
       this.$c.toolbar.$e.select_ix.val(id);
@@ -180,12 +185,16 @@ $ctl.application.Ixctl.ModalUpdateIX = $tc.extend(
   "ModalUpdateIX",
   {
     ModalUpdateIX : function() {
+      let ix = $ctl.ixctl.ix_object();
+
       var form = this.form = new twentyc.rest.Form(
         $ctl.template("form_update_ix")
       );
       form.base_url = form.base_url.replace("/default", "/"+ $ctl.ixctl.ix_slug());
 
       var modal = this;
+
+      form.fill(ix)
 
       $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
         $ctl.ixctl.refresh().then(
@@ -194,8 +203,6 @@ $ctl.application.Ixctl.ModalUpdateIX = $tc.extend(
         modal.hide();
       });
       this.Modal("continue", "Edit exchange", form.element);
-      // remove dupe
-      // form.element.find("span.select2").last().detach()
       form.wire_submit(this.$e.button_submit);
     }
   },
@@ -214,7 +221,6 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
       );
 
       this.member = member;
-
       form.base_url = form.base_url.replace("/default", "/"+ix_slug);
 
       if(member) {
