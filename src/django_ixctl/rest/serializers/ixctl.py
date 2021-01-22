@@ -106,7 +106,7 @@ class PermissionRequest(ModelSerializer):
 class InternetExchange(ModelSerializer):
     class Meta:
         model = models.InternetExchange
-        fields = ["pdb_id", "urlkey", "name", "slug"]
+        fields = ["pdb_id", "urlkey", "ixf_export_privacy", "name", "slug"]
 
 
 @register
