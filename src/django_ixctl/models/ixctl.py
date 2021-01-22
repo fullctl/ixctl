@@ -184,7 +184,7 @@ class InternetExchange(PdbRefModel):
         """
 
         return reverse(
-            "ixf export", args=(self.instance.org.slug, self.instance.secret,)
+            "ixf export", args=(self.instance.org.slug, self.slug,)
         )
 
     @property
