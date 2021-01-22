@@ -17,10 +17,18 @@
         <label for="edit_ix_slug">{% trans "Exchange Slug" %}:</label>
         <input 
           type="text"
-          class="form-control"
+          class="form-control mb-3"
           name="slug"
           id="edit_ix_slug">
         </input>
+        <label for="ixf-export-privacy">{% trans "IX-F Export Privacy Setting" %}</label>
+          <span class="modal-control">
+          <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+          <select class="form-control" id="ixf-export-privacy" name="ixf_export_privacy">
+            <option value="public">{% trans "Public (Anyone can view)" %}</option>
+            <option value="private">{% trans "Private (Requires secret key to view)" %}</option>
+          <select>
+          </span>
       </div>
     </div>
   </div>
