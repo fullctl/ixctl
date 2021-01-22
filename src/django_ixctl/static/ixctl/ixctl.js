@@ -312,9 +312,11 @@ $ctl.application.Ixctl.Members = $tc.extend(
           this.apply_ordering();
           this.$w.list.load();
           let ixf_export_url = this.jquery.data("ixf-export-url").replace("default", $ctl.ixctl.ix_slug());
+          if ($ctl.ixctl.ix_object().ixf_export_privacy == "private"){
+            ixf_export_url = ixf_export_url + "?secret=" + $ctl.ixctl.urlkey()
+          }
           this.$e.menu.find('[data-element="button_ixf_export"]').attr(
-            "href", 
-            ixf_export_url + "?secret=" + $ctl.ixctl.urlkey()
+            "href", ixf_export_url
           )
 
           this.$e.menu.find('[data-element="button_api_view"]').attr(
