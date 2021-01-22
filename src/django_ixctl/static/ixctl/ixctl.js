@@ -400,7 +400,10 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
         row.find('a[data-action="view_rsconf"]').mousedown(function() {
           var routeserver = row.data("apiobject");
-          $(this).attr("href", row.data("rsconfurl").replace("0.0.0.0", routeserver.router_id))
+          let rsconfurl = row.data("rsconfurl");
+          rsconfurl = rsconfurl.replace("default", $ctl.ixctl.ix_slug());
+          rsconfurl = rsconfurl.replace("__replace__me__", routeserver.name);
+          $(this).attr("href", rsconfurl)
         });
       };
 
