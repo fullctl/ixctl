@@ -53,6 +53,9 @@ def test_view_ixf_export_private(db, pdb_data, account_objects):
     response = account_objects.client.get(url)
     assert response.status_code == 404
 
+    response = account_objects.client.get(url, {"secret": ix.urlkey[-5]})
+    assert response.status_code == 404
+
     response = account_objects.client.get(url, {"secret": ix.urlkey})
     assert response.status_code == 200
 

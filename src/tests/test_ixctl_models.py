@@ -145,6 +145,23 @@ def test_ix_slug(db, pdb_data, account_objects):
         ix.full_clean()
 
 
+def test_ix_ixf_export_privacy(db, pdb_data, account_objects):
+    ix = models.InternetExchange.create_from_pdb(
+        account_objects.ixctl_instance, account_objects.pdb_ixlan
+    )
+    assert ix.ixf_export_privacy == "public"
+
+    # option to change to private
+    ix.ixf_export_privacy = "private"
+    ix.save()
+    assert ix.ixf_export_privacy == "private"
+
+    # cannot change to other choices
+    ix.ixf_export_privacy = "other"
+    with pytest.raises(ValidationError):
+        ix.full_clean()
+
+
 def test_ix_ixf_export_url(db, pdb_data, account_objects):
     ix = models.InternetExchange.create_from_pdb(
         account_objects.ixctl_instance, account_objects.pdb_ixlan
@@ -154,7 +171,7 @@ def test_ix_ixf_export_url(db, pdb_data, account_objects):
         "ixf export",
         args=(
             ix.instance.org.slug,
-            ix.instance.secret,
+            ix.slug,
         ),
     )
     assert path == ix.ixf_export_url
