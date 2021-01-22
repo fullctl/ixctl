@@ -239,9 +239,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         member.id = request.data.get("id")
         return Response(Serializers.member(instance=member).data)
 
-    def get_object(self):
-        print("getting object")
-        return None
 
 
 @route
