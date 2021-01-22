@@ -305,8 +305,10 @@ $ctl.application.Ixctl.Members = $tc.extend(
           this.show();
           this.apply_ordering();
           this.$w.list.load();
+          let ixf_export_url = this.jquery.data("ixf-export-url").replace("default", $ctl.ixctl.ix_slug());
           this.$e.menu.find('[data-element="button_ixf_export"]').attr(
-            "href", this.jquery.data("ixf-export-url").replace("URLKEY", $ctl.ixctl.urlkey())
+            "href", 
+            ixf_export_url + "?secret=" + $ctl.ixctl.urlkey()
           )
 
           this.$e.menu.find('[data-element="button_api_view"]').attr(
