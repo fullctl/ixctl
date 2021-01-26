@@ -1,29 +1,25 @@
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Loader
 
+import django_peeringdb.models.concrete as pdb_models
 import yaml
-
-from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
-
+from django.utils.translation import ugettext_lazy as _
+from django_inet.rest import IPAddressField
+from fullctl.django.rest.decorators import serializer_registry
+from fullctl.django.rest.serializers import (
+    ModelSerializer,
+    RequireContext,
+    SoftRequiredValidator,
+)
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
-from django_inet.rest import IPAddressField
-import django_peeringdb.models.concrete as pdb_models
-
-from fullctl.django.rest.decorators import serializer_registry
-from fullctl.django.rest.serializers import RequireContext, ModelSerializer, SoftRequiredValidator
-
-
 import django_ixctl.models as models
-from django_ixctl.peeringdb import (
-    import_exchange,
-    import_org,
-)
+from django_ixctl.peeringdb import import_exchange, import_org
 
 Serializers, register = serializer_registry()
 
@@ -182,7 +178,9 @@ class InternetExchangeMember(ModelSerializer):
 @register
 class Routeserver(ModelSerializer):
 
-    router_id = IPAddressField(version=4,)
+    router_id = IPAddressField(
+        version=4,
+    )
 
     class Meta:
         model = models.Routeserver
@@ -249,10 +247,8 @@ class NetworkPresence(InternetExchangeMember):
         user = self.context.get("user")
         if not hasattr(self, "_permrequest"):
             self._permrequest = {
-                pr.org_id : True for pr in
-                models.PermissionRequest.objects.filter(
-                    user=user
-                )
+                pr.org_id: True
+                for pr in models.PermissionRequest.objects.filter(user=user)
             }
         return self._permrequest
 
@@ -283,8 +279,5 @@ class NetworkPresence(InternetExchangeMember):
 
         return "denied"
 
-
-
     def get_access_pending(self, obj):
         return self.permrequest.get(obj.org.id, False)
-

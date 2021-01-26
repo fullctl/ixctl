@@ -1,6 +1,6 @@
-import django_ixctl.models as models
-
 from fullctl.django.rest.decorators import grainy_endpoint as _grainy_endpoint
+
+import django_ixctl.models as models
 
 
 class grainy_endpoint(_grainy_endpoint):

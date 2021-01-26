@@ -1,26 +1,16 @@
-import re
-from django.utils.translation import gettext_lazy as _
-
+from fullctl.django.rest.api_schema import PeeringDBImportSchema
+from fullctl.django.rest.core import BadRequest
+from fullctl.django.rest.decorators import load_object
+from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
+from fullctl.django.rest.renderers import PlainTextRenderer
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.schemas.openapi import AutoSchema
 
-
-from fullctl.django.rest.core import BadRequest
-from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
-from fullctl.django.rest.renderers import PlainTextRenderer
-from fullctl.django.rest.api_schema import PeeringDBImportSchema
-from fullctl.django.util import verified_asns
-
-from django_ixctl.peeringdb import import_org
-from django_ixctl.rest.serializers.ixctl import Serializers
 import django_ixctl.models as models
-from django_ixctl.rest.route.ixctl import route
-
-
 from django_ixctl.rest.decorators import grainy_endpoint
-from fullctl.django.rest.decorators import load_object
+from django_ixctl.rest.route.ixctl import route
+from django_ixctl.rest.serializers.ixctl import Serializers
 
 
 class CachedObjectMixin:
@@ -37,6 +27,7 @@ class OrgQuerysetMixin:
     the resulting queryset by matching the instance org to the
     provided slug.
     """
+
     def get_queryset(self):
         org_tag = self.kwargs["org_tag"]
         return self.queryset.filter(instance__org__slug=org_tag)
@@ -240,7 +231,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         return Response(Serializers.member(instance=member).data)
 
 
-
 @route
 class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
@@ -312,7 +302,7 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
-    lookup_value_regex = "[^\/]+"
+    lookup_value_regex = "[^\/]+"  # noqa: W605
     lookup_url_kwarg = "name"
     lookup_field = "rs__name"
     ref_tag = "rsconf"
@@ -362,7 +352,9 @@ class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
         )
         return Response(serializer.data)
 
-    @action(detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)")
+    @action(
+        detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)"
+    )  # noqa: W605
     @grainy_endpoint(namespace="net.{request.org.permission_id}.{asn}")
     @load_object("net", models.Network, asn="asn", instance="instance")
     def presence(self, request, org, instance, asn, net=None, *args, **kwargs):

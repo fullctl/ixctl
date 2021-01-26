@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+
 class ModelSerializer(serializers.ModelSerializer):
     grainy = serializers.SerializerMethodField()
 
@@ -8,6 +9,7 @@ class ModelSerializer(serializers.ModelSerializer):
         if hasattr(obj, "Grainy"):
             return obj.Grainy.namespace(obj)
         return None
+
 
 class RequireContext:
 
