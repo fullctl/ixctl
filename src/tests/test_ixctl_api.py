@@ -1,6 +1,7 @@
 import json
-from django.urls import reverse
+
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 import django_ixctl.models as models
 

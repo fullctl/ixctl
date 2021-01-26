@@ -1,6 +1,7 @@
 import json
-from django.urls import reverse
+
 import django_peeringdb.models.concrete as pdb_models
+from django.urls import reverse
 
 
 def test_view_instance(db, pdb_data, account_objects):

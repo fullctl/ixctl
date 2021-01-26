@@ -1,8 +1,7 @@
-import pytest
 from collections import namedtuple
 
+import pytest
 from django.core.exceptions import ValidationError
-
 from fullctl.django import validators
 
 

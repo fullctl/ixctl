@@ -1,12 +1,13 @@
-import json
 import ipaddress
+import json
 import os
+
+import django_peeringdb.models.concrete as pdb_models
 import pytest
-from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 
 import django_ixctl.models as models
-import django_peeringdb.models.concrete as pdb_models
 
 
 def test_pdb_create_error(db, pdb_data, account_objects):

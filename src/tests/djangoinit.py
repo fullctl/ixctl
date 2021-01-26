@@ -1,4 +1,5 @@
 import os.path
+
 from django.conf import settings
 
 # lazy init for translations
@@ -84,8 +85,9 @@ def pytest_configure():
                 "fullctl.django.rest.authentication.APIKeyAuthentication",
                 "rest_framework.authentication.SessionAuthentication",
             ),
-            "DEFAULT_MODEL_SERIALIZER_CLASS": \
-            "rest_framework.serializers.HyperlinkedModelSerializer",
+            "DEFAULT_MODEL_SERIALIZER_CLASS": (
+                "rest_framework.serializers.HyperlinkedModelSerializer"
+            ),
             "DEFAULT_PERMISSION_CLASSES": [
                 "rest_framework.permissions.IsAuthenticated",
             ],

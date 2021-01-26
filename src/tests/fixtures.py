@@ -1,4 +1,5 @@
 import os.path
+
 import pytest
 from django.test import Client
 
@@ -9,8 +10,9 @@ _ = lambda s: s  # noqa: E731
 class AccountObjects:
     def __init__(self, handle):
         from django.contrib.auth import get_user_model
-        from rest_framework.test import APIClient
         from fullctl.django.auth import permissions
+        from rest_framework.test import APIClient
+
         from django_ixctl.models import Organization, OrganizationUser
 
         self.user = user = get_user_model().objects.create_user(
