@@ -14,7 +14,6 @@ import os
 
 from django.utils.translation import gettext_lazy as _
 
-
 _DEFAULT_ARG = object()
 
 
@@ -298,7 +297,7 @@ AUTHENTICATION_BACKENDS = [
 
 GRAINY_REMOTE = {
     "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
-    #"url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
+    # "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
 }
 
 set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
@@ -343,7 +342,9 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     # Handle rest of permissioning via django-namespace-perms
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated",],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
     # FIXME: need to somehow allow different drf settings by app
     "EXCEPTION_HANDLER": "fullctl.django.rest.core.exception_handler",
     "DEFAULT_THROTTLE_RATES": {"email": "1/minute"},
