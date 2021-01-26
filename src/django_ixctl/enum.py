@@ -18,9 +18,7 @@ ARS_NO_EXPORT_ACTIONS = (
     ("strip", _("Strip (Treat as non-transitive)")),
 )
 
-PERMISSION_REQUEST_TYPES = (
-    ("net_ix", _("Manage network at exchange")),
-)
+PERMISSION_REQUEST_TYPES = (("net_ix", _("Manage network at exchange")),)
 
 IXF_EXPORT_PRIVACY_TYPES = (
     ("public", _("IX-F export feed is public")),

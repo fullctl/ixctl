@@ -27,4 +27,3 @@ def _launch_task(content_type_id, pk):
     task_model = ContentType.objects.get(id=content_type_id).model_class()
     task = task_model.objects.get(id=pk)
     task._run()
-

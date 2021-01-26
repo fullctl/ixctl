@@ -1,7 +1,5 @@
-from django.conf import settings
 import django_peeringdb.models.concrete as pdb_models
 
-from fullctl.django.util import verified_asns
 from fullctl.django.auth import permissions
 
 from django_ixctl.models import (
@@ -20,10 +18,11 @@ def create_networks_from_verified_asns(user):
     perms = permissions(user)
     perms.load()
 
-
     asns = [
-        namespace[2] for namespace in
-        perms.pset.expand("verified.asn.?.?", exact=True, explicit=True)
+        namespace[2]
+        for namespace in perms.pset.expand(
+            "verified.asn.?.?", exact=True, explicit=True
+        )
     ]
 
     for asn in asns:
@@ -38,9 +37,4 @@ def create_networks_from_verified_asns(user):
                 pdb_net = pdb_models.Network.objects.get(asn=asn)
                 Network.create_from_pdb(instance, pdb_net)
             except pdb_models.Network.DoesNotExist:
-                Network.objects.create(
-                    name=f"AS{asn}",
-                    asn=asn,
-                    instance=instance
-                )
-
+                Network.objects.create(name=f"AS{asn}", asn=asn, instance=instance)

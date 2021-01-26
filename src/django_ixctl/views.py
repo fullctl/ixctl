@@ -10,11 +10,7 @@ from fullctl.django.decorators import (
     require_auth,
 )
 
-from django_ixctl.models import (
-    Instance,
-    InternetExchange,
-    Organization,
-)
+from django_ixctl.models import InternetExchange
 
 # Create your views here.
 

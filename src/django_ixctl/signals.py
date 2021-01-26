@@ -5,6 +5,7 @@ from django_ixctl.util import (
     create_networks_from_verified_asns,
 )
 
+
 @receiver(user_logged_in)
 def handle_login(sender, **kwargs):
     user = kwargs.get("user")

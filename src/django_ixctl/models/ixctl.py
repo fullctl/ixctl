@@ -20,11 +20,14 @@ from django_inet.models import ASNField, IPAddressField, MacAddressField
 from django_peeringdb.models.concrete import IXLan
 from django_peeringdb.models.concrete import Network as PeeringdbNetwork
 from django_peeringdb.models.concrete import NetworkIXLan
-from fullctl.django.inet.validators import (validate_as_set, validate_ip4,
-                                            validate_ip6)
+from fullctl.django.inet.validators import validate_as_set, validate_ip4, validate_ip6
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
-from fullctl.django.models.concrete import (Instance, Organization,
-                                            )
+from fullctl.django.models.concrete import (
+    Instance,
+    Organization,
+    OrganizationUser,
+    APIKey,
+)
 
 import django_ixctl.enum
 from django_ixctl.peeringdb import get_as_set
@@ -193,7 +196,8 @@ class InternetExchange(PdbRefModel):
 @grainy_model(
     namespace="member",
     namespace_instance=(
-        "member.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"),
+        "member.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+    ),
 )
 class InternetExchangeMember(PdbRefModel):
 
@@ -296,7 +300,8 @@ class InternetExchangeMember(PdbRefModel):
 @grainy_model(
     namespace="rs",
     namespace_instance=(
-        "rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"),
+        "rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+    ),
 )
 class Routeserver(HandleRefModel):
 
