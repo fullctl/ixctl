@@ -1,11 +1,9 @@
 import os.path
 import pytest
-import json
-from django.conf import settings
 from django.test import Client
 
 # lazy init for translations
-_ = lambda s: s
+_ = lambda s: s  # noqa: E731
 
 
 class AccountObjects:

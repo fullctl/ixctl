@@ -116,7 +116,13 @@ def test_ix_put_ixf_export_policy(db, pdb_data, account_objects):
     }
 
     response = client.put(
-        reverse("ixctl_api:ix-detail", args=(org.slug, ix.slug, )),
+        reverse(
+            "ixctl_api:ix-detail",
+            args=(
+                org.slug,
+                ix.slug,
+            ),
+        ),
         json.dumps(data),
         content_type="application/json",
     )
@@ -142,7 +148,13 @@ def test_ix_put_slug(db, pdb_data, account_objects):
         "slug": "changed-slug",
     }
     response = client.put(
-        reverse("ixctl_api:ix-detail", args=(org.slug, ix.slug, )),
+        reverse(
+            "ixctl_api:ix-detail",
+            args=(
+                org.slug,
+                ix.slug,
+            ),
+        ),
         json.dumps(data),
         content_type="application/json",
     )
@@ -171,7 +183,13 @@ def test_ix_put_slug_invalid(db, pdb_data, account_objects):
         "slug": "invalid slug",
     }
     response = client.put(
-        reverse("ixctl_api:ix-detail", args=(org.slug, ix.slug, )),
+        reverse(
+            "ixctl_api:ix-detail",
+            args=(
+                org.slug,
+                ix.slug,
+            ),
+        ),
         json.dumps(data),
         content_type="application/json",
     )
@@ -181,7 +199,6 @@ def test_ix_put_slug_invalid(db, pdb_data, account_objects):
 
 
 def test_ix_create_invalid(db, pdb_data, account_objects):
-    ix = account_objects.ix
     client = account_objects.api_client
     org = account_objects.org
 
@@ -234,7 +251,7 @@ def test_ix_delete_member(db, pdb_data, account_objects):
     assert response.status_code == 200
 
     assert (
-        models.InternetExchangeMember.objects.filter(id=ixmember.id).exists() == False
+        models.InternetExchangeMember.objects.filter(id=ixmember.id).exists() is False
     )
 
 
@@ -242,8 +259,6 @@ def test_ix_create_member(db, pdb_data, account_objects):
     ix = account_objects.ix
     client = account_objects.api_client
     org = account_objects.org
-
-    ixmember = ix.member_set.first()
 
     response = client.post(
         reverse("ixctl_api:member-list", args=(org.slug, ix.slug)),
@@ -323,7 +338,6 @@ def test_ix_edit_member(db, pdb_data, account_objects):
         ),
         content_type="application/json",
     )
-    data = response.json()["data"]
     assert response.status_code == 200
 
     ixmember.refresh_from_db()
@@ -367,13 +381,10 @@ def test_ix_edit_member_invalid(db, pdb_data, account_objects):
 
 def test_list_routeservers(db, pdb_data, account_objects):
     ix = account_objects.ix
-    rs = account_objects.routeserver
     client = account_objects.api_client
     org = account_objects.org
-
-    response = client.get(
-        reverse("ixctl_api:rs-list", args=(org.slug, ix.slug))
-    )
+    assert account_objects.routeserver
+    response = client.get(reverse("ixctl_api:rs-list", args=(org.slug, ix.slug)))
     assert response.status_code == 200
     data = response.json()["data"]
 
@@ -383,10 +394,9 @@ def test_list_routeservers(db, pdb_data, account_objects):
 
 def test_create_routeserver(db, pdb_data, account_objects):
     ix = account_objects.ix
-    rs = account_objects.routeserver
     client = account_objects.api_client
     org = account_objects.org
-
+    assert account_objects.routeserver
     payload = {
         "asn": 63311,
         "graceful_shutdown": False,
@@ -496,8 +506,8 @@ def test_retrieve_routeserverconfig(db, pdb_data, account_objects):
     )
     assert response_plain.status_code == 200
 
+
 def test_list_users(db, pdb_data, account_objects):
-    ix = account_objects.ix
     client = account_objects.api_client
     org = account_objects.org
 
@@ -515,9 +525,7 @@ def test_list_users(db, pdb_data, account_objects):
 
 
 def test_list_orgs(db, pdb_data, account_objects):
-    ix = account_objects.ix
     client = account_objects.api_client
-    org = account_objects.org
 
     response = client.get(reverse("ixctl_account_api:org-list"))
 

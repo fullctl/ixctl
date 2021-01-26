@@ -1,11 +1,8 @@
 import os.path
-import pytest
-import json
 from django.conf import settings
-from django.test import Client
 
 # lazy init for translations
-_ = lambda s: s
+_ = lambda s: s  # noqa: E731
 
 
 def pytest_configure():
@@ -87,7 +84,8 @@ def pytest_configure():
                 "fullctl.django.rest.authentication.APIKeyAuthentication",
                 "rest_framework.authentication.SessionAuthentication",
             ),
-            "DEFAULT_MODEL_SERIALIZER_CLASS": "rest_framework.serializers.HyperlinkedModelSerializer",
+            "DEFAULT_MODEL_SERIALIZER_CLASS": \
+            "rest_framework.serializers.HyperlinkedModelSerializer",
             "DEFAULT_PERMISSION_CLASSES": [
                 "rest_framework.permissions.IsAuthenticated",
             ],

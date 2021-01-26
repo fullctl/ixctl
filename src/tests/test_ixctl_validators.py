@@ -41,7 +41,8 @@ def test_validate_prefix(ipaddrs):
 def ipaddrs():
     Ipaddresses = namedtuple(
         "Ipaddresses",
-        "IPADDRESS4 IPADDRESS6 INVALID_IPADDRESS4 INVALID_IPADDRESS6 PREFIX NETMASK INVALID_PREFIX INVALID_NETMASK",
+        "IPADDRESS4 IPADDRESS6 INVALID_IPADDRESS4\
+         INVALID_IPADDRESS6 PREFIX NETMASK INVALID_PREFIX INVALID_NETMASK",
     )
     return Ipaddresses(
         "192.168.0.1",
