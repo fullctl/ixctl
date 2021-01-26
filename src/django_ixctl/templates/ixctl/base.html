@@ -36,10 +36,12 @@
       data-element="select_ix"></select>
     </span>
     {% if permissions.update_instance %}
-    <button type="button" class="button d-block mt-3 text-white" data-element="button_update_ix">
-      <span class="icon ixctl icon-add"></span>
-      {% trans "Update" %}
+    <div>
+    <button type="button" class="button mt-3" data-element="button_update_ix">
+      <span class="icon icon-settings"></span>
+      {% trans "Configure" %}
       </button>
+    </div>
     {% endif %}
 
   </div>
