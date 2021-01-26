@@ -1,53 +1,33 @@
-import time
 import os.path
-import tempfile
 import subprocess
-
+import tempfile
 from secrets import token_urlsafe
 
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader, Dumper
 
-import yaml
-
-from django.contrib.auth import get_user_model
-from django.core import validators
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext_lazy as _
-from django.urls import reverse
-from django.conf import settings
-
-from django_grainy.decorators import grainy_model
-
-from django_inet.models import (
-    IPAddressField,
-    MacAddressField,
-    ASNField,
-)
-
-
 import reversion
-
-
-from django_peeringdb.models.concrete import IXLan, NetworkIXLan, Network as PeeringdbNetwork
-from fullctl.django.models.concrete import (
-    Organization,
-    OrganizationUser,
-    Instance,
-    APIKey,
-)
+import yaml
+from django.contrib.auth import get_user_model
+from django.db import models
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from django_grainy.decorators import grainy_model
+from django_inet.models import ASNField, IPAddressField, MacAddressField
+from django_peeringdb.models.concrete import IXLan
+from django_peeringdb.models.concrete import Network as PeeringdbNetwork
+from django_peeringdb.models.concrete import NetworkIXLan
+from fullctl.django.inet.validators import (validate_as_set, validate_ip4,
+                                            validate_ip6)
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
+from fullctl.django.models.concrete import (Instance, Organization,
+                                            )
 
-from fullctl.django.auth import permissions
-from fullctl.django.inet.util import pdb_lookup
-from fullctl.django.inet.validators import validate_ip4, validate_ip6, validate_as_set
-
-
-from django_ixctl.peeringdb import get_as_set
 import django_ixctl.enum
+from django_ixctl.peeringdb import get_as_set
 
 
 def generate_secret():
@@ -82,7 +62,9 @@ class PermissionRequest(HandleRefModel):
 
 
 @reversion.register()
-@grainy_model(namespace="ix", namespace_instance="ix.{instance.org.permission_id}.{instance.id}")
+@grainy_model(
+    namespace="ix", namespace_instance="ix.{instance.org.permission_id}.{instance.id}"
+)
 class InternetExchange(PdbRefModel):
 
     """
@@ -96,15 +78,12 @@ class InternetExchange(PdbRefModel):
     updated = models.DateTimeField(auto_now=True)
     urlkey = models.CharField(max_length=255, default=generate_secret, unique=True)
     ixf_export_privacy = models.CharField(
-        max_length=32, choices=django_ixctl.enum.IXF_EXPORT_PRIVACY_TYPES, default="public",
+        max_length=32,
+        choices=django_ixctl.enum.IXF_EXPORT_PRIVACY_TYPES,
+        default="public",
     )
 
-    slug = models.SlugField(
-        max_length=64,
-        unique=False,
-        blank=True,
-        null=False
-    )
+    slug = models.SlugField(max_length=64, unique=False, blank=True, null=False)
 
     instance = models.ForeignKey(
         Instance, related_name="ix_set", on_delete=models.CASCADE, null=True
@@ -121,7 +100,9 @@ class InternetExchange(PdbRefModel):
         verbose_name_plural = _("Internet Exchanges")
         verbose_name = _("Internet Exchange")
         constraints = [
-            models.UniqueConstraint(fields=['instance', 'slug'], name='unique_slug_instance_pair')
+            models.UniqueConstraint(
+                fields=["instance", "slug"], name="unique_slug_instance_pair"
+            )
         ]
 
     @classmethod
@@ -184,7 +165,11 @@ class InternetExchange(PdbRefModel):
         """
 
         return reverse(
-            "ixf export", args=(self.instance.org.slug, self.slug,)
+            "ixf export",
+            args=(
+                self.instance.org.slug,
+                self.slug,
+            ),
         )
 
     @property
@@ -207,7 +192,8 @@ class InternetExchange(PdbRefModel):
 @reversion.register()
 @grainy_model(
     namespace="member",
-    namespace_instance="member.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+    namespace_instance=(
+        "member.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"),
 )
 class InternetExchangeMember(PdbRefModel):
 
@@ -309,7 +295,8 @@ class InternetExchangeMember(PdbRefModel):
 @reversion.register
 @grainy_model(
     namespace="rs",
-    namespace_instance="rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+    namespace_instance=(
+        "rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"),
 )
 class Routeserver(HandleRefModel):
 
@@ -318,27 +305,38 @@ class Routeserver(HandleRefModel):
     """
 
     ix = models.ForeignKey(
-        InternetExchange, on_delete=models.CASCADE, related_name="rs_set",
+        InternetExchange,
+        on_delete=models.CASCADE,
+        related_name="rs_set",
     )
 
     # RS Config
 
-    name = models.CharField(max_length=255, help_text=_("Routeserver name"),)
+    name = models.CharField(
+        max_length=255,
+        help_text=_("Routeserver name"),
+    )
 
     asn = ASNField(help_text=_("ASN"))
 
-    router_id = IPAddressField(version=4, help_text=_("Router Id"),)
+    router_id = IPAddressField(
+        version=4,
+        help_text=_("Router Id"),
+    )
 
     rpki_bgp_origin_validation = models.BooleanField(default=False)
 
     # ARS Config
 
     ars_type = models.CharField(
-        max_length=32, choices=django_ixctl.enum.ARS_TYPES, default="bird",
+        max_length=32,
+        choices=django_ixctl.enum.ARS_TYPES,
+        default="bird",
     )
 
     max_as_path_length = models.IntegerField(
-        default=32, help_text=_("Max length of AS_PATH attribute."),
+        default=32,
+        help_text=_("Max length of AS_PATH attribute."),
     )
 
     no_export_action = models.CharField(
@@ -349,7 +347,8 @@ class Routeserver(HandleRefModel):
     )
 
     graceful_shutdown = models.BooleanField(
-        default=False, help_text=_("Graceful BGP session shutdown"),
+        default=False,
+        help_text=_("Graceful BGP session shutdown"),
     )
 
     extra_config = models.TextField(
@@ -400,7 +399,9 @@ class Routeserver(HandleRefModel):
                         "enabled": self.rpki_bgp_origin_validation
                     },
                 },
-                "rfc1997_wellknown_communities": {"policy": self.no_export_action,},
+                "rfc1997_wellknown_communities": {
+                    "policy": self.no_export_action,
+                },
                 "graceful_shutdown": {"enabled": self.graceful_shutdown},
             }
         }
@@ -475,7 +476,10 @@ class RouteserverConfig(HandleRefModel):
     """
 
     rs = models.OneToOneField(
-        Routeserver, on_delete=models.CASCADE, null=True, blank=True,
+        Routeserver,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
 
     generated = models.DateTimeField(
@@ -527,7 +531,6 @@ class RouteserverConfig(HandleRefModel):
         Generate the route server config using arouteserver
         """
 
-        ix = self.rs.ix
         rs = self.rs
         ars_general = rs.ars_general
         ars_clients = rs.ars_clients
@@ -585,8 +588,12 @@ class RouteserverConfig(HandleRefModel):
 
         self.save()
 
+
 @reversion.register()
-@grainy_model(namespace="net", namespace_instance="net.{instance.org.permission_id}.{instance.asn}")
+@grainy_model(
+    namespace="net",
+    namespace_instance="net.{instance.org.permission_id}.{instance.asn}",
+)
 class Network(PdbRefModel):
 
     """
@@ -612,9 +619,7 @@ class Network(PdbRefModel):
         db_table = "ixctl_net"
         verbose_name_plural = _("Networks")
         verbose_name = _("Network")
-        unique_together = (
-            ("instance", "asn"),
-        )
+        unique_together = (("instance", "asn"),)
 
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
@@ -638,7 +643,14 @@ class Network(PdbRefModel):
         - `Network` instance
         """
 
-        net = super().create_from_pdb(pdb_object, save=save, instance=instance, name=pdb_object.name, asn=pdb_object.asn, **fields)
+        net = super().create_from_pdb(
+            pdb_object,
+            save=save,
+            instance=instance,
+            name=pdb_object.name,
+            asn=pdb_object.asn,
+            **fields,
+        )
 
         return net
 
@@ -668,10 +680,7 @@ class Network(PdbRefModel):
     def members(self):
         if not hasattr(self, "_members"):
             self._members = [
-                member for member in
-                InternetExchangeMember.objects.filter(
-                    asn = self.asn
-                )
+                member for member in InternetExchangeMember.objects.filter(asn=self.asn)
             ]
         return self._members
 
