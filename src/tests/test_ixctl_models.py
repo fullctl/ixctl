@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 
 import django_ixctl.models as models
+from fullctl.django.models.concrete import OrganizationUser
 
 
 def test_pdb_create_error(db, pdb_data, account_objects):
@@ -55,7 +56,7 @@ def test_org_sync_single_new(db, pdb_data, account_objects):
     new_org = models.Organization.sync_single(data, account_objects.user, None)
     assert new_org.name == "org3-test"
     assert new_org.slug == "org3"
-    assert models.OrganizationUser.objects.filter(
+    assert OrganizationUser.objects.filter(
         org=new_org.id, user=account_objects.user.id
     ).exists()
 
@@ -89,7 +90,7 @@ def test_instance_create(db, pdb_data, account_objects):
 
 
 def test_orguser(db, pdb_data, account_objects):
-    orguser = models.OrganizationUser.objects.filter(
+    orguser = OrganizationUser.objects.filter(
         org=account_objects.org, user=account_objects.user
     ).first()
     assert orguser.__str__() == "user_test <test@localhost>"

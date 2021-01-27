@@ -13,7 +13,8 @@ class AccountObjects:
         from fullctl.django.auth import permissions
         from rest_framework.test import APIClient
 
-        from django_ixctl.models import Organization, OrganizationUser
+        from django_ixctl.models import Organization
+        from fullctl.django.models.concrete import OrganizationUser
 
         self.user = user = get_user_model().objects.create_user(
             username=f"user_{handle}",
