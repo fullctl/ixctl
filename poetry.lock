@@ -428,7 +428,6 @@ description = "Get control"
 category = "main"
 optional = false
 python-versions = "*"
-develop = false
 
 [package.dependencies]
 celery = ">=5,<6"
@@ -448,11 +447,8 @@ social-auth-app-django = "<4"
 dev = ["pytest (>=6.0.1)", "pytest-django (>=3.8.0)", "pytest-cov", "black (==20.8b1)"]
 
 [package.source]
-type = "git"
-url = "https://github.com/fullctl/fullctl.git"
-reference = "master"
-resolved_reference = "086efd41bfcfc6b77c6df6d6134bf23ec7319f9b"
-
+type = "url"
+url = "https://github.com/fullctl/fullctl/archive/master.zip"
 [[package]]
 name = "future"
 version = "0.18.2"
@@ -673,7 +669,6 @@ description = "peeringdb client and interface"
 category = "main"
 optional = false
 python-versions = "*"
-develop = false
 
 [package.dependencies]
 cfu = ">=0.5.1"
@@ -682,11 +677,8 @@ PyYAML = ">=3.11"
 "twentyc.rpc" = ">=0.3.4"
 
 [package.source]
-type = "git"
-url = "https://github.com/peeringdb/peeringdb-py.git"
-reference = "july_updates"
-resolved_reference = "f923072ec169abeeb90e900f8b9fd4a654120850"
-
+type = "url"
+url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"
 [[package]]
 name = "pluggy"
 version = "0.13.1"
@@ -1058,7 +1050,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "7ad3cb4d09519468f8e4134b7331a412c9e3bb3669409f9726ca99bdd675733b"
+content-hash = "68a2cd76f5ec30b6768bd42ac8abef4e9e9e67d2106416a3299c5dfcd3c1a81a"
 
 [metadata.files]
 aggregate6 = [

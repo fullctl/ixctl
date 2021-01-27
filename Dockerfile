@@ -1,4 +1,4 @@
-FROM python:3.6-alpine as base
+FROM python:3.7-alpine as base
 
 ARG virtual_env=/venv
 ARG install_to=/srv/ixctl
@@ -20,6 +20,7 @@ ENV RUN_DEPS=$run_deps
 ENV IXCTL_HOME=$install_to
 ENV VIRTUAL_ENV=$virtual_env
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV POETRY_VERSION=1.1.4
 
 
 # build container
@@ -28,15 +29,39 @@ FROM base as builder
 RUN apk --update --no-cache add $BUILD_DEPS
 
 # create venv
-RUN pip install -U pip pipenv
+RUN pip install -U pip wheel
+
+# pipenv install
+# RUN pip install -U pipenv
+
+# poetry install
+RUN pip install "poetry==$POETRY_VERSION"
 RUN python3 -m venv "$VIRTUAL_ENV"
 
 WORKDIR /build
-# individual files here instead of COPY . . for caching
-COPY Pipfile* ./
-COPY Ctl/VERSION Ctl/
-RUN pipenv install --dev --ignore-pipfile
 
+# PipFile install
+# COPY Pipfile* ./
+# RUN pipenv install --dev --ignore-pipfile
+
+# individual files here instead of COPY . . for caching
+COPY pyproject.toml poetry.lock ./
+
+RUN . "$VIRTUAL_ENV"/bin/activate && poetry install --no-root
+
+COPY . .
+RUN . "$VIRTUAL_ENV"/bin/activate && poetry build
+
+
+
+# install your pinned requirements first, before copying your code
+# Need to export without hashes bc we're using some VCS repos
+# RUN poetry export -f requirements.txt --without-hashes | "$VIRTUAL_ENV"/bin/pip install -r /dev/stdin
+# use poetry build to build a wheel, and then pip-install that into your virtualenv
+COPY . .
+# RUN poetry build && "$VIRTUAL_ENV"/bin/pip install dist/*.whl
+
+COPY Ctl/VERSION Ctl/
 
 #### final image
 
@@ -55,7 +80,10 @@ RUN apk add $RUN_DEPS
 RUN adduser -Du $uid $USER
 
 WORKDIR $IXCTL_HOME
+# This stays the same
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
+
+
 
 RUN mkdir -p etc locale media static
 COPY Ctl/VERSION etc/
@@ -68,6 +96,9 @@ FROM final
 
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
+
+RUN . "$VIRTUAL_ENV"/bin/activate
+
 RUN ln -s $IXCTL_HOME/entrypoint.sh /entrypoint
 RUN ln -s /venv $IXCTL_HOME/venv
 
@@ -80,4 +111,4 @@ ENV UWSGI_SOCKET=127.0.0.1:6002
 USER $USER
 
 ENTRYPOINT ["/entrypoint"]
-CMD ["runserver"]
+CMD ["runserver", "127.0.0.1:8000"]

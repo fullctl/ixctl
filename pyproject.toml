@@ -37,8 +37,8 @@ pyyaml = "*"
 pip = "*"
 arouteserver = "*"
 celery = "<6,>=5"
-fullctl = { git = "https://github.com/fullctl/fullctl.git", branch = "master" }
-peeringdb = { git = "https://github.com/peeringdb/peeringdb-py.git", branch = "july_updates" }
+fullctl = { url = "https://github.com/fullctl/fullctl/archive/master.zip" }
+peeringdb = { url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
 
 [tool.poetry.dev-dependencies]
 # tests
