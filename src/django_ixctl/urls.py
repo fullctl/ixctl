@@ -1,7 +1,4 @@
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
-from django.views.generic import TemplateView
-from django.conf import settings
 
 import django_ixctl.views as views
 

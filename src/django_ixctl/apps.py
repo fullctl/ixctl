@@ -6,4 +6,4 @@ class DjangoIxctlConfig(AppConfig):
     label = "django_ixctl"
 
     def ready(self):
-        import django_ixctl.signals
+        import django_ixctl.signals  # noqa: F401
