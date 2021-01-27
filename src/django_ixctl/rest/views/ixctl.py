@@ -353,9 +353,7 @@ class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
         return Response(serializer.data)
 
     @action(
-        detail=False,
-        methods=["GET"],
-        url_path="presence/(?P<asn>[\d]+)"  # noqa: W605
+        detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)"  # noqa: W605
     )
     @grainy_endpoint(namespace="net.{request.org.permission_id}.{asn}")
     @load_object("net", models.Network, asn="asn", instance="instance")

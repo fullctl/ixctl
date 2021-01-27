@@ -6,9 +6,9 @@ import django_peeringdb.models.concrete as pdb_models
 import pytest
 from django.core.exceptions import ValidationError
 from django.urls import reverse
+from fullctl.django.models.concrete import OrganizationUser
 
 import django_ixctl.models as models
-from fullctl.django.models.concrete import OrganizationUser
 
 
 def test_pdb_create_error(db, pdb_data, account_objects):

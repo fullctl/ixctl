@@ -1,8 +1,7 @@
-from django.core.management.base import BaseCommand
 from django.conf import settings
-
+from django.core.management.base import BaseCommand
+from peeringdb import initialize_backend, resource
 from peeringdb.client import Client
-from peeringdb import resource, initialize_backend
 
 # from peeringdb import get_backend
 

@@ -1,15 +1,10 @@
-from django.http import Http404, HttpResponse
 from django.conf import settings
-from django.shortcuts import render, redirect
+from django.http import Http404, HttpResponse
+from django.shortcuts import redirect, render
+from fullctl.django.decorators import load_instance, require_auth
 
-import django_ixctl.forms
 import django_ixctl.exporters.ixf
-
-from fullctl.django.decorators import (
-    load_instance,
-    require_auth,
-)
-
+import django_ixctl.forms
 from django_ixctl.models import InternetExchange
 
 # Create your views here.

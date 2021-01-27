@@ -1,16 +1,16 @@
 from django.contrib import admin
 from django_handleref.admin import VersionAdmin
+from fullctl.django.models.concrete import APIKey, OrganizationUser
 
 from django_ixctl.models import (
-    Organization,
     InternetExchange,
     InternetExchangeMember,
+    Network,
+    Organization,
+    PermissionRequest,
     Routeserver,
     RouteserverConfig,
-    Network,
-    PermissionRequest,
 )
-from fullctl.django.models.concrete import OrganizationUser, APIKey
 
 
 class BaseAdmin(VersionAdmin):

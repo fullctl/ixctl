@@ -1,10 +1,7 @@
 import django_peeringdb.models.concrete as pdb_models
-
 from fullctl.django.auth import permissions
 
-from django_ixctl.models import (
-    Network,
-)
+from django_ixctl.models import Network
 
 
 def create_networks_from_verified_asns(user):

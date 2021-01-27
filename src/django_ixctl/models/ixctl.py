@@ -22,10 +22,7 @@ from django_peeringdb.models.concrete import Network as PeeringdbNetwork
 from django_peeringdb.models.concrete import NetworkIXLan
 from fullctl.django.inet.validators import validate_as_set, validate_ip4, validate_ip6
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
-from fullctl.django.models.concrete import (
-    Instance,
-    Organization
-)
+from fullctl.django.models.concrete import Instance, Organization
 
 import django_ixctl.enum
 from django_ixctl.peeringdb import get_as_set
