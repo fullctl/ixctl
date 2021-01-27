@@ -35,6 +35,15 @@
       data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
       data-element="select_ix"></select>
     </span>
+    {% if permissions.update_instance %}
+    <div>
+    <button type="button" class="button mt-3" data-element="button_update_ix">
+      <span class="icon icon-settings"></span>
+      {% trans "Configure" %}
+      </button>
+    </div>
+    {% endif %}
+
   </div>
   <div class="col-3 col-md-2">
       {% if permissions.update_instance %}
@@ -79,5 +88,6 @@
 {{ block.super }}
 {% include "ixctl/form-import.html" %}
 {% include "ixctl/form-create-ix.html" %}
+{% include "ixctl/form-update-ix.html" %}
 
 {% endblock %}

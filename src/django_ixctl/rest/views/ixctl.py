@@ -9,7 +9,6 @@ from rest_framework.schemas.openapi import AutoSchema
 
 from fullctl.django.rest.core import BadRequest
 from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
-from fullctl.django.rest.decorators import grainy_endpoint as _grainy_endpoint, load_object
 from fullctl.django.rest.renderers import PlainTextRenderer
 from fullctl.django.rest.api_schema import PeeringDBImportSchema
 from fullctl.django.util import verified_asns
@@ -20,20 +19,56 @@ import django_ixctl.models as models
 from django_ixctl.rest.route.ixctl import route
 
 
-class grainy_endpoint(_grainy_endpoint):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            instance_class=models.Instance,
-            explicit=kwargs.pop("explicit", False),
-            *args,
-            **kwargs
-        )
-        if "namespace" not in kwargs:
-            self.namespace += ["ixctl"]
+from django_ixctl.rest.decorators import grainy_endpoint
+from fullctl.django.rest.decorators import load_object
+
+
+class CachedObjectMixin:
+    def get_object(self):
+        if getattr(self, "_obj", None) is None:
+            self._obj = super().get_object()
+
+        return self._obj
+
+
+class OrgQuerysetMixin:
+    """
+    For objects with URLs that require an "org_tag", this filters
+    the resulting queryset by matching the instance org to the
+    provided slug.
+    """
+    def get_queryset(self):
+        org_tag = self.kwargs["org_tag"]
+        return self.queryset.filter(instance__org__slug=org_tag)
+
+
+class IxOrgQuerysetMixin:
+    """
+    For objects with URLs that require a "ix_tag" and "org_tag", this filters
+    the resulting queryset by matching the org slug and ix slug to the url
+    tags.
+
+    Set the 'ix_lookup_field' attribute on the Viewset if the model for the viewset
+    does not have an IX attribute, but has a related object with a IX attribute.
+
+    E.g., RouteserverConfig.rs.ix
+    """
+
+    def get_queryset(self):
+        org_tag = self.kwargs["org_tag"]
+        ix_tag = self.kwargs["ix_tag"]
+        ix_lookup_field = getattr(self, "ix_lookup_field", "ix")
+
+        filters = {
+            f"{ix_lookup_field}__slug": ix_tag,
+            f"{ix_lookup_field}__instance__org__slug": org_tag,
+        }
+
+        return self.queryset.filter(**filters)
 
 
 @route
-class InternetExchange(viewsets.GenericViewSet):
+class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
     """
     retrieve:
         Return a internet exchange instance.
@@ -48,44 +83,20 @@ class InternetExchange(viewsets.GenericViewSet):
         Import an internet exhange from Peeringdb.
 
     update:
-        Update a user.
+        Update an intenet exchange.
     """
 
     serializer_class = Serializers.ix
-    serializer_class_dict = {
-        "list": Serializers.ix,
-        "retrieve": Serializers.ix,
-        "create": Serializers.ix,
-        "import_peeringdb": Serializers.impix,
-        "members": Serializers.member,
-        "add_member": Serializers.member,
-        "delete_member": Serializers.member,
-        "routeservers": Serializers.rs,
-        "add_routeserver": Serializers.rs,
-        "edit_routeserver": Serializers.rs,
-    }
-
     queryset = models.InternetExchange.objects.all()
     ref_tag = "ix"
-
-    def get_serializer_class(self):
-        if self.action in self.serializer_class_dict:
-            return self.serializer_class_dict[self.action]
-        return self.serializer_class
+    lookup_url_kwarg = "ix_tag"
+    lookup_field = "slug"
 
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def list(self, request, org, instance, *args, **kwargs):
         serializer = Serializers.ix(
             instance=models.InternetExchange.objects.filter(instance=instance),
             many=True,
-        )
-        return Response(serializer.data)
-
-    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{pk}")
-    def retrieve(self, request, org, instance, pk, *args, **kwargs):
-        serializer = Serializers.ix(
-            instance=models.InternetExchange.objects.get(instance=instance, id=pk),
-            many=False,
         )
         return Response(serializer.data)
 
@@ -101,11 +112,36 @@ class InternetExchange(viewsets.GenericViewSet):
         ix.save()
         return Response(Serializers.ix(instance=ix).data)
 
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}")
+    def retrieve(self, request, org, ix, instance, *args, **kwargs):
+        serializer = Serializers.ix(
+            instance=ix,
+            many=False,
+        )
+        return Response(serializer.data)
+
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}")
+    def update(self, request, org, ix, instance, *args, **kwargs):
+        serializer = Serializers.ix(
+            ix,
+            data=request.data,
+        )
+
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+        ix = serializer.save()
+        ix.instance = instance
+        ix.save()
+        return Response(Serializers.ix(instance=ix).data)
+
     @action(detail=False, methods=["POST"], schema=PeeringDBImportSchema())
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def import_peeringdb(self, request, org, instance, *args, **kwargs):
         serializer = Serializers.impix(
-            data=request.data, context={"instance": instance},
+            data=request.data,
+            context={"instance": instance},
         )
 
         if not serializer.is_valid():
@@ -115,48 +151,41 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.ix(instance=ix).data)
 
-    @action(detail=True, methods=["GET", "POST"])
-    @grainy_endpoint(
-        namespace = "member.{request.org.permission_id}.{pk}.?",
-        handlers = {
-            "*" : { "key": lambda row,idx: row["asn"] }
-        }
-    )
-    def members(self, request, org, instance, pk, *args, **kwargs):
-        if request.method == "POST":
-            return self._create_member(request, org, instance, pk, *args, **kwargs)
-        else:
-            return self._list_members(request, org, instance, pk, *args, **kwargs)
 
-    @action(
-        detail=True,
-        url_path="members/(?P<member_id>[^/.]+)",
-        serializer_class=Serializers.member,
-        methods=["PUT", "DELETE"],
-    )
-    @load_object("member", models.InternetExchangeMember, id="member_id")
-    @grainy_endpoint(
-        namespace = "member.{request.org.permission_id}.{pk}.{member.asn}.?",
-    )
-    def member(self, request, org, instance, pk, member_id=None, *args, **kwargs):
-        if request.method == "PUT":
-            return self._update_member(
-                request, org, instance, pk, member_id, *args, **kwargs
-            )
-        elif request.method == "DELETE":
-            return self._destroy_member(
-                request, org, instance, pk, member_id, *args, **kwargs
-            )
+@route
+class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
+    """
+    list:
+        Return all member instances.
 
-    def _list_members(self, request, org, instance, pk, *args, **kwargs):
+    create:
+        Create a new member.
+
+    update:
+        Update a member.
+
+    delete:
+        Delete a member.
+    """
+
+    serializer_class = Serializers.member
+    ref_tag = "member"
+    queryset = models.InternetExchangeMember.objects.all()
+    lookup_url_kwarg = "member_id"
+    lookup_field = "id"
+    ix_tag_needed = True
+
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(
+        namespace="member.{request.org.permission_id}.{ix.pk}.?",
+        handlers={"*": {"key": lambda row, idx: row["asn"]}},
+    )
+    def list(self, request, org, instance, ix, *args, **kwargs):
         ordering_filter = CaseInsensitiveOrderingFilter(
             ["name", "asn", "ipaddr4", "ipaddr6", "speed"]
         )
 
-        queryset = models.InternetExchangeMember.objects.filter(
-                ix_id=pk,
-                ix__instance=instance
-            ).select_related("ix", "ix__instance")
+        queryset = self.get_queryset().select_related("ix", "ix__instance")
 
         queryset = ordering_filter.filter_queryset(request, queryset, self)
 
@@ -167,16 +196,14 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
-    def _destroy_member(self, request, org, instance, pk, member_id, *args, **kwargs):
-        ix = models.InternetExchange.objects.get(instance=instance, id=pk)
-        member = models.InternetExchangeMember.objects.get(ix=ix, id=member_id)
-        member.delete()
-        member.id = request.data.get("id")
-        return Response(Serializers.member(instance=member).data)
-
-    def _create_member(self, request, org, instance, pk, *args, **kwargs):
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(
+        namespace="member.{request.org.permission_id}.{ix.pk}.?",
+        handlers={"*": {"key": lambda row, idx: row["asn"]}},
+    )
+    def create(self, request, org, instance, ix, *args, **kwargs):
         data = request.data
-        data["ix"] = models.InternetExchange.objects.get(instance=instance, id=pk).id
+        data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
         serializer = Serializers.member(data=data, context={"instance": instance})
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
@@ -185,13 +212,14 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.member(instance=member).data)
 
-    def _update_member(self, request, org, instance, pk, member_id, *args, **kwargs):
-        member = kwargs.get("member")
-
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @load_object("member", models.InternetExchangeMember, id="member_id")
+    @grainy_endpoint(
+        namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}.?",
+    )
+    def update(self, request, org, instance, ix, member, *args, **kwargs):
         serializer = request.grainy_update_serializer(
-            Serializers.member,
-            member,
-            context={"instance": instance}
+            Serializers.member, member, context={"instance": instance}
         )
 
         if not serializer.is_valid():
@@ -201,59 +229,50 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.member(instance=member).data)
 
-    @action(detail=True, methods=["GET", "POST"], serializer_class=Serializers.rs)
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @load_object("member", models.InternetExchangeMember, id="member_id")
     @grainy_endpoint(
-        namespace = "rs.{request.org.permission_id}.{pk}.?",
-        handlers = {
-            "*" : { "key": lambda row,idx: row["asn"] }
-        }
+        namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}",
     )
-    def routeservers(self, request, org, instance, pk=None, *args, **kwargs):
-        if request.method == "GET":
-            return self._list_routeservers(request, org, instance, pk, *args, **kwargs)
-        elif request.method == "POST":
-            return self._create_routeserver(request, org, instance, pk, *args, **kwargs)
+    def destroy(self, request, org, instance, ix, member, *args, **kwargs):
+        member.delete()
+        member.id = request.data.get("id")
+        return Response(Serializers.member(instance=member).data)
 
-    @action(
-        detail=True,
-        url_path="routeservers/(?P<rs_id>[^/.]+)",
-        serializer_class=Serializers.rs,
-        methods=["PUT", "DELETE"],
-    )
+
+
+@route
+class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
+
+    serializer_class = Serializers.rs
+    queryset = models.Routeserver.objects.all()
+    ref_tag = "rs"
+    ix_tag_needed = True
+    lookup_url_kwarg = "rs_id"
+    lookup_field = "id"
+
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
-        namespace = "rs.{request.org.permission_id}.{pk}.{rs_id}",
+        namespace="rs.{request.org.permission_id}.{ix.pk}.?",
+        handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
-    def routeserver(self, request, org, instance, pk, rs_id, *args, **kwargs):
-        if request.method == "PUT":
-            return self._update_routeserver(
-                request, org, instance, pk, rs_id, *args, **kwargs
-            )
-        elif request.method == "DELETE":
-            return self._destroy_routeserver(
-                request, org, instance, pk, rs_id, *args, **kwargs
-            )
-
-    def _list_routeservers(self, request, org, instance, pk, *args, **kwargs):
-
+    def list(self, request, org, instance, ix, *args, **kwargs):
+        queryset = self.get_queryset().order_by("name")
         serializer = Serializers.rs(
-            instance=models.Routeserver.objects.filter(
-                ix_id=pk, ix__instance=instance
-            ).order_by("name"),
+            instance=queryset,
             many=True,
         )
 
         return Response(serializer.data)
 
-    def _destroy_routeserver(self, request, org, instance, pk, rs_id, *args, **kwargs):
-        ix = models.InternetExchange.objects.get(instance=instance, id=pk)
-        routeserver = models.Routeserver.objects.get(ix=ix, id=rs_id)
-        routeserver.delete()
-        routeserver.id = request.data.get("id")
-        return Response(Serializers.rs(instance=routeserver).data)
-
-    def _create_routeserver(self, request, org, instance, pk, *args, **kwargs):
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(
+        namespace="rs.{request.org.permission_id}.{ix.pk}.?",
+        handlers={"*": {"key": lambda row, idx: row["asn"]}},
+    )
+    def create(self, request, org, instance, ix, *args, **kwargs):
         data = request.data
-        data["ix"] = models.InternetExchange.objects.get(instance=instance, id=pk).id
+        data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
         serializer = Serializers.rs(data=data, context={"instance": instance})
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
@@ -262,10 +281,12 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.rs(instance=routeserver).data)
 
-    def _update_routeserver(self, request, org, instance, pk, rs_id, *args, **kwargs):
-        routeserver = models.Routeserver.objects.get(
-            ix__instance=instance, ix_id=pk, id=rs_id
-        )
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(
+        namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
+    )
+    def update(self, request, org, instance, ix, rs_id, *args, **kwargs):
+        routeserver = self.get_object()
         serializer = Serializers.rs(
             data=request.data, instance=routeserver, context={"instance": instance}
         )
@@ -276,52 +297,64 @@ class InternetExchange(viewsets.GenericViewSet):
 
         return Response(Serializers.rs(instance=routeserver).data)
 
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @grainy_endpoint(
+        namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
+    )
+    def destroy(self, request, org, instance, ix, rs_id, *args, **kwargs):
+        routeserver = self.get_object()
+        routeserver.delete()
+        routeserver.id = request.data.get("id")
+        return Response(Serializers.rs(instance=routeserver).data)
+
 
 @route
-class RouteserverConfig(viewsets.GenericViewSet):
+class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
     lookup_value_regex = "[^\/]+"
     lookup_url_kwarg = "name"
     lookup_field = "rs__name"
+    ref_tag = "rsconf"
+    ix_tag_needed = True
+    ix_lookup_field = "rs__ix"
 
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
-        namespace = "rsconf.{request.org.permission_id}",
+        namespace="rsconf.{request.org.permission_id}",
     )
-    def retrieve(self, request, org, instance, name, *args, **kwargs):
+    def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = self.get_object()
         serializer = Serializers.rsconf(
-            instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__name=name
-            ),
+            instance=rs_config,
             many=False,
         )
         return Response(serializer.data)
 
     @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
-        namespace = "rsconf.{request.org.permission_id}",
+        namespace="rsconf.{request.org.permission_id}",
     )
-    def plain(self, request, org, instance, name, *args, **kwargs):
+    def plain(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = self.get_object()
         serializer = Serializers.rsconf(
-            instance=models.RouteserverConfig.objects.get(
-                rs__ix__instance=instance, rs__name=name
-            ),
+            instance=rs_config,
             many=False,
         )
+        # return Response(serializer.instance.body)
         return Response(serializer.instance.body)
 
 
 @route
-class Network(viewsets.GenericViewSet):
+class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
     serializer_class = Serializers.net
     queryset = models.Network.objects.all()
 
-    lookup_url_kwarfs = "asn"
+    lookup_url_kwarg = "asn"
+    lookup_field = "asn"
 
-
-    @grainy_endpoint(
-        namespace = "net.{request.org.permission_id}"
-    )
+    @grainy_endpoint(namespace="net.{request.org.permission_id}")
     def list(self, request, org, instance, *args, **kwargs):
         serializer = Serializers.net(
             instance.net_set.all(),
@@ -329,23 +362,20 @@ class Network(viewsets.GenericViewSet):
         )
         return Response(serializer.data)
 
-    @action(
-        detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)"
-    )
-    @grainy_endpoint(
-        namespace = "net.{request.org.permission_id}.{asn}"
-    )
+    @action(detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)")
+    @grainy_endpoint(namespace="net.{request.org.permission_id}.{asn}")
     @load_object("net", models.Network, asn="asn", instance="instance")
     def presence(self, request, org, instance, asn, net=None, *args, **kwargs):
         serializer = Serializers.presence(
             net.members,
             many=True,
-            context={"perms": request.perms, "user": request.user}
+            context={"perms": request.perms, "user": request.user},
         )
         return Response(serializer.data)
 
+
 @route
-class PermissionRequest(viewsets.GenericViewSet):
+class PermissionRequest(CachedObjectMixin, viewsets.GenericViewSet):
 
     serializer_class = Serializers.permreq
     queryset = models.PermissionRequest.objects.all()
@@ -355,10 +385,12 @@ class PermissionRequest(viewsets.GenericViewSet):
         serializer = Serializers.permreq(
             org.permreq_set.all(),
             many=True,
-            context={"user": request.user, "perms": request.perms,},
+            context={
+                "user": request.user,
+                "perms": request.perms,
+            },
         )
         return Response(serializer.data)
-
 
     """
     @grainy_endpoint(namespace="?.?")
@@ -374,5 +406,3 @@ class PermissionRequest(viewsets.GenericViewSet):
         permreq = serializer.save()
         return Response(serializer.data)
     """
-
-

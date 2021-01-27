@@ -28,8 +28,6 @@ from django_ixctl.peeringdb import (
 Serializers, register = serializer_registry()
 
 
-
-
 @register
 class ImportOrganization(RequireContext, serializers.Serializer):
 
@@ -104,12 +102,11 @@ class PermissionRequest(ModelSerializer):
         fields = ["user", "type", "org"]
 
 
-
 @register
 class InternetExchange(ModelSerializer):
     class Meta:
         model = models.InternetExchange
-        fields = ["pdb_id", "urlkey", "name"]
+        fields = ["pdb_id", "urlkey", "ixf_export_privacy", "name", "slug"]
 
 
 @register

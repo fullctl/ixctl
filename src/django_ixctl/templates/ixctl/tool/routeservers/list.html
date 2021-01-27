@@ -1,8 +1,8 @@
 {% load static i18n %}
 <table
   class="table"
-  data-api-base="{% url "ixctl_api:ix-detail" org_tag=request.org.slug pk="0" %}"
-  data-api-action="routeservers"
+  data-api-base="{% url "ixctl_api:rs-list" org_tag=request.org.slug ix_tag="default" %}"
+  data-api-action=""
   data-template="list">
   <thead>
     <tr>
@@ -15,7 +15,7 @@
   <tbody class="list-body">
   </tbody>
   <tbody class="templates">
-    <tr data-template="row" data-rsconfurl="{% url "ixctl_api:rsconf-plain" org_tag=request.org.slug name="__replace__me__" %}">
+    <tr data-template="row" data-rsconfurl="{% url "ixctl_api:rsconf-plain" org_tag=request.org.slug ix_tag="default" name="__replace__me__" %}">
       <td data-field="asn"></td>
       <td data-field="display_name" class="highlight"></td>
       <td data-field="router_id"></td>
@@ -29,7 +29,7 @@
           </div>
           <div class="col-xs-12 col-lg-4">
         <a
-          data-api-action="routeservers/{id}"
+          data-api-action="{id}"
           data-api-callback="remove"
           data-confirm="Remove routeserver?"
           data-api-method="DELETE"><span class="icon ixctl icon-delete"></span><span class="ixctl label">{% trans "Delete" %}</span></a>

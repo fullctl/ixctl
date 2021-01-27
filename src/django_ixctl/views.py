@@ -40,16 +40,21 @@ def org_redirect(request):
 
 
 @load_instance(public=True)
-def export_ixf(request, org, urlkey, **kwargs):
+def export_ixf(request, org, ix_tag, **kwargs):
     try:
-        exchange = InternetExchange.objects.get(urlkey=urlkey)
+        ix = InternetExchange.objects.get(slug=ix_tag)
     except InternetExchange.DoesNotExist:
         raise Http404
+
+    # Handle private
+    if ix.ixf_export_privacy == "private":
+        if request.GET.get("secret") != ix.urlkey:
+            raise Http404
 
     if "pretty" in request.GET:
         pretty = True
     else:
         pretty = False
 
-    rv = django_ixctl.exporters.ixf.export(exchange, pretty=pretty)
+    rv = django_ixctl.exporters.ixf.export(ix, pretty=pretty)
     return HttpResponse(rv, content_type="application/json")

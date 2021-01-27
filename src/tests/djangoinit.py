@@ -33,7 +33,7 @@ def pytest_configure():
             "django.contrib.auth.middleware.AuthenticationMiddleware",
             "django.contrib.messages.middleware.MessageMiddleware",
             "django.middleware.clickjacking.XFrameOptionsMiddleware",
-            "django_ixctl.middleware.RequestAugmentation",
+            "fullctl.django.middleware.RequestAugmentation",
         ],
         INSTALLED_APPS=[
             "dal",
@@ -53,11 +53,15 @@ def pytest_configure():
             # social auth
             "social_django",
             # ixctl apps
-            "django_ixctl",
+            "fullctl.django.apps.DjangoFullctlConfig",
+            "django_ixctl.apps.DjangoIxctlConfig",
         ],
         DATABASE_ENGINE="django.db.backends.sqlite3",
         DATABASES={
-            "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:",}
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": ":memory:",
+            }
         },
         DEBUG=False,
         DEBUG_EMAIL=True,
@@ -76,23 +80,28 @@ def pytest_configure():
         AUTHENTICATION_BACKENDS=["django_grainy.backends.GrainyBackend"],
         NETOM_TEMPLATE_DIR=os.path.join(os.path.dirname(__file__), "data", "netom"),
         REST_FRAMEWORK={
-            "DEFAULT_RENDERER_CLASSES": ["django_ixctl.rest.renderers.JSONRenderer",],
+            "DEFAULT_RENDERER_CLASSES": [
+                "fullctl.django.rest.renderers.JSONRenderer",
+            ],
             "DEFAULT_AUTHENTICATION_CLASSES": (
-                "django_ixctl.rest.authentication.APIKeyAuthentication",
+                "fullctl.django.rest.authentication.APIKeyAuthentication",
                 "rest_framework.authentication.SessionAuthentication",
             ),
             "DEFAULT_MODEL_SERIALIZER_CLASS": "rest_framework.serializers.HyperlinkedModelSerializer",
             "DEFAULT_PERMISSION_CLASSES": [
                 "rest_framework.permissions.IsAuthenticated",
             ],
-            "EXCEPTION_HANDLER": "django_ixctl.rest.exception_handler",
+            "EXCEPTION_HANDLER": "fullctl.django.rest.core.exception_handler",
             "DEFAULT_THROTTLE_RATES": {"email": "1/minute"},
         },
         LOGGING={
             "version": 1,
             "disable_existing_loggers": False,
             "handlers": {
-                "stderr": {"level": "DEBUG", "class": "logging.StreamHandler",},
+                "stderr": {
+                    "level": "DEBUG",
+                    "class": "logging.StreamHandler",
+                },
             },
             "loggers": {
                 "": {"handlers": ["stderr"], "level": "DEBUG", "propagate": False},
@@ -102,7 +111,9 @@ def pytest_configure():
         USE_TZ=True,
         PEERINGDB_SYNC_STRIP_TZ=True,
         MANAGED_BY_OAUTH=False,
-        OAUTH_TWENTYC_HOST="localhost",
-        COUNTRIES_OVERRIDE={"XK": _("Kosovo"),},
+        COUNTRIES_OVERRIDE={
+            "XK": _("Kosovo"),
+        },
         TWENTYC_ENDPOINT="https://account.20c.com",
+        USE_LOCAL_PERMISSIONS=True,
     )

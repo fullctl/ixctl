@@ -95,6 +95,16 @@ class InternetExchange(PdbRefModel):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     urlkey = models.CharField(max_length=255, default=generate_secret, unique=True)
+    ixf_export_privacy = models.CharField(
+        max_length=32, choices=django_ixctl.enum.IXF_EXPORT_PRIVACY_TYPES, default="public",
+    )
+
+    slug = models.SlugField(
+        max_length=64,
+        unique=False,
+        blank=True,
+        null=False
+    )
 
     instance = models.ForeignKey(
         Instance, related_name="ix_set", on_delete=models.CASCADE, null=True
@@ -110,6 +120,9 @@ class InternetExchange(PdbRefModel):
         db_table = "ixctl_ix"
         verbose_name_plural = _("Internet Exchanges")
         verbose_name = _("Internet Exchange")
+        constraints = [
+            models.UniqueConstraint(fields=['instance', 'slug'], name='unique_slug_instance_pair')
+        ]
 
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
@@ -171,16 +184,24 @@ class InternetExchange(PdbRefModel):
         """
 
         return reverse(
-            "ixf export", args=(self.instance.org.slug, self.instance.secret,)
+            "ixf export", args=(self.instance.org.slug, self.slug,)
         )
 
     @property
     def org(self):
         return self.instance.org
 
+    def _default_slug(self):
+        slug = self.name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
+        return slug
 
     def __str__(self):
         return f"{self.name} ({self.id})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self._default_slug()
+        super().save(*args, **kwargs)
 
 
 @reversion.register()
