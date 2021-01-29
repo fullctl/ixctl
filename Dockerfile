@@ -29,7 +29,7 @@ FROM base as builder
 RUN apk --update --no-cache add $BUILD_DEPS
 
 # create venv
-RUN pip install -U pip wheel
+RUN pip install -U pip
 
 # pipenv install
 # RUN pip install -U pipenv
@@ -47,19 +47,7 @@ WORKDIR /build
 # individual files here instead of COPY . . for caching
 COPY pyproject.toml poetry.lock ./
 
-RUN . "$VIRTUAL_ENV"/bin/activate && poetry install --no-root
-
-COPY . .
-RUN . "$VIRTUAL_ENV"/bin/activate && poetry build
-
-
-
-# install your pinned requirements first, before copying your code
-# Need to export without hashes bc we're using some VCS repos
-# RUN poetry export -f requirements.txt --without-hashes | "$VIRTUAL_ENV"/bin/pip install -r /dev/stdin
-# use poetry build to build a wheel, and then pip-install that into your virtualenv
-COPY . .
-# RUN poetry build && "$VIRTUAL_ENV"/bin/pip install dist/*.whl
+RUN . "$VIRTUAL_ENV"/bin/activate && poetry install --no-root --no-dev
 
 COPY Ctl/VERSION Ctl/
 
