@@ -28,26 +28,17 @@ FROM base as builder
 
 RUN apk --update --no-cache add $BUILD_DEPS
 
-# create venv
 RUN pip install -U pip
 
-# pipenv install
-# RUN pip install -U pipenv
-
-# poetry install
 RUN pip install "poetry==$POETRY_VERSION"
 RUN python3 -m venv "$VIRTUAL_ENV"
 
 WORKDIR /build
 
-# PipFile install
-# COPY Pipfile* ./
-# RUN pipenv install --dev --ignore-pipfile
-
 # individual files here instead of COPY . . for caching
 COPY pyproject.toml poetry.lock ./
 
-RUN . "$VIRTUAL_ENV"/bin/activate && poetry install --no-root --no-dev
+RUN poetry install --no-root --no-dev
 
 COPY Ctl/VERSION Ctl/
 
@@ -68,7 +59,7 @@ RUN apk add $RUN_DEPS
 RUN adduser -Du $uid $USER
 
 WORKDIR $IXCTL_HOME
-# This stays the same
+
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
 
 
@@ -85,8 +76,6 @@ FROM final
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
 
-RUN . "$VIRTUAL_ENV"/bin/activate
-
 RUN ln -s $IXCTL_HOME/entrypoint.sh /entrypoint
 RUN ln -s /venv $IXCTL_HOME/venv
 
@@ -99,4 +88,4 @@ ENV UWSGI_SOCKET=127.0.0.1:6002
 USER $USER
 
 ENTRYPOINT ["/entrypoint"]
-CMD ["runserver", "127.0.0.1:8000"]
+CMD ["runserver"]
