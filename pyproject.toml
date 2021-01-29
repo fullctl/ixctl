@@ -2,7 +2,7 @@
 name = "ixctl"
 repository = "https://github.com/fullctl/ixctl"
 version = "0.1.0"
-description = "Full control of your environment"
+description = "ix control"
 authors = ["20C <code@20c.com>"]
 license = "Apache-2.0"
 
@@ -11,8 +11,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Topic :: Software Development",
-    "Topic :: Software Development :: Build Tools",
-    "Topic :: Software Development :: Documentation",
 ]
 
 
