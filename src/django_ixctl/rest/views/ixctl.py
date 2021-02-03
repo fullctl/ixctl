@@ -21,25 +21,7 @@ from django_ixctl.rest.route.ixctl import route
 
 from django_ixctl.rest.decorators import grainy_endpoint
 from fullctl.django.rest.decorators import load_object
-
-
-class CachedObjectMixin:
-    def get_object(self):
-        if getattr(self, "_obj", None) is None:
-            self._obj = super().get_object()
-
-        return self._obj
-
-
-class OrgQuerysetMixin:
-    """
-    For objects with URLs that require an "org_tag", this filters
-    the resulting queryset by matching the instance org to the
-    provided slug.
-    """
-    def get_queryset(self):
-        org_tag = self.kwargs["org_tag"]
-        return self.queryset.filter(instance__org__slug=org_tag)
+from fullctl.django.rest.mixins import CachedObjectMixin, OrgQuerysetMixin
 
 
 class IxOrgQuerysetMixin:
