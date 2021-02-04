@@ -3,9 +3,13 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from django.conf import settings
 
+import fullctl.django.rest.urls.service_bridge as service_bridge
 import django_ixctl.views as views
+import django_ixctl.service_bridge
 
-urlpatterns = [
+urlpatterns = service_bridge.urlpatterns(["aaactl", "devicectl"])
+
+urlpatterns += [
     path(
         "api/",
         include(("django_ixctl.rest.urls.ixctl", "ixctl_api"), namespace="ixctl_api"),
