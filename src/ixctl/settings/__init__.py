@@ -12,9 +12,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
-from django.utils.translation import gettext_lazy as _
-
-
 _DEFAULT_ARG = object()
 
 
@@ -45,7 +42,8 @@ def set_default(name, value):
 def set_from_env(name, default=_DEFAULT_ARG):
     """
     Sets a global variable from a environment variable of the same name.
-    This is useful to leave the option unset and use Django's default (which may change).
+    This is useful to leave the option unset and use Django's default
+    (which may change).
     """
     if default is _DEFAULT_ARG and name not in os.environ:
         return
@@ -54,7 +52,8 @@ def set_from_env(name, default=_DEFAULT_ARG):
 
 
 def set_option(name, value):
-    """ Sets an option, first checking for env vars, then checking for value already set, then going to the default value if passed. """
+    """Sets an option, first checking for env vars, then checking for value already set,
+    then going to the default value if passed."""
     if name in os.environ:
         globals()[name] = os.environ.get(name)
 
@@ -63,7 +62,8 @@ def set_option(name, value):
 
 
 def set_bool(name, value):
-    """ Sets and option, first checking for env vars, then checking for value already set, then going to the default value if passed. """
+    """Sets and option, first checking for env vars, then checking for value already set,
+    then going to the default value if passed."""
     if name in os.environ:
         envval = os.environ.get(name).lower()
         if envval in ["1", "true", "y", "yes"]:
@@ -227,14 +227,15 @@ DATABASES = {
 }
 
 
-####################### start concat config
-
+# start concat config
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        )
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
@@ -298,7 +299,7 @@ AUTHENTICATION_BACKENDS = [
 
 GRAINY_REMOTE = {
     "url_load": f"{OAUTH_TWENTYC_HOST}/grainy/load/",
-    #"url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
+    # "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
 }
 
 set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
@@ -339,11 +340,15 @@ REST_FRAMEWORK = {
     ),
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
-    "DEFAULT_MODEL_SERIALIZER_CLASS": "rest_framework.serializers.HyperlinkedModelSerializer",
+    "DEFAULT_MODEL_SERIALIZER_CLASS": (
+        "rest_framework.serializers.HyperlinkedModelSerializer"
+    ),
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     # Handle rest of permissioning via django-namespace-perms
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated",],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
     # FIXME: need to somehow allow different drf settings by app
     "EXCEPTION_HANDLER": "fullctl.django.rest.core.exception_handler",
     "DEFAULT_THROTTLE_RATES": {"email": "1/minute"},

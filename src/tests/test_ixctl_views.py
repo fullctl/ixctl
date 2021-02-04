@@ -1,6 +1,7 @@
 import json
-from django.urls import reverse
+
 import django_peeringdb.models.concrete as pdb_models
+from django.urls import reverse
 
 
 def test_view_instance(db, pdb_data, account_objects):
@@ -26,12 +27,12 @@ def test_view_ixf_export_public(db, pdb_data, account_objects):
     ix = account_objects.ix
     assert ix.ixf_export_privacy == "public"
     url = reverse(
-            "ixf export",
-            args=(
-                account_objects.org.slug,
-                ix.slug,
-            ),
-        )
+        "ixf export",
+        args=(
+            account_objects.org.slug,
+            ix.slug,
+        ),
+    )
     response = account_objects.client.get(url)
     assert response.status_code == 200
 
@@ -44,12 +45,12 @@ def test_view_ixf_export_private(db, pdb_data, account_objects):
     ix.refresh_from_db()
 
     url = reverse(
-            "ixf export",
-            args=(
-                account_objects.org.slug,
-                ix.slug,
-            ),
-        )
+        "ixf export",
+        args=(
+            account_objects.org.slug,
+            ix.slug,
+        ),
+    )
     response = account_objects.client.get(url)
     assert response.status_code == 404
 
@@ -102,7 +103,6 @@ def test_view_ixf_export_pretty(db, pdb_data, account_objects, client_anon):
 
 
 def test_view_ixf_export_error(db, pdb_data, account_objects, client_anon):
-    ix = account_objects.ix
     response = account_objects.client.get(
         reverse(
             "ixf export",

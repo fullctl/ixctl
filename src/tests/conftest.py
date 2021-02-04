@@ -1,3 +1,4 @@
-import pytest
-from tests.fixtures import *
-from tests.djangoinit import pytest_configure
+import pytest  # noqa: F401
+
+from tests.djangoinit import pytest_configure  # noqa: F401
+from tests.fixtures import *  # noqa: F401, F403

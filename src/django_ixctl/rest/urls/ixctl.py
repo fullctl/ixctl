@@ -1,12 +1,7 @@
-from django.urls import path, include
-from django_ixctl.rest.views.ixctl import (
-    InternetExchange,
-    Member,
-    Routeserver,
-    RouteserverConfig,
-)
-import django_ixctl.rest.route.ixctl
+from django.urls import include, path
 
+import django_ixctl.rest.route.ixctl
+import django_ixctl.rest.views.ixctl
 
 urlpatterns = [
     path("", include(django_ixctl.rest.route.ixctl.router.urls)),

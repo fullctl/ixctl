@@ -1,12 +1,11 @@
 import pytest
-from django.core.management import call_command
 from django.conf import settings
+from django.core.management import call_command
 
 import django_ixctl.models as models
 
 
 def test_rsconf_generate(db, pdb_data, account_objects, capsys):
-    rs = account_objects.routeserver
     assert models.RouteserverConfig.objects.count() == 0
     call_command("ixctl_rsconf_generate")
     assert models.RouteserverConfig.objects.count() == 1
@@ -18,7 +17,6 @@ def test_rsconf_generate(db, pdb_data, account_objects, capsys):
 
 def test_rsconf_generate_outdated(db, pdb_data, account_objects, capsys):
     rs = account_objects.routeserver
-    rsconf = rs.rsconf
     # Make rsconf outdated
     rs.ars_type = "bird2"
     rs.save()

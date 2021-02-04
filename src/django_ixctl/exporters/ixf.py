@@ -4,7 +4,6 @@ import json
 
 def export(ix, pretty=False):
     member_list = []
-    ixp_list = []
 
     rv = {
         "version": "0.6",

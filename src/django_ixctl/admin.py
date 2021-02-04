@@ -1,17 +1,15 @@
 from django.contrib import admin
-from django.utils.translation import gettext as _
 from django_handleref.admin import VersionAdmin
+from fullctl.django.models.concrete import APIKey, OrganizationUser
 
 from django_ixctl.models import (
-    Organization,
-    OrganizationUser,
-    APIKey,
     InternetExchange,
     InternetExchangeMember,
+    Network,
+    Organization,
+    PermissionRequest,
     Routeserver,
     RouteserverConfig,
-    Network,
-    PermissionRequest,
 )
 
 
@@ -62,6 +60,7 @@ class InternetInternetExchangeAdmin(BaseAdmin):
 class RouteserverConfigAdmin(BaseAdmin):
     list_display = ("rs", "created", "updated", "generated")
 
+
 @admin.register(Network)
 class NetworkAdmin(BaseAdmin):
     list_display = ("asn", "name", "created", "updated", "org")
@@ -70,6 +69,7 @@ class NetworkAdmin(BaseAdmin):
     def org(self, obj):
         return obj.instance.org
 
+
 @admin.register(PermissionRequest)
 class PermissionRequestAdmin(BaseAdmin):
-    list_display = ("org","user","created","type")
+    list_display = ("org", "user", "created", "type")

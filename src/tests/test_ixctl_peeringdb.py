@@ -1,6 +1,6 @@
-import django_ixctl.models as models
 import django_peeringdb.models.concrete as pdb_models
 
+import django_ixctl.models as models
 from django_ixctl import peeringdb
 
 

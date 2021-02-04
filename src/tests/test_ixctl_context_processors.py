@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from fullctl.django import context_processors
 
+
 # Settings fixture allows for safe manipulations of settings inside test
 def test_account_service(db, pdb_data, account_objects, settings):
 
@@ -16,9 +17,7 @@ def test_account_service(db, pdb_data, account_objects, settings):
 
     settings.MANAGED_BY_OAUTH = True
     context = context_processors.account_service(request)
-    print(context["account_service"])
-
-    assert context["oauth_manages_org"] == True
+    assert context["oauth_manages_org"] is True
     assert context["account_service"] == expected
 
     settings.MANAGED_BY_OAUTH = False

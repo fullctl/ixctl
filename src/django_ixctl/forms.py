@@ -1,6 +1,6 @@
-from django import forms
-from dal import autocomplete
 import django_peeringdb.models.concrete as pdb_models
+from dal import autocomplete
+from django import forms
 from django.utils.translation import gettext as _
 
 

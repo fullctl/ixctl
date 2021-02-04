@@ -1,12 +1,14 @@
-import json
 import ipaddress
+import json
 import os
+
+import django_peeringdb.models.concrete as pdb_models
 import pytest
-from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.urls import reverse
+from fullctl.django.models.concrete import OrganizationUser
 
 import django_ixctl.models as models
-import django_peeringdb.models.concrete as pdb_models
 
 
 def test_pdb_create_error(db, pdb_data, account_objects):
@@ -46,16 +48,15 @@ def test_org_sync_single_change(db, pdb_data, account_objects):
     org.refresh_from_db()
     assert org.name == "changed name"
     assert org.slug == "changed slug"
-    assert org.personal == False
+    assert org.personal is False
 
 
 def test_org_sync_single_new(db, pdb_data, account_objects):
-    org = account_objects.org
     data = {"id": 3, "name": "org3-test", "slug": "org3", "personal": False}
     new_org = models.Organization.sync_single(data, account_objects.user, None)
     assert new_org.name == "org3-test"
     assert new_org.slug == "org3"
-    assert models.OrganizationUser.objects.filter(
+    assert OrganizationUser.objects.filter(
         org=new_org.id, user=account_objects.user.id
     ).exists()
 
@@ -65,7 +66,7 @@ def test_org_sync_multiple(db, pdb_data, account_objects):
         {"id": 3, "name": "org3-test", "slug": "org3", "personal": False},
         {"id": 4, "name": "org4-test", "slug": "org4", "personal": False},
     ]
-    synced = models.Organization.sync(orgs, account_objects.user, None)
+    models.Organization.sync(orgs, account_objects.user, None)
     assert models.Organization.objects.filter(name="org3-test").exists()
     assert models.Organization.objects.filter(name="org4-test").exists()
     # Assert the synced orgs are the only orgs that the user belongs to now
@@ -89,7 +90,7 @@ def test_instance_create(db, pdb_data, account_objects):
 
 
 def test_orguser(db, pdb_data, account_objects):
-    orguser = models.OrganizationUser.objects.filter(
+    orguser = OrganizationUser.objects.filter(
         org=account_objects.org, user=account_objects.user
     ).first()
     assert orguser.__str__() == "user_test <test@localhost>"
@@ -178,7 +179,6 @@ def test_ix_ixf_export_url(db, pdb_data, account_objects):
 
 
 def test_ixmember(db, pdb_data, account_objects):
-    net = account_objects.pdb_net
     netixlan = pdb_models.NetworkIXLan.objects.filter(ixlan_id=239).first()
     # The following line also runs the
     # create_from_pdb method of the InternetExchangeMember
@@ -205,12 +205,12 @@ def test_routeserver(db, pdb_data, account_objects):
     assert rs.name == "test routeserver"
     assert rs.asn == account_objects.pdb_net.asn
     assert rs.router_id == ipaddress.IPv4Address("192.168.0.1")
-    assert rs.rpki_bgp_origin_validation == False
+    assert rs.rpki_bgp_origin_validation is False
     assert rs.ars_type == "bird"
     assert rs.max_as_path_length == 32
     assert rs.no_export_action == "pass"
-    assert rs.graceful_shutdown == False
-    assert rs.extra_config == None
+    assert rs.graceful_shutdown is False
+    assert rs.extra_config is None
 
     assert rs.display_name == rs.name
     assert (
@@ -261,15 +261,15 @@ def test_routeserver_ars_clients(db, pdb_data, account_objects):
 def test_routeserver_rsconf(db, pdb_data, account_objects):
     rs = account_objects.routeserver
     # This property creates a config if it doesn't already exist
-    rsconf = rs.rsconf
+    rs.rsconf
     assert models.RouteserverConfig.objects.filter(rs=rs).exists()
 
 
 def test_rsconf(db, pdb_data, account_objects):
     try:
-        from yaml import CLoader as Loader, CDumper as Dumper
+        from yaml import CDumper as Dumper
     except ImportError:
-        from yaml import Loader, Dumper
+        from yaml import Dumper
     import yaml
 
     rs = account_objects.routeserver
@@ -286,19 +286,19 @@ def test_rsconf_outdated_update_rs(db, pdb_data, account_objects):
     rs = account_objects.routeserver
     rsconf = rs.rsconf
 
-    assert rsconf.outdated == False
+    assert rsconf.outdated is False
     # Update rs
     rs.ars_type = "bird2"
     rs.save()
-    assert rsconf.outdated == True
+    assert rsconf.outdated is True
 
 
 def test_rsconf_outdated_update_ixmember(db, pdb_data, account_objects):
     rs = account_objects.routeserver
     rsconf = rs.rsconf
-    assert rsconf.outdated == False
+    assert rsconf.outdated is False
 
     ixmember = rs.ix.member_set.filter(is_rs_peer=True).first()
     ixmember.name = "Changed name"
     ixmember.save()
-    assert rsconf.outdated == True
+    assert rsconf.outdated is True
