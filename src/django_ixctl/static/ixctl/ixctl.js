@@ -21,7 +21,7 @@ $ctl.application.Ixctl = $tc.extend(
             this.exchanges[data[i].id] = data[i];
             this.ix_slugs[data[i].id] = data[i].slug;
           }
-          
+
           if(data.length == 0) {
             $e.select_ix.attr('disabled', true)
           } else {

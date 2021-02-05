@@ -20,8 +20,9 @@ from django_ixctl.rest.route.ixctl import route
 
 
 from django_ixctl.rest.decorators import grainy_endpoint
-from fullctl.django.rest.decorators import load_object
+from fullctl.django.rest.decorators import load_object, billable
 from fullctl.django.rest.mixins import CachedObjectMixin, OrgQuerysetMixin
+
 
 
 class IxOrgQuerysetMixin:
@@ -178,6 +179,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
+    @billable("fullctl.ixctl.members")
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
         namespace="member.{request.org.permission_id}.{ix.pk}.?",
