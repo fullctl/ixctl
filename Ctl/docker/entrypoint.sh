@@ -23,7 +23,8 @@ case "$@" in
     source venv/bin/activate
     cd main
     export DJANGO_SETTINGS_MODULE=ixctl.settings
-    pytest tests/
+    pytest tests/ -vv --cov-report=term-missing --cov-report=xml --cov=django_ixctl --cov=ixctl
+    coverage report
     ;;
   "test_mode" )
     source venv/bin/activate
