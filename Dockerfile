@@ -10,6 +10,7 @@ ARG build_deps=" \
     linux-headers \
     make \
     openssl-dev \
+    curl \
     "
 ARG run_deps=" \
     postgresql-libs \
@@ -28,9 +29,14 @@ FROM base as builder
 
 RUN apk --update --no-cache add $BUILD_DEPS
 
-RUN pip install -U pip
+# Install Rust to install Poetry
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
+# Use Pip to install Poetry
 RUN pip install "poetry==$POETRY_VERSION"
+
+# Create a VENV
 RUN python3 -m venv "$VIRTUAL_ENV"
 
 WORKDIR /build
@@ -38,6 +44,9 @@ WORKDIR /build
 # individual files here instead of COPY . . for caching
 COPY pyproject.toml poetry.lock ./
 
+# Need to upgrade pip and wheel within Poetry for all its installs
+RUN poetry run pip install --upgrade pip
+RUN poetry run pip install --upgrade wheel
 RUN poetry install --no-root
 
 COPY Ctl/VERSION Ctl/
