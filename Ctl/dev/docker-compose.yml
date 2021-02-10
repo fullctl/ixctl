@@ -26,3 +26,6 @@ services:
       - ../../src:/srv/ixctl/main
     depends_on:
       - postgres
+
+volumes:
+  postgres_data:
