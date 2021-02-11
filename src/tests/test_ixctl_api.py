@@ -1,6 +1,5 @@
 import json
 
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 import django_ixctl.models as models
@@ -506,33 +505,3 @@ def test_retrieve_routeserverconfig(db, pdb_data, account_objects):
         reverse("ixctl_api:rsconf-plain", args=(org.slug, ix.slug, rs.name))
     )
     assert response_plain.status_code == 200
-
-
-def test_list_users(db, pdb_data, account_objects):
-    client = account_objects.api_client
-    org = account_objects.org
-
-    response = client.get(reverse("ixctl_api:user-list", args=(org.slug,)))
-
-    assert response.status_code == 200
-    data = response.json()["data"]
-    assert len(data) == get_user_model().objects.count()
-    assert set([d["name"] for d in data]) == set(
-        [
-            f"{user.first_name} {user.last_name}"
-            for user in get_user_model().objects.all()
-        ]
-    )
-
-
-def test_list_orgs(db, pdb_data, account_objects):
-    client = account_objects.api_client
-
-    response = client.get(reverse("ixctl_account_api:org-list"))
-
-    assert response.status_code == 200
-    data = response.json()["data"]
-    assert len(data) == len(account_objects.orgs)
-    assert set([d["name"] for d in data]) == set(
-        [org.display_name for org in account_objects.orgs]
-    )
