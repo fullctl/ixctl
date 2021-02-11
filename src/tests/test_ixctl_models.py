@@ -6,7 +6,6 @@ import django_peeringdb.models.concrete as pdb_models
 import pytest
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from fullctl.django.models.concrete import OrganizationUser
 
 import django_ixctl.models as models
 
@@ -87,20 +86,6 @@ def test_instance_create(db, pdb_data, account_objects):
     instance = models.Instance.get_or_create(org)
     assert instance.org == org
     assert instance.org.status == "ok"
-
-
-def test_orguser(db, pdb_data, account_objects):
-    orguser = OrganizationUser.objects.filter(
-        org=account_objects.org, user=account_objects.user
-    ).first()
-    assert orguser.__str__() == "user_test <test@localhost>"
-
-
-def test_apikey(db, pdb_data, account_objects):
-    user = account_objects.user
-    models.APIKey.objects.create(key="abcdefgh", user=user)
-    user.refresh_from_db()
-    assert type(user.key_set.first()) == models.APIKey
 
 
 def test_ix(db, pdb_data, account_objects):
