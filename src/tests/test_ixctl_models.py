@@ -16,6 +16,7 @@ def test_pdb_create_error(db, pdb_data, account_objects):
             account_objects.ixctl_instance, account_objects.pdb_ix
         )
 
+
 def test_instance(db, pdb_data, account_objects):
     instance = account_objects.ixctl_instance
     assert instance.org == account_objects.org

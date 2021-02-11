@@ -6,6 +6,8 @@ import django_ixctl.models as models
 
 
 def test_rsconf_generate(db, pdb_data, account_objects, capsys):
+    rs = account_objects.routeserver
+    assert list(models.Routeserver.objects.all()) == [rs]
     assert models.RouteserverConfig.objects.count() == 0
     call_command("ixctl_rsconf_generate")
     assert models.RouteserverConfig.objects.count() == 1
