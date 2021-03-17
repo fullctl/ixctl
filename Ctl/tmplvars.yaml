@@ -1,0 +1,6 @@
+project_name: "ixctl"
+service_home: "/src/ixctl"
+virtual_env: "venv"
+database_name: "ixctl"
+database_user: "ixctl"
+database_password: "devPASSWORD"
