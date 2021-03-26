@@ -39,15 +39,22 @@ fullctl = { url = "https://github.com/fullctl/fullctl/archive/master.zip" }
 peeringdb = { url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
 
 [tool.poetry.dev-dependencies]
+
 # tests
 pytest = ">=6.0.1"
 pytest-django = ">=3.8.0"
 pytest-cov = "*"
+
 # linting
 bandit = "^1.6.2"
 black = "^20.8b1"
 isort = "^5.7.0"
 flake8 = "^3.8.4"
+
+# ctl
+ctl = "^1.0.0"
+jinja2 = "^2.11.2"
+tmpl = "^0.3.0"
 
 [tool.isort]
 profile = "black"
