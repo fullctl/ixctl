@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from confu.util import SettingsManager
 
 _DEFAULT_ARG = object()
 
@@ -33,52 +34,6 @@ def get_locale_name(code):
     return language_map.get(language, code)
 
 
-def set_default(name, value):
-    """ Sets the default value for the option if it's not already set. """
-    if name not in globals():
-        globals()[name] = value
-
-
-def set_from_env(name, default=_DEFAULT_ARG):
-    """
-    Sets a global variable from a environment variable of the same name.
-    This is useful to leave the option unset and use Django's default
-    (which may change).
-    """
-    if default is _DEFAULT_ARG and name not in os.environ:
-        return
-
-    globals()[name] = os.environ.get(name, default)
-
-
-def set_option(name, value):
-    """Sets an option, first checking for env vars, then checking for value already set,
-    then going to the default value if passed."""
-    if name in os.environ:
-        globals()[name] = os.environ.get(name)
-
-    if name not in globals():
-        globals()[name] = value
-
-
-def set_bool(name, value):
-    """Sets and option, first checking for env vars, then checking for value already set,
-    then going to the default value if passed."""
-    if name in os.environ:
-        envval = os.environ.get(name).lower()
-        if envval in ["1", "true", "y", "yes"]:
-            globals()[name] = True
-        elif envval in ["0", "false", "n", "no"]:
-            globals()[name] = False
-        else:
-            raise ValueError(
-                "{} is a boolean, cannot match '{}'".format(name, os.environ[name])
-            )
-
-    if name not in globals():
-        globals()[name] = value
-
-
 def try_include(filename):
     """ Tries to include another file from the settings directory. """
     print_debug(f"including {filename} {RELEASE_ENV}")
@@ -98,16 +53,21 @@ def read_file(name):
         return fh.read()
 
 
+# Intialize settings manager with global variable
+
+settings_manager = SettingsManager(globals())
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 # set RELEASE_ENV, usually one of dev, beta, tutor, prod
-set_option("RELEASE_ENV", "dev")
+settings_manager.set_option("RELEASE_ENV", "dev")
 
 if RELEASE_ENV == "dev":
-    set_bool("DEBUG", True)
+    settings_manager.set_bool("DEBUG", True)
 else:
-    set_bool("DEBUG", False)
+    settings_manager.set_bool("DEBUG", False)
 
 # look for mainsite/settings/${RELEASE_ENV}.py and load if it exists
 env_file = os.path.join(os.path.dirname(__file__), f"{RELEASE_ENV}.py")
@@ -116,22 +76,22 @@ try_include(env_file)
 
 print_debug(f"Release env is '{RELEASE_ENV}'")
 
-set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "etc/VERSION")).strip())
+settings_manager.set_option("PACKAGE_VERSION", read_file(os.path.join(BASE_DIR, "etc/VERSION")).strip())
 
 # Contact email, from address, support email
-set_from_env("SERVER_EMAIL")
+settings_manager.set_from_env("SERVER_EMAIL")
 
 # django secret key
-set_from_env("SECRET_KEY")
+settings_manager.set_from_env("SECRET_KEY")
 
 # database
-set_option("DATABASE_ENGINE", "postgresql_psycopg2")
+settings_manager.set_option("DATABASE_ENGINE", "postgresql_psycopg2")
 
-set_from_env("DATABASE_HOST")
-set_from_env("DATABASE_PORT")
-set_from_env("DATABASE_NAME")
-set_from_env("DATABASE_USER")
-set_from_env("DATABASE_PASSWORD")
+settings_manager.set_from_env("DATABASE_HOST")
+settings_manager.set_from_env("DATABASE_PORT")
+settings_manager.set_from_env("DATABASE_NAME")
+settings_manager.set_from_env("DATABASE_USER")
+settings_manager.set_from_env("DATABASE_PASSWORD")
 
 
 # Django config
@@ -148,17 +108,17 @@ USE_L10N = True
 ADMINS = ("Support", SERVER_EMAIL)
 MANAGERS = ADMINS
 
-set_option("HOST_URL", "https://localhost:8000")
+settings_manager.set_option("HOST_URL", "https://localhost:8000")
 
-set_option("MEDIA_ROOT", os.path.abspath(os.path.join(BASE_DIR, "media")))
-set_option("MEDIA_URL", f"/m/{PACKAGE_VERSION}/")
+settings_manager.set_option("MEDIA_ROOT", os.path.abspath(os.path.join(BASE_DIR, "media")))
+settings_manager.set_option("MEDIA_URL", f"/m/{PACKAGE_VERSION}/")
 
-set_option("STATIC_ROOT", os.path.abspath(os.path.join(BASE_DIR, "static")))
-set_option("STATIC_URL", f"/s/{PACKAGE_VERSION}/")
+settings_manager.set_option("STATIC_ROOT", os.path.abspath(os.path.join(BASE_DIR, "static")))
+settings_manager.set_option("STATIC_URL", f"/s/{PACKAGE_VERSION}/")
 
-set_option("SESSION_COOKIE_NAME", "ixctlsid")
+settings_manager.set_option("SESSION_COOKIE_NAME", "ixctlsid")
 
-set_option("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
+settings_manager.set_option("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 
 AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
@@ -277,19 +237,19 @@ LOGIN_URL = "/login"
 # MANY - any organization may maintain and create their
 # own exchange data
 
-set_option("IXCTL_MODE", "MANY")
+settings_manager.set_option("IXCTL_MODE", "MANY")
 
 # OAUTH
 
 # 20C
 
-set_option("OAUTH_TWENTYC_HOST", "https://account.20c.com")
+settings_manager.set_option("OAUTH_TWENTYC_HOST", "https://account.20c.com")
 OAUTH_TWENTYC_ACCESS_TOKEN_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/token/"
 OAUTH_TWENTYC_AUTHORIZE_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/authorize/"
 OAUTH_TWENTYC_PROFILE_URL = f"{OAUTH_TWENTYC_HOST}/account/auth/o/profile/"
 
-set_option("OAUTH_TWENTYC_KEY", "")
-set_option("OAUTH_TWENTYC_SECRET", "")
+settings_manager.set_option("OAUTH_TWENTYC_KEY", "")
+settings_manager.set_option("OAUTH_TWENTYC_SECRET", "")
 
 SOCIAL_AUTH_TWENTYC_KEY = OAUTH_TWENTYC_KEY
 SOCIAL_AUTH_TWENTYC_SECRET = OAUTH_TWENTYC_SECRET
@@ -302,7 +262,7 @@ GRAINY_REMOTE = {
     # "url_get": f"{OAUTH_TWENTYC_HOST}/grainy/get/" + "{}/",
 }
 
-set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
+settings_manager.set_option("SOCIAL_AUTH_REDIRECT_IS_HTTPS", True)
 
 SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.social_auth.social_details",
