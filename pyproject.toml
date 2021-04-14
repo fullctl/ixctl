@@ -37,6 +37,7 @@ arouteserver = "*"
 celery = "<6,>=5"
 fullctl = { url = "https://github.com/fullctl/fullctl/archive/master.zip" }
 peeringdb = { url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
+confu = ">=1.5,<2"
 
 [tool.poetry.dev-dependencies]
 # tests
