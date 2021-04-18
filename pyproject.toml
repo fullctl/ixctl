@@ -35,9 +35,10 @@ pyyaml = "*"
 pip = "*"
 arouteserver = "*"
 celery = "<6,>=5"
-fullctl = { url = "https://github.com/fullctl/fullctl/archive/master.zip" }
+fullctl = { url = "https://github.com/fullctl/fullctl/archive/refs/heads/whitenoise.zip" }
 peeringdb = { url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
 confu = ">=1.5,<2"
+uWSGI = "^2.0.19"
 
 [tool.poetry.dev-dependencies]
 # tests
@@ -49,6 +50,8 @@ bandit = "^1.6.2"
 black = "^20.8b1"
 isort = "^5.7.0"
 flake8 = "^3.8.4"
+ctl = "^1.0.0"
+tmpl = "^0.3.0"
 
 [tool.isort]
 profile = "black"
