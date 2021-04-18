@@ -4,6 +4,22 @@ ctl:
     - type: changelog
       name: changelog
 
+    - name: build
+      type: command
+      config:
+        shell: true
+        command:
+          - "docker build -t $(basename $(pwd)):$(cat Ctl/VERSION) ."
+
+    - name: deploy
+      type: command
+      config:
+        shell: true
+        command:
+          - "docker build -t $(basename $(pwd)):$(cat Ctl/VERSION) ."
+          - "docker tag $(basename $(pwd)):$(cat Ctl/VERSION) $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
+          - "docker push $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
+
   permissions:
     - namespace: "ctl"
       permission: "crud"

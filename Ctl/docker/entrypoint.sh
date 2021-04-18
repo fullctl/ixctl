@@ -5,6 +5,11 @@ function migrate_all() {
   manage migrate
 }
 
+function collect_static() {
+  echo collecting static files
+  manage collectstatic --no-input
+}
+
 
 cd $IXCTL_HOME
 case "$@" in
@@ -13,6 +18,10 @@ case "$@" in
     if [[ -z "$NO_MIGRATE" ]]; then
       migrate_all
     fi
+    if [[ -z "$NO_COLLECT_STATIC" ]]; then
+      collect_static
+    fi
+    echo launching uwsgi ${UWSGI_HTTP}
     exec venv/bin/uwsgi --ini etc/django-uwsgi.ini
     ;;
 	# good to keep it as a separate arg incase we end up with multi stage migrations tho

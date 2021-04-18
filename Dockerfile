@@ -1,7 +1,7 @@
 FROM python:3.7-alpine as base
 
 ARG virtual_env=/venv
-ARG install_to=/srv/ixctl
+ARG install_to=/srv/service
 ARG build_deps=" \
     postgresql-dev \
     g++ \
@@ -82,6 +82,8 @@ RUN chown -R $USER:$USER locale media
 #### entry point from final image, not tester
 FROM final
 
+# XXX ARG USER=acctsvc
+
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
 
@@ -92,7 +94,7 @@ COPY Ctl/docker/django-uwsgi.ini etc/
 COPY Ctl/docker/manage.sh /usr/bin/manage
 
 
-ENV UWSGI_SOCKET=127.0.0.1:6002
+#ENV UWSGI_SOCKET=127.0.0.1:6002
 
 USER $USER
 
