@@ -56,7 +56,7 @@ COPY Ctl/VERSION Ctl/
 FROM base as final
 
 ARG uid=5002
-ARG USER=acctsvc
+ARG USER=fullctl
 
 # extra settings file if needed
 # TODO keep in until final production deploy
@@ -71,18 +71,18 @@ WORKDIR $IXCTL_HOME
 
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
 
-
-
 RUN mkdir -p etc locale media static
 COPY Ctl/VERSION etc/
 COPY docs/ docs
+
+#RUN Ctl/docker/manage.sh collectstatic --no-input
 
 RUN chown -R $USER:$USER locale media
 
 #### entry point from final image, not tester
 FROM final
 
-# XXX ARG USER=acctsvc
+#  XXX ARG USER=fullctl
 
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
