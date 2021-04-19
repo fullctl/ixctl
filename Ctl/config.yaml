@@ -41,6 +41,7 @@ ctl:
           - Ctl/tmplvars.yaml
         ignore:
           - \.git/
+          - \.ixctl.env
     
     # command to remove temporary files
 
