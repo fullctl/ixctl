@@ -25,12 +25,21 @@ ctl:
           - "docker tag $(basename $(pwd)):$(cat Ctl/VERSION) $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
           - "docker push $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
 
+    - name: show_version
+      type: command
+      config:
+        shell: true
+        command:
+          - "echo version $(cat Ctl/VERSION)"
+
     - name: deploy_dev
       type: chain
       config:
         chain:
           - stage: build and deploy
             plugin: deploy
+          - stage: complete
+            plugin: show_version
 
   permissions:
     - namespace: "ctl"
