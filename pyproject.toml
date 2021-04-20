@@ -35,8 +35,8 @@ pyyaml = "*"
 pip = "*"
 arouteserver = "*"
 celery = "<6,>=5"
-fullctl = { url = "https://github.com/fullctl/fullctl/archive/refs/heads/master.zip" }
-peeringdb = { url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
+fullctl = { url = "https://github.com/fullctl/fullctl/archive/refs/heads/prep_prod.zip" }
+peeringdb = "^1.1.0"
 confu = ">=1.5,<2"
 uWSGI = "^2.0.19"
 

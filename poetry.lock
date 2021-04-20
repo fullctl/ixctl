@@ -471,7 +471,7 @@ whitenoise = ">=5.2.0,<6.0.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/fullctl/fullctl/archive/refs/heads/master.zip"
+url = "https://github.com/fullctl/fullctl/archive/refs/heads/prep_prod.zip"
 [[package]]
 name = "future"
 version = "0.18.2"
@@ -698,7 +698,7 @@ python-versions = ">=2.6"
 
 [[package]]
 name = "peeringdb"
-version = "1.0.0.1"
+version = "1.1.0"
 description = "peeringdb client and interface"
 category = "main"
 optional = false
@@ -710,9 +710,6 @@ munge = ">=0.1.5"
 PyYAML = ">=3.11"
 "twentyc.rpc" = ">=0.3.4"
 
-[package.source]
-type = "url"
-url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"
 [[package]]
 name = "pluggy"
 version = "0.13.1"
@@ -1125,7 +1122,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "6838d66b3d45d54e11b1109a81aa629300211b20f75117e4af93a22ee30bc3e3"
+content-hash = "aef837fcd7f1b46108186efdf7ff690ac351f3f4ab82cfeecb9ae4732b311e99"
 
 [metadata.files]
 aggregate6 = [
@@ -1249,9 +1246,6 @@ coverage = [
     {file = "coverage-5.5-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:8963a499849a1fc54b35b1c9f162f4108017b2e6db2c46c1bed93a72262ed083"},
     {file = "coverage-5.5-cp27-cp27mu-manylinux2010_i686.whl", hash = "sha256:869a64f53488f40fa5b5b9dcb9e9b2962a66a87dab37790f3fcfb5144b996ef5"},
     {file = "coverage-5.5-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:4a7697d8cb0f27399b0e393c0b90f0f1e40c82023ea4d45d22bce7032a5d7b81"},
-    {file = "coverage-5.5-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:8d0a0725ad7c1a0bcd8d1b437e191107d457e2ec1084b9f190630a4fb1af78e6"},
-    {file = "coverage-5.5-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:51cb9476a3987c8967ebab3f0fe144819781fca264f57f89760037a2ea191cb0"},
-    {file = "coverage-5.5-cp310-cp310-win_amd64.whl", hash = "sha256:c0891a6a97b09c1f3e073a890514d5012eb256845c451bd48f7968ef939bf4ae"},
     {file = "coverage-5.5-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:3487286bc29a5aa4b93a072e9592f22254291ce96a9fbc5251f566b6b7343cdb"},
     {file = "coverage-5.5-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:deee1077aae10d8fa88cb02c845cfba9b62c55e1183f52f6ae6a2df6a2187160"},
     {file = "coverage-5.5-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:f11642dddbb0253cc8853254301b51390ba0081750a8ac03f20ea8103f0c56b6"},
@@ -1478,7 +1472,9 @@ pbr = [
     {file = "pbr-5.5.1-py2.py3-none-any.whl", hash = "sha256:b236cde0ac9a6aedd5e3c34517b423cd4fd97ef723849da6b0d2231142d89c00"},
     {file = "pbr-5.5.1.tar.gz", hash = "sha256:5fad80b613c402d5b7df7bd84812548b2a61e9977387a80a5fc5c396492b13c9"},
 ]
-peeringdb = []
+peeringdb = [
+    {file = "peeringdb-1.1.0.tar.gz", hash = "sha256:927a34c31e5b93130a855bb4c8fd84dcf604b9939678f75918f7c1bd8a501471"},
+]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
