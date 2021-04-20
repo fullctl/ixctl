@@ -54,7 +54,7 @@ ctl:
 
     # chain plugin for entire template process
 
-    - name: chain_template
+    - name: sync_tmpl
       type: chain
       config:
         chain:
