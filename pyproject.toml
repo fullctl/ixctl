@@ -52,6 +52,7 @@ isort = "^5.7.0"
 flake8 = "^3.8.4"
 ctl = "^1.0.0"
 tmpl = "^0.3.0"
+docker-compose = "^1.29.1"
 
 [tool.isort]
 profile = "black"
