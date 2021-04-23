@@ -275,6 +275,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 SERVICE_TAG = "ixctl"
 
+settings_manager.set_option("SERVICE_KEY", "")
 
 # PEERINGDB
 
