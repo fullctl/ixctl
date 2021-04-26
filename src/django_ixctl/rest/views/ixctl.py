@@ -238,6 +238,7 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         return Response(serializer.data)
 
+    @billable("fullctl.ixctl.routeservers")
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
         namespace="rs.{request.org.permission_id}.{ix.pk}.?",

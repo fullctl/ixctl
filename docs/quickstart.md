@@ -23,6 +23,8 @@ Please checkout and install https://github.com/fullctl/aaactl and once you have 
 - OAUTH_TWENTYC_KEY: the oauth application client id
 - OAUTH_TWENTYC_SECRET: the oauth application client secret
 
+- SERVICE_KEY: Internal API key (can be created/managed inside aaactl django admin)
+
 Note you will need to give users permissions (in aaactl) to the following namespaces for ixctl to work correctly:
 
 - `org.{org id}`
