@@ -275,6 +275,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 SERVICE_TAG = "ixctl"
 
+settings_manager.set_option("SERVICE_KEY", "")
 
 # PEERINGDB
 
@@ -311,6 +312,10 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "fullctl.django.rest.api_schema.BaseSchema",
 }
 
+
+# SERVICE BRIDGES
+
+AAACTL_HOST = OAUTH_TWENTYC_HOST
 
 # FINALIZE
 

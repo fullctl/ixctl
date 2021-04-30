@@ -21,7 +21,7 @@ $ctl.application.Ixctl = $tc.extend(
             this.exchanges[data[i].id] = data[i];
             this.ix_slugs[data[i].id] = data[i].slug;
           }
-          console.log(data)
+
           if(data.length == 0) {
             $e.select_ix.attr('disabled', true);
             $e.button_update_ix.hide();

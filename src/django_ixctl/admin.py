@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django_handleref.admin import VersionAdmin
-from fullctl.django.models.concrete import APIKey, OrganizationUser
+from fullctl.django.models.concrete import OrganizationUser
 
 from django_ixctl.models import (
     InternetExchange,
@@ -19,11 +19,6 @@ class BaseAdmin(VersionAdmin):
 
 class BaseTabularAdmin(admin.TabularInline):
     readonly_fields = ("version",)
-
-
-@admin.register(APIKey)
-class APIKeyAdmin(BaseAdmin):
-    list_display = ("id", "user", "key")
 
 
 class OrganizationUserInline(admin.TabularInline):
