@@ -24,6 +24,7 @@ services:
         max-file: "3"
     volumes:
       - ../../src:/srv/ixctl/main
+      - ../../ars_config:/root/arouteserver
     depends_on:
       - postgres
 

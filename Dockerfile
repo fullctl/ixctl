@@ -1,7 +1,8 @@
 FROM python:3.7-alpine as base
 
 ARG virtual_env=/venv
-ARG install_to=/srv/ixctl
+ARG install_to=/srv/service
+ARG bgpq4_version=0.0.6
 ARG build_deps=" \
     postgresql-dev \
     g++ \
@@ -15,7 +16,9 @@ ARG build_deps=" \
 ARG run_deps=" \
     postgresql-libs \
     "
+
 # env to pass to sub images
+ENV BGPQ4_VERSION=$bgpq4_version
 ENV BUILD_DEPS=$build_deps
 ENV RUN_DEPS=$run_deps
 ENV IXCTL_HOME=$install_to
@@ -41,6 +44,15 @@ RUN python3 -m venv "$VIRTUAL_ENV"
 
 WORKDIR /build
 
+# build bgpq4 before venv, since it changes less often
+ADD https://github.com/bgp/bgpq4/archive/refs/tags/${BGPQ4_VERSION}.zip /build
+RUN unzip ${BGPQ4_VERSION}.zip
+WORKDIR /build/bgpq4-${BGPQ4_VERSION}
+RUN apk add autoconf automake
+RUN ./bootstrap
+RUN ./configure --prefix=/usr
+RUN make install
+
 # individual files here instead of COPY . . for caching
 COPY pyproject.toml poetry.lock ./
 
@@ -49,14 +61,13 @@ RUN poetry run pip install --upgrade pip
 RUN poetry run pip install --upgrade wheel
 RUN poetry install --no-root
 
-COPY Ctl/VERSION Ctl/
 
 #### final image
 
 FROM base as final
 
 ARG uid=5002
-ARG USER=acctsvc
+ARG USER=fullctl
 
 # extra settings file if needed
 # TODO keep in until final production deploy
@@ -70,17 +81,23 @@ RUN adduser -Du $uid $USER
 WORKDIR $IXCTL_HOME
 
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
-
-
+COPY --from=builder /usr/bin/bgpq4 /usr/bin/bgpq4
 
 RUN mkdir -p etc locale media static
 COPY Ctl/VERSION etc/
 COPY docs/ docs
 
+# XXX
+COPY ars_config/ /root/arouteserver
+
+#RUN Ctl/docker/manage.sh collectstatic --no-input
+
 RUN chown -R $USER:$USER locale media
 
 #### entry point from final image, not tester
 FROM final
+
+#  XXX ARG USER=fullctl
 
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
@@ -92,7 +109,7 @@ COPY Ctl/docker/django-uwsgi.ini etc/
 COPY Ctl/docker/manage.sh /usr/bin/manage
 
 
-ENV UWSGI_SOCKET=127.0.0.1:6002
+#ENV UWSGI_SOCKET=127.0.0.1:6002
 
 USER $USER
 

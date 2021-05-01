@@ -116,4 +116,5 @@ def pytest_configure():
         },
         TWENTYC_ENDPOINT="https://account.20c.com",
         USE_LOCAL_PERMISSIONS=True,
+        SERVICE_KEY="secret",
     )

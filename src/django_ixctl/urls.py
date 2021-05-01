@@ -1,8 +1,12 @@
 from django.urls import include, path
 
+import fullctl.django.rest.urls.service_bridge as service_bridge
 import django_ixctl.views as views
+import django_ixctl.service_bridge
 
-urlpatterns = [
+urlpatterns = service_bridge.urlpatterns(["aaactl", "devicectl"])
+
+urlpatterns += [
     path(
         "api/",
         include(("django_ixctl.rest.urls.ixctl", "ixctl_api"), namespace="ixctl_api"),
