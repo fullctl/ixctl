@@ -44,16 +44,7 @@ RUN python3 -m venv "$VIRTUAL_ENV"
 
 WORKDIR /build
 
-# individual files here instead of COPY . . for caching
-COPY pyproject.toml poetry.lock ./
-
-# Need to upgrade pip and wheel within Poetry for all its installs
-RUN poetry run pip install --upgrade pip
-RUN poetry run pip install --upgrade wheel
-RUN poetry install --no-root
-
-#ADD https://github.com/bgp/bgpq4/archive/master.zip /build
-#RUN unzip master.zip
+# build bgpq4 before venv, since it changes less often
 ADD https://github.com/bgp/bgpq4/archive/refs/tags/${BGPQ4_VERSION}.zip /build
 RUN unzip ${BGPQ4_VERSION}.zip
 WORKDIR /build/bgpq4-${BGPQ4_VERSION}
@@ -61,6 +52,14 @@ RUN apk add autoconf automake
 RUN ./bootstrap
 RUN ./configure --prefix=/usr
 RUN make install
+
+# individual files here instead of COPY . . for caching
+COPY pyproject.toml poetry.lock ./
+
+# Need to upgrade pip and wheel within Poetry for all its installs
+RUN poetry run pip install --upgrade pip
+RUN poetry run pip install --upgrade wheel
+RUN poetry install --no-root
 
 
 #### final image
