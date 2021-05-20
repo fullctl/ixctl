@@ -220,6 +220,7 @@ TEMPLATES[0]["OPTIONS"]["context_processors"] += [
     "social_django.context_processors.login_redirect",
     "fullctl.django.context_processors.account_service",
     "fullctl.django.context_processors.permissions",
+    "fullctl.django.context_processors.conf",
 ]
 
 LOGIN_REDIRECT_URL = "/"
@@ -322,6 +323,10 @@ REST_FRAMEWORK = {
 # SERVICE BRIDGES
 
 AAACTL_HOST = OAUTH_TWENTYC_HOST
+
+# OUTSIDE SERVICES
+
+settings_manager.set_option("GOOGLE_ANALYTICS_ID", "")
 
 # FINALIZE
 
