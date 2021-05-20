@@ -272,6 +272,13 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.user.user_details",
 )
 
+# allow propagation of user field changes during oauth process
+# with exception of id fields
+
+SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS = True
+
+SOCIAL_AUTH_PROTECTED_USER_FIELDS = ("id", "pk")
+
 SERVICE_TAG = "ixctl"
 
 settings_manager.set_option("SERVICE_KEY", "")
