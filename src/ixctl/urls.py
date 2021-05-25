@@ -10,8 +10,8 @@ urlpatterns = [
     path("", include("django_ixctl.urls")),
 ]
 
-handler500 = 'fullctl.django.views.handle_error_500'
-handler404 = 'fullctl.django.views.handle_error_404'
-handler403 = 'fullctl.django.views.handle_error_403'
-handler401 = 'fullctl.django.views.handle_error_401'
-handler400 = 'fullctl.django.views.handle_error_400'
+handler500 = "fullctl.django.views.handle_error_500"
+handler404 = "fullctl.django.views.handle_error_404"
+handler403 = "fullctl.django.views.handle_error_403"
+handler401 = "fullctl.django.views.handle_error_401"
+handler400 = "fullctl.django.views.handle_error_400"
