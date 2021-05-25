@@ -36,7 +36,7 @@ jobs:
           flake8 src/
           black src/ --check
           isort src/
-  
+
   test:
     needs: linting
     runs-on: ubuntu-latest
