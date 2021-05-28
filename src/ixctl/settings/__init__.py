@@ -53,7 +53,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "
 # set RELEASE_ENV, usually one of dev, beta, tutor, prod
 settings_manager.set_option("RELEASE_ENV", "dev")
 
-if RELEASE_ENV == "dev":
+if RELEASE_ENV in ("dev", "run_tests"):
     settings_manager.set_bool("DEBUG", True)
 else:
     settings_manager.set_bool("DEBUG", False)
@@ -96,7 +96,7 @@ LANGUAGE_CODE = "en-us"
 USE_I18N = True
 USE_L10N = True
 
-ADMINS = ("Support", SERVER_EMAIL)
+ADMINS = [("Support", SERVER_EMAIL)]
 MANAGERS = ADMINS
 
 settings_manager.set_option("HOST_URL", "https://localhost:8000")
@@ -283,6 +283,11 @@ SOCIAL_AUTH_PROTECTED_USER_FIELDS = ("id", "pk")
 SERVICE_TAG = "ixctl"
 
 settings_manager.set_option("SERVICE_KEY", "")
+
+# toggle billing integration with aaactl
+# if false, billing checks on api end points will be disabled
+
+settings_manager.set_bool("BILLING_INTEGRATION", True)
 
 # PEERINGDB
 

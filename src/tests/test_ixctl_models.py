@@ -20,7 +20,6 @@ def test_pdb_create_error(db, pdb_data, account_objects):
 def test_instance(db, pdb_data, account_objects):
     instance = account_objects.ixctl_instance
     assert instance.org == account_objects.org
-    assert instance.__str__() == f"{account_objects.org} (1)"
 
 
 def test_instance_create(db, pdb_data, account_objects):

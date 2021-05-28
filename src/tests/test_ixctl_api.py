@@ -458,7 +458,7 @@ def test_update_routeserver(db, pdb_data, account_objects):
         "asn": 63311,
         "graceful_shutdown": False,
         "id": 1,
-        "ix": 1,
+        "ix": models.InternetExchange.objects.first().id,
         "max_as_path_length": 32,
         "name": "changed name",  # changed
         "no_export_action": "pass",
@@ -471,6 +471,8 @@ def test_update_routeserver(db, pdb_data, account_objects):
         json.dumps(payload),
         content_type="application/json",
     )
+
+    print(response.json())
 
     assert response.status_code == 200
     # Response is correct

@@ -1,1 +1,1 @@
-import django_ixctl.rest.usage
+import django_ixctl.rest.usage  # noqa

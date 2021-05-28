@@ -7,6 +7,18 @@ from django.test import Client
 _ = lambda s: s  # noqa: E731
 
 
+def reset_auto_fields():
+    from django.core.management.color import no_style
+    from django.db import connection
+
+    from django_ixctl.models import Organization
+
+    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Organization])
+    with connection.cursor() as cursor:
+        for sql in sequence_sql:
+            cursor.execute(sql)
+
+
 class AccountObjects:
     def __init__(self, handle):
         from django.contrib.auth import get_user_model
@@ -15,6 +27,8 @@ class AccountObjects:
         from rest_framework.test import APIClient
 
         from django_ixctl.models import Organization
+
+        reset_auto_fields()
 
         self.user = user = get_user_model().objects.create_user(
             username=f"user_{handle}",

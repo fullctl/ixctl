@@ -30,6 +30,8 @@ case "$@" in
     ;;
   "run_tests" )
     source venv/bin/activate
+    export DJANGO_SETTINGS_MODULE=ixctl.settings
+    export RELEASE_ENV=run_tests
     cd main
     pytest tests/ -vv --cov-report=term-missing --cov-report=xml --cov=django_ixctl --cov=ixctl
     ;;
