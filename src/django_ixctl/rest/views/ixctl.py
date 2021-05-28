@@ -4,6 +4,8 @@ from fullctl.django.rest.decorators import load_object, billable
 from fullctl.django.rest.mixins import CachedObjectMixin, OrgQuerysetMixin
 from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
 from fullctl.django.rest.renderers import PlainTextRenderer
+from fullctl.django.auditlog import auditlog
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -72,8 +74,9 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         )
         return Response(serializer.data)
 
+    @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
-    def create(self, request, org, instance, *args, **kwargs):
+    def create(self, request, org, instance, auditlog=None, *args, **kwargs):
         data = request.data
         data["pdb_id"] = None
         serializer = Serializers.ix(data=data)
@@ -82,6 +85,9 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix = serializer.save()
         ix.instance = instance
         ix.save()
+
+        auditlog.log("ix:create", log_object=ix, ix_name=ix.name)
+
         return Response(Serializers.ix(instance=ix).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -168,13 +174,14 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
+    @auditlog()
     @billable("fullctl.ixctl.members")
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @grainy_endpoint(
         namespace="member.{request.org.permission_id}.{ix.pk}.?",
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
-    def create(self, request, org, instance, ix, *args, **kwargs):
+    def create(self, request, org, instance, ix, auditlog=None, *args, **kwargs):
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
         serializer = Serializers.member(data=data, context={"instance": instance})
@@ -182,6 +189,8 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
             return BadRequest(serializer.errors)
 
         member = serializer.save()
+
+        auditog.log("member:create", log_object=member)
 
         return Response(Serializers.member(instance=member).data)
 
