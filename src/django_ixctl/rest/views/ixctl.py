@@ -99,7 +99,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         )
         return Response(serializer.data)
 
-
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}")
@@ -136,7 +135,12 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         auditlog.log("ix:import", log_object=ix, **request.data)
 
         for member in ix.member_set.all():
-            auditlog.log("member:import", log_object=member, ix_id=member.ix_id, pdb_id=member.pdb_id)
+            auditlog.log(
+                "member:import",
+                log_object=member,
+                ix_id=member.ix_id,
+                pdb_id=member.pdb_id,
+            )
 
         return Response(Serializers.ix(instance=ix).data)
 
@@ -211,7 +215,9 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     @grainy_endpoint(
         namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}.?",
     )
-    def update(self, request, org, instance, ix, member, auditlog=None, *args, **kwargs):
+    def update(
+        self, request, org, instance, ix, member, auditlog=None, *args, **kwargs
+    ):
         serializer = request.grainy_update_serializer(
             Serializers.member, member, context={"instance": instance}
         )
@@ -231,7 +237,9 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     @grainy_endpoint(
         namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}",
     )
-    def destroy(self, request, org, instance, ix, member, auditlog=None, *args, **kwargs):
+    def destroy(
+        self, request, org, instance, ix, member, auditlog=None, *args, **kwargs
+    ):
         member.delete()
         member.id = request.data.get("id")
         auditlog.log("member:delete", log_object=member, **request.data)
@@ -276,7 +284,6 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
 
-
         routeserver = serializer.save()
 
         auditlog.log("rs:create", log_object=routeserver, **request.data)
@@ -307,7 +314,9 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
     @grainy_endpoint(
         namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
     )
-    def destroy(self, request, org, instance, ix, rs_id, auditlog=None, *args, **kwargs):
+    def destroy(
+        self, request, org, instance, ix, rs_id, auditlog=None, *args, **kwargs
+    ):
         routeserver = self.get_object()
         routeserver.delete()
         routeserver.id = request.data.get("id")
