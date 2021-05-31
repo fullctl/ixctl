@@ -86,7 +86,7 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix.instance = instance
         ix.save()
 
-        auditlog.log("ix:create", log_object=ix, ix_name=ix.name)
+        auditlog.log("ix:create", log_object=ix, **data)
 
         return Response(Serializers.ix(instance=ix).data)
 
@@ -99,9 +99,11 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         )
         return Response(serializer.data)
 
+
     @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}")
-    def update(self, request, org, ix, instance, *args, **kwargs):
+    def update(self, request, org, ix, instance, auditlog=None, *args, **kwargs):
         serializer = Serializers.ix(
             ix,
             data=request.data,
@@ -112,11 +114,15 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix = serializer.save()
         ix.instance = instance
         ix.save()
+
+        auditlog.log("ix:update", log_object=ix, **request.data)
+
         return Response(Serializers.ix(instance=ix).data)
 
     @action(detail=False, methods=["POST"], schema=PeeringDBImportSchema())
+    @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
-    def import_peeringdb(self, request, org, instance, *args, **kwargs):
+    def import_peeringdb(self, request, org, instance, auditlog=None, *args, **kwargs):
         serializer = Serializers.impix(
             data=request.data,
             context={"instance": instance},
@@ -126,6 +132,11 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
             return BadRequest(serializer.errors)
 
         ix = serializer.save()
+
+        auditlog.log("ix:import", log_object=ix, **request.data)
+
+        for member in ix.member_set.all():
+            auditlog.log("member:import", log_object=member, ix_id=member.ix_id, pdb_id=member.pdb_id)
 
         return Response(Serializers.ix(instance=ix).data)
 
@@ -174,9 +185,9 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
-    @auditlog()
     @billable("fullctl.ixctl.members")
     @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @auditlog()
     @grainy_endpoint(
         namespace="member.{request.org.permission_id}.{ix.pk}.?",
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
@@ -190,16 +201,17 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         member = serializer.save()
 
-        auditog.log("member:create", log_object=member)
+        auditlog.log("member:create", log_object=member, **data)
 
         return Response(Serializers.member(instance=member).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @load_object("member", models.InternetExchangeMember, id="member_id")
+    @auditlog()
     @grainy_endpoint(
         namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}.?",
     )
-    def update(self, request, org, instance, ix, member, *args, **kwargs):
+    def update(self, request, org, instance, ix, member, auditlog=None, *args, **kwargs):
         serializer = request.grainy_update_serializer(
             Serializers.member, member, context={"instance": instance}
         )
@@ -209,16 +221,20 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         member = serializer.save()
 
+        auditlog.log("member:update", log_object=member, **request.data)
+
         return Response(Serializers.member(instance=member).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
     @load_object("member", models.InternetExchangeMember, id="member_id")
+    @auditlog()
     @grainy_endpoint(
         namespace="member.{request.org.permission_id}.{ix.pk}.{member.asn}",
     )
-    def destroy(self, request, org, instance, ix, member, *args, **kwargs):
+    def destroy(self, request, org, instance, ix, member, auditlog=None, *args, **kwargs):
         member.delete()
         member.id = request.data.get("id")
+        auditlog.log("member:delete", log_object=member, **request.data)
         return Response(Serializers.member(instance=member).data)
 
 
@@ -248,26 +264,31 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
     @billable("fullctl.ixctl.routeservers")
     @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @auditlog()
     @grainy_endpoint(
         namespace="rs.{request.org.permission_id}.{ix.pk}.?",
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
-    def create(self, request, org, instance, ix, *args, **kwargs):
+    def create(self, request, org, instance, ix, auditlog=None, *args, **kwargs):
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
         serializer = Serializers.rs(data=data, context={"instance": instance})
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
 
+
         routeserver = serializer.save()
+
+        auditlog.log("rs:create", log_object=routeserver, **request.data)
 
         return Response(Serializers.rs(instance=routeserver).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @auditlog()
     @grainy_endpoint(
         namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
     )
-    def update(self, request, org, instance, ix, rs_id, *args, **kwargs):
+    def update(self, request, org, instance, ix, rs_id, auditlog=None, *args, **kwargs):
         routeserver = self.get_object()
         serializer = Serializers.rs(
             data=request.data, instance=routeserver, context={"instance": instance}
@@ -277,16 +298,22 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         routeserver = serializer.save()
 
+        auditlog.log("rs:update", log_object=routeserver, **request.data)
+
         return Response(Serializers.rs(instance=routeserver).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @auditlog()
     @grainy_endpoint(
         namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
     )
-    def destroy(self, request, org, instance, ix, rs_id, *args, **kwargs):
+    def destroy(self, request, org, instance, ix, rs_id, auditlog=None, *args, **kwargs):
         routeserver = self.get_object()
         routeserver.delete()
         routeserver.id = request.data.get("id")
+
+        auditlog.log("rs:delete", log_object=routeserver)
+
         return Response(Serializers.rs(instance=routeserver).data)
 
 

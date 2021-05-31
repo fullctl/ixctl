@@ -290,6 +290,9 @@ class InternetExchangeMember(PdbRefModel):
 
         return [as_set.strip() for as_set in self.as_macro.split(",")]
 
+    def __str__(self):
+        return f"AS{self.asn} - {self.ipaddr4} - {self.ipaddr6} ({self.id})"
+
 
 @reversion.register
 @grainy_model(
