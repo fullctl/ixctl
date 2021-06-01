@@ -35,29 +35,43 @@
       data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
       data-element="select_ix"></select>
     </span>
-    {% if permissions.update_instance %}
-    <div>
-    <button type="button" class="button mt-3" data-element="button_update_ix">
-      <span class="icon ixctl icon-settings"></span>
-      {% trans "Configure" %}
+
+    <!-- ix tools: manage selected ix -->
+    <div class="ix-mgmt">
+
+      <!-- button: configure currently select ix -->
+      <button type="button" class="button mt-3" style="display:none;" data-element="button_update_ix">
+        <span class="icon ixctl icon-settings"></span>
+        {% trans "Configure" %}
       </button>
+
+      <!-- button: delete currently selected ix -->
+      <button type="button btn-danger" class="button mt-3" style="display:none;" data-element="button_delete_ix">
+        <span class="icon ixctl icon-delete"></span>
+        {% trans "Delete" %}
+      </button>
+
     </div>
-    {% endif %}
+
 
   </div>
+
+  <!-- ix tools: create ix, import ix -->
+
+  <!-- button: create ix -->
+
   <div class="col-3 col-md-2">
-      {% if permissions.update_instance %}
-      <button type="button" class="button" data-element="button_create_ix">
+      <button type="button" class="button" style="display:none" data-element="button_create_ix">
       <span class="icon ixctl icon-add"></span>
       {% trans "Create" %}</button>
-      {% endif %}
   </div>
+
+  <!-- button: import ix from pdb -->
+
   <div class="col-3 col-md-2">
-      {% if permissions.update_instance %}
-      <button type="button" class="button" data-element="button_import">
+      <button type="button" class="button" style="display:none" data-element="button_import_ix">
       <span class="icon ixctl icon-add"></span>
       {% trans "Import" %}</button>
-      {% endif %}
   </div>
 </div>
 
@@ -89,5 +103,6 @@
 {% include "ixctl/form-import.html" %}
 {% include "ixctl/form-create-ix.html" %}
 {% include "ixctl/form-update-ix.html" %}
+{% include "ixctl/form-delete-ix.html" %}
 
 {% endblock %}

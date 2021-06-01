@@ -118,6 +118,15 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
 
         return Response(Serializers.ix(instance=ix).data)
 
+    @load_object("ix", models.InternetExchange, slug="ix_tag")
+    @auditlog()
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}")
+    def destroy(self, request, org, ix, instance, auditlog=None, *args, **kwargs):
+        ix.delete()
+        ix.id = request.data.get("id")
+        auditlog.log("ix:delete", log_object=ix, **request.data)
+        return Response(Serializers.ix(instance=ix).data)
+
     @action(detail=False, methods=["POST"], schema=PeeringDBImportSchema())
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")

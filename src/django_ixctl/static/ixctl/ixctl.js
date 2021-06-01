@@ -24,12 +24,10 @@ $ctl.application.Ixctl = $tc.extend(
 
           if(data.length == 0) {
             $e.select_ix.attr('disabled', true);
-            if($e.button_update_ix)
-              $e.button_update_ix.hide();
+            this.permission_ui();
           } else {
             $e.select_ix.attr('disabled', false)
-            if($e.button_update_ix)
-              $e.button_update_ix.show();
+            this.permission_ui();
           }
         });
         return w
@@ -62,7 +60,7 @@ $ctl.application.Ixctl = $tc.extend(
         this.sync();
       });
 
-      $(this.$c.toolbar.$e.button_import).click(() => {
+      $(this.$c.toolbar.$e.button_import_ix).click(() => {
         this.prompt_import();
       });
 
@@ -74,10 +72,33 @@ $ctl.application.Ixctl = $tc.extend(
         this.prompt_update_exchange();
       });
 
+      $(this.$c.toolbar.$e.button_delete_ix).click(() => {
+        this.prompt_delete_exchange();
+      });
+
+
 
       this.$t.members.activate();
       this.$t.routeservers.activate();
 
+    },
+
+
+    permission_ui : function() {
+      let $e = this.$c.toolbar.$e;
+      let ix = this.exchanges[this.ix()];
+      let org = $ctl.org.id;
+
+      if(ix) {
+        $e.button_update_ix.grainy_toggle(ix.grainy, "u");
+        $e.button_delete_ix.grainy_toggle(ix.grainy, "d");
+      } else {
+        $e.button_update_ix.hide();
+        $e.button_delete_ix.hide();
+      }
+
+      $e.button_create_ix.grainy_toggle(`ix.${org}`, "c");
+      $e.button_import_ix.grainy_toggle(`ix.${org}`, "c");
     },
 
     ix : function() {
@@ -96,9 +117,19 @@ $ctl.application.Ixctl = $tc.extend(
       return this.urlkeys[this.ix()];
     },
 
+    unload_ix : function(id) {
+      delete this.exchanges[id];
+      delete this.urlkeys[id];
+      delete this.ix_slugs[id];
+    },
+
 
     select_ix : function(id) {
-      this.$c.toolbar.$e.select_ix.val(id);
+      if(id)
+        this.$c.toolbar.$e.select_ix.val(id);
+      else
+        this.$c.toolbar.$e.select_ix.val(this.$c.toolbar.$e.select_ix.find('option').val());
+
       this.sync();
     },
 
@@ -120,6 +151,10 @@ $ctl.application.Ixctl = $tc.extend(
 
     prompt_update_exchange : function() {
       return new $ctl.application.Ixctl.ModalUpdateIX();
+    },
+
+    prompt_delete_exchange : function() {
+      return new $ctl.application.Ixctl.ModalDeleteIX();
     }
 
   },
@@ -212,6 +247,36 @@ $ctl.application.Ixctl.ModalUpdateIX = $tc.extend(
   },
   $ctl.application.Modal
 );
+
+$ctl.application.Ixctl.ModalDeleteIX = $tc.extend(
+  "ModalDeleteIX",
+  {
+    ModalDeleteIX : function() {
+      let ix = $ctl.ixctl.ix_object();
+
+      var form = this.form = new twentyc.rest.Form(
+        $ctl.template("form_delete_ix")
+      );
+      form.base_url = form.base_url.replace("/default", "/"+ $ctl.ixctl.ix_slug());
+
+      var modal = this;
+
+      $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
+        $ctl.ixctl.refresh().then(
+          () => {
+            $ctl.ixctl.unload_ix(ix.id);
+            $ctl.ixctl.select_ix()
+          }
+        );
+        modal.hide();
+      });
+      this.Modal("continue", `Delete ${ix.name}`, form.element);
+      form.wire_submit(this.$e.button_submit);
+    }
+  },
+  $ctl.application.Modal
+);
+
 
 
 $ctl.application.Ixctl.ModalMember = $tc.extend(
