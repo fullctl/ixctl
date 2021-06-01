@@ -24,9 +24,12 @@ $ctl.application.Ixctl = $tc.extend(
 
           if(data.length == 0) {
             $e.select_ix.attr('disabled', true);
-            $e.button_update_ix.hide();
+            if($e.button_update_ix)
+              $e.button_update_ix.hide();
           } else {
             $e.select_ix.attr('disabled', false)
+            if($e.button_update_ix)
+              $e.button_update_ix.show();
           }
         });
         return w
