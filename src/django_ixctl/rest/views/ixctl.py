@@ -77,6 +77,7 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def create(self, request, org, instance, auditlog=None, *args, **kwargs):
+
         data = request.data
         data["pdb_id"] = None
         serializer = Serializers.ix(data=data)
@@ -86,7 +87,7 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix.instance = instance
         ix.save()
 
-        auditlog.log("ix:create", log_object=ix, **data)
+        auditlog.set("data", data)
 
         return Response(Serializers.ix(instance=ix).data)
 
@@ -114,7 +115,7 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix.instance = instance
         ix.save()
 
-        auditlog.log("ix:update", log_object=ix, **request.data)
+        auditlog.set("data", request.data)
 
         return Response(Serializers.ix(instance=ix).data)
 
@@ -124,7 +125,7 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     def destroy(self, request, org, ix, instance, auditlog=None, *args, **kwargs):
         ix.delete()
         ix.id = request.data.get("id")
-        auditlog.log("ix:delete", log_object=ix, **request.data)
+        auditlog.set("data", request.data)
         return Response(Serializers.ix(instance=ix).data)
 
     @action(detail=False, methods=["POST"], schema=PeeringDBImportSchema())
@@ -142,14 +143,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix = serializer.save()
 
         auditlog.log("ix:import", log_object=ix, **request.data)
-
-        for member in ix.member_set.all():
-            auditlog.log(
-                "member:import",
-                log_object=member,
-                ix_id=member.ix_id,
-                pdb_id=member.pdb_id,
-            )
 
         return Response(Serializers.ix(instance=ix).data)
 
@@ -214,7 +207,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         member = serializer.save()
 
-        auditlog.log("member:create", log_object=member, **data)
+        auditlog.set("data", data)
 
         return Response(Serializers.member(instance=member).data)
 
@@ -236,7 +229,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         member = serializer.save()
 
-        auditlog.log("member:update", log_object=member, **request.data)
+        auditlog.set("data", request.data)
 
         return Response(Serializers.member(instance=member).data)
 
@@ -251,7 +244,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     ):
         member.delete()
         member.id = request.data.get("id")
-        auditlog.log("member:delete", log_object=member, **request.data)
+        auditlog.set("data", request.data)
         return Response(Serializers.member(instance=member).data)
 
 
@@ -295,7 +288,7 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         routeserver = serializer.save()
 
-        auditlog.log("rs:create", log_object=routeserver, **request.data)
+        auditlog.set("data", request.data)
 
         return Response(Serializers.rs(instance=routeserver).data)
 
@@ -314,7 +307,7 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         routeserver = serializer.save()
 
-        auditlog.log("rs:update", log_object=routeserver, **request.data)
+        auditlog.set("data", request.data)
 
         return Response(Serializers.rs(instance=routeserver).data)
 
@@ -330,7 +323,7 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
         routeserver.delete()
         routeserver.id = request.data.get("id")
 
-        auditlog.log("rs:delete", log_object=routeserver)
+        auditlog.set("data", request.data)
 
         return Response(Serializers.rs(instance=routeserver).data)
 
