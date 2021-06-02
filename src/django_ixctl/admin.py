@@ -1,6 +1,7 @@
 from django.contrib import admin
-from django_handleref.admin import VersionAdmin
+from django.forms import ModelForm
 from fullctl.django.models.concrete import OrganizationUser
+from fullctl.django.admin import BaseAdmin, BaseTabularAdmin
 
 from django_ixctl.models import (
     InternetExchange,
@@ -11,14 +12,6 @@ from django_ixctl.models import (
     Routeserver,
     RouteserverConfig,
 )
-
-
-class BaseAdmin(VersionAdmin):
-    readonly_fields = ("version",)
-
-
-class BaseTabularAdmin(admin.TabularInline):
-    readonly_fields = ("version",)
 
 
 class OrganizationUserInline(admin.TabularInline):
@@ -33,8 +26,29 @@ class OrganizationAdmin(BaseAdmin):
     inlines = (OrganizationUserInline,)
 
 
+class MemberForm(ModelForm):
+    def clean_macaddr(self):
+        macaddr = self.cleaned_data["macaddr"]
+        if not macaddr:
+            return None
+        return macaddr
+
+    def clean_ipaddr4(self):
+        ipaddr4 = self.cleaned_data["ipaddr4"]
+        if not ipaddr4:
+            return None
+        return ipaddr4
+
+    def clean_ipaddr6(self):
+        ipaddr6 = self.cleaned_data["ipaddr6"]
+        if not ipaddr6:
+            return None
+        return ipaddr6
+
+
 class InternetExchangeMemberInline(BaseTabularAdmin):
     model = InternetExchangeMember
+    form = MemberForm
 
 
 class RouteserverInline(BaseTabularAdmin):
@@ -62,7 +76,9 @@ class NetworkAdmin(BaseAdmin):
     readonly_fields = ("org",)
 
     def org(self, obj):
-        return obj.instance.org
+        if obj.instance:
+            return obj.instance.org
+        return "<orphan>"
 
 
 @admin.register(PermissionRequest)
