@@ -21,6 +21,7 @@ ctl:
       config:
         shell: true
         command:
+          - "poetry lock"
           - "docker build -t $(basename $(pwd)):$(cat Ctl/VERSION) ."
           - "docker tag $(basename $(pwd)):$(cat Ctl/VERSION) $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
           - "docker push $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
