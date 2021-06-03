@@ -87,8 +87,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix.instance = instance
         ix.save()
 
-        auditlog.set("data", data)
-
         return Response(Serializers.ix(instance=ix).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -115,8 +113,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix.instance = instance
         ix.save()
 
-        auditlog.set("data", request.data)
-
         return Response(Serializers.ix(instance=ix).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -125,7 +121,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     def destroy(self, request, org, ix, instance, auditlog=None, *args, **kwargs):
         ix.delete()
         ix.id = request.data.get("id")
-        auditlog.set("data", request.data)
         return Response(Serializers.ix(instance=ix).data)
 
     @action(detail=False, methods=["POST"], schema=PeeringDBImportSchema())
@@ -207,8 +202,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         member = serializer.save()
 
-        auditlog.set("data", data)
-
         return Response(Serializers.member(instance=member).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -229,8 +222,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         member = serializer.save()
 
-        auditlog.set("data", request.data)
-
         return Response(Serializers.member(instance=member).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -244,7 +235,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     ):
         member.delete()
         member.id = request.data.get("id")
-        auditlog.set("data", request.data)
         return Response(Serializers.member(instance=member).data)
 
 
@@ -288,8 +278,6 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         routeserver = serializer.save()
 
-        auditlog.set("data", request.data)
-
         return Response(Serializers.rs(instance=routeserver).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -307,8 +295,6 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         routeserver = serializer.save()
 
-        auditlog.set("data", request.data)
-
         return Response(Serializers.rs(instance=routeserver).data)
 
     @load_object("ix", models.InternetExchange, slug="ix_tag")
@@ -322,8 +308,6 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
         routeserver = self.get_object()
         routeserver.delete()
         routeserver.id = request.data.get("id")
-
-        auditlog.set("data", request.data)
 
         return Response(Serializers.rs(instance=routeserver).data)
 
