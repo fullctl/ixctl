@@ -31,9 +31,9 @@ def org_redirect(request):
 
 
 @load_instance(public=True)
-def export_ixf(request, org, ix_tag, **kwargs):
+def export_ixf(request, instance, ix_tag, **kwargs):
     try:
-        ix = InternetExchange.objects.get(slug=ix_tag)
+        ix = InternetExchange.objects.get(instance=instance, slug=ix_tag)
     except InternetExchange.DoesNotExist:
         raise Http404
 
