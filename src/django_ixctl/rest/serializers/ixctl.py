@@ -111,7 +111,7 @@ class PermissionRequest(ModelSerializer):
 @register
 class InternetExchange(ModelSerializer):
 
-    slug = serializers.CharField(required=False)
+    slug = serializers.SlugField(required=False)
 
     class Meta:
         model = models.InternetExchange
