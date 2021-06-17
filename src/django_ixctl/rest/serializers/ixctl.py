@@ -85,6 +85,16 @@ class ImportExchange(RequireContext, serializers.Serializer):
 
         return self.pdb_ix.id
 
+    def validate(self, cleaned_data):
+        instance = self.context.get("instance")
+        slug = models.InternetExchange.default_slug(self.pdb_ix.name)
+        qset = models.InternetExchange.objects.filter(instance=instance, slug=slug)
+        if qset.exists():
+            raise ValidationError(
+                _("You already have an exchange with the identifier `{}`").format(slug)
+            )
+        return cleaned_data
+
     def save(self):
         instance = self.context.get("instance")
         ix = import_exchange(self.pdb_ix, instance)
@@ -100,9 +110,26 @@ class PermissionRequest(ModelSerializer):
 
 @register
 class InternetExchange(ModelSerializer):
+
+    slug = serializers.CharField(required=False)
+
     class Meta:
         model = models.InternetExchange
-        fields = ["pdb_id", "urlkey", "ixf_export_privacy", "name", "slug"]
+        fields = ["pdb_id", "urlkey", "instance", "ixf_export_privacy", "name", "slug"]
+
+    def validate(self, cleaned_data):
+        instance = cleaned_data.get("instance")
+        slug = cleaned_data.get("slug")
+        if not slug:
+            slug = models.InternetExchange.default_slug(cleaned_data["name"])
+        print("checking", instance, slug)
+        qset = models.InternetExchange.objects.filter(instance=instance, slug=slug)
+        if qset.exists():
+            raise ValidationError(
+                _("You already have an exchange with the identifier `{}`").format(slug)
+            )
+        cleaned_data["slug"] = slug
+        return cleaned_data
 
 
 @register

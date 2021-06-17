@@ -81,7 +81,7 @@ class InternetExchange(PdbRefModel):
         default="public",
     )
 
-    slug = models.SlugField(max_length=64, unique=False, blank=True, null=False)
+    slug = models.SlugField(max_length=64, unique=False, blank=False, null=False)
 
     instance = models.ForeignKey(
         Instance, related_name="ix_set", on_delete=models.CASCADE, null=True
@@ -128,6 +128,7 @@ class InternetExchange(PdbRefModel):
         ix = super().create_from_pdb(pdb_object, save=save, instance=instance, **fields)
 
         ix.name = pdb_object.ix.name
+        ix.slug = cls.default_slug(ix.name)
 
         if save:
             ix.save()
@@ -174,17 +175,12 @@ class InternetExchange(PdbRefModel):
     def org(self):
         return self.instance.org
 
-    def _default_slug(self):
-        slug = self.name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
-        return slug
+    @classmethod
+    def default_slug(cls, name):
+        return name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
 
     def __str__(self):
         return f"{self.name} ({self.id})"
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = self._default_slug()
-        super().save(*args, **kwargs)
 
 
 @reversion.register()

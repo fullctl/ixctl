@@ -80,12 +80,11 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
 
         data = request.data
         data["pdb_id"] = None
+        data["instance"] = instance.id
         serializer = Serializers.ix(data=data)
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
         ix = serializer.save()
-        ix.instance = instance
-        ix.save()
 
         return Response(Serializers.ix(instance=ix).data)
 
@@ -127,6 +126,7 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def import_peeringdb(self, request, org, instance, auditlog=None, *args, **kwargs):
+
         serializer = Serializers.impix(
             data=request.data,
             context={"instance": instance},
