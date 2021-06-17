@@ -182,7 +182,9 @@ $ctl.application.Ixctl.ModalImport = $tc.extend(
       });
       this.Modal("continue", "Import from PeeringDB", form.element);
       // remove dupe
-      form.element.find("span.select2").last().detach()
+      if(form.element.find("span.select2").length > 1) {
+        form.element.find("span.select2").last().detach()
+      }
       form.wire_submit(this.$e.button_submit);
     }
   },
