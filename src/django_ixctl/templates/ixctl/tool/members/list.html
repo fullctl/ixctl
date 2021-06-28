@@ -6,11 +6,11 @@
   data-template="list">
   <thead>
     <tr>
-      <th data-sort-target="asn" class="sortable-button">{% trans "ASN" %}</th>
-      <th data-sort-target="name" class="sortable-button">{% trans "Name" %}</th>
+      <th data-sort-target="asn" data-sort-secondary="ipaddr4,ipaddr6" class="sortable-button">{% trans "ASN" %}</th>
+      <th data-sort-target="name" data-sort-initial="yes" data-sort-secondary="ipaddr4,ipaddr6"  class="sortable-button">{% trans "Name" %}</th>
       <th data-sort-target="ipaddr4" class="sortable-button">{% trans "IPv4" %}</th>
       <th data-sort-target="ipaddr6" class="sortable-button">{% trans "IPv6" %}</th>
-      <th data-sort-target="speed" class="sortable-button">{% trans "Speed" %}</th>
+      <th data-sort-target="speed" data-sort-secondary="name,ipaddr4,ipaddr6"  class="sortable-button">{% trans "Speed" %}</th>
       <th></th>
     </tr>
   </thead>

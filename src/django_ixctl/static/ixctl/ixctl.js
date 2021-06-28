@@ -362,7 +362,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
         this.base_url = url.join("/");
       })
 
-      this.initialize_sortable_headers("name");
+      this.initialize_sortable_headers();
     },
 
     menu : function() {
