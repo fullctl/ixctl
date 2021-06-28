@@ -251,6 +251,9 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
     )
     def list(self, request, org, instance, ix, *args, **kwargs):
         queryset = self.get_queryset().order_by("name")
+        ordering_filter = CaseInsensitiveOrderingFilter(["name", "asn", "router_id"])
+        queryset = ordering_filter.filter_queryset(request, queryset, self)
+
         serializer = Serializers.rs(
             instance=queryset,
             many=True,

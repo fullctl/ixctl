@@ -481,13 +481,14 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       };
 
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
-      this.$w.list.base
 
       $(this.$w.list).on("api-read:before",function()  {
         let url = this.base_url.split("/").slice(0,-1);
         url.push($ctl.ixctl.ix_slug());
         this.base_url = url.join("/");
       })
+
+      this.initialize_sortable_headers();
     },
 
     menu : function() {
@@ -505,6 +506,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
         var rs_namespace =exchange.grainy.replace(/^ix\./, "rs.")+".?"
         if(grainy.check(rs_namespace, "r")) {
           this.show();
+          this.apply_ordering();
           this.$w.list.load();
           this.$e.menu.find('[data-element="button_api_view"]').attr(
             "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
