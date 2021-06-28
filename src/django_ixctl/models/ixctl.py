@@ -217,7 +217,9 @@ class InternetExchangeMember(PdbRefModel):
     asn = models.PositiveIntegerField()
     name = models.CharField(max_length=255, blank=True, null=True)
 
-    ixf_state = models.CharField(max_length=255, default="active")
+    ixf_state = models.CharField(
+        max_length=255, default="active", choices=django_ixctl.enum.MEMBER_STATE
+    )
     ixf_member_type = models.CharField(
         max_length=255, choices=django_ixctl.enum.IXF_MEMBER_TYPE, default="peering"
     )

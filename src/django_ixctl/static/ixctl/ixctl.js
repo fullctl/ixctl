@@ -294,12 +294,22 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
       this.member = member;
       form.base_url = form.base_url.replace("/default", "/"+ix_slug);
 
+      var state_select = new twentyc.rest.Select(
+        form.element.find('#member-state')
+      )
+      state_select.load((member?member.ixf_state:null));
+
+      var type_select = new twentyc.rest.Select(
+        form.element.find('#member-type')
+      )
+      type_select.load((member?member.ixf_member_type:null));
+
+
       if(member) {
         title = "Edit "+member.display_name;
         form.method = "PUT"
         form.form_action = member.id;
         form.fill(member);
-
 
         form.element.find('input[type="text"],select,input[type="checkbox"]').each(function() {
           if(!grainy.check(member.grainy+"."+$(this).attr("name"), "u")) {
