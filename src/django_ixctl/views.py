@@ -26,6 +26,21 @@ def view_instance(request, instance, **kwargs):
 
 
 @require_auth()
+@load_instance()
+def view_instance_load_ix(request, instance, ix_tag, **kwargs):
+    try:
+        ix = InternetExchange.objects.get(instance=instance, slug=ix_tag)
+    except InternetExchange.DoesNotExist:
+        raise Http404
+
+    env = make_env(request, instance=instance, org=instance.org)
+    env["forms"] = {"import_ix": django_ixctl.forms.ImportIXForm()}
+    env["select_ix"] = ix
+
+    return render(request, "ixctl/index.html", env)
+
+
+@require_auth()
 def org_redirect(request):
     return redirect(f"/{request.org.slug}/")
 

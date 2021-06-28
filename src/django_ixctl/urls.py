@@ -15,6 +15,7 @@ urlpatterns += [
         views.export_ixf,
         name="ixf export",
     ),
+    path("<str:org_tag>/<str:ix_tag>/", views.view_instance_load_ix, name="ixctl-home"),
     path("<str:org_tag>/", views.view_instance, name="ixctl-home"),
     path("", views.org_redirect),
 ]

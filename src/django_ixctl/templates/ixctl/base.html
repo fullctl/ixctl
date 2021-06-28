@@ -6,6 +6,13 @@
 {{ block.super }}
 <script src="{% static "ixctl/ixctl.js" %}" type="text/javascript"></script>
 <script src="{% static "ixctl/ixctl.net.js" %}" type="text/javascript"></script>
+<script>
+{% if select_ix %}
+$(fullctl.application).on("initialized", function(e, ixctl, id) {
+  ixctl.preselect_ix = {{ select_ix.id }};
+});
+{% endif %}
+</script>
 {% endblock %}
 
 {% block "css" %}

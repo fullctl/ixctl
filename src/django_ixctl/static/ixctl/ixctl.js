@@ -35,12 +35,11 @@ $ctl.application.Ixctl = $tc.extend(
       });
 
       $(this.$c.toolbar.$w.select_ix).one("load:after", () => {
-        params = new URLSearchParams(window.location.search)
-        var preselect_ix = params.get("ix")
-        if(preselect_ix) {
-          this.select_ix(preselect_ix)
+        if(this.preselect_ix) {
+          this.select_ix(this.preselect_ix)
         } else {
           this.sync();
+          this.sync_url(this.$c.toolbar.$e.select_ix.val());
         }
       });
 
@@ -58,6 +57,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       $(this.$c.toolbar.$e.select_ix).on("change", () => {
         this.sync();
+        this.sync_url(this.$c.toolbar.$e.select_ix.val())
       });
 
       $(this.$c.toolbar.$e.button_import_ix).click(() => {
@@ -131,6 +131,14 @@ $ctl.application.Ixctl = $tc.extend(
         this.$c.toolbar.$e.select_ix.val(this.$c.toolbar.$e.select_ix.find('option').val());
 
       this.sync();
+      this.sync_url(id);
+    },
+
+    sync_url: function(id) {
+      var ix = this.exchanges[id];
+      var url = new URL(window.location)
+      url.pathname = `/${fullctl.org.slug}/${ix.slug}/`
+      window.history.pushState({}, '', url);
     },
 
     refresh : function() {
