@@ -16,13 +16,15 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_grainy.decorators import grainy_model
-from django_inet.models import ASNField, IPAddressField, MacAddressField
+from django_inet.models import ASNField
 from django_peeringdb.models.concrete import IXLan
 from django_peeringdb.models.concrete import Network as PeeringdbNetwork
 from django_peeringdb.models.concrete import NetworkIXLan
 from fullctl.django.inet.validators import validate_as_set, validate_ip4, validate_ip6
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
+
+from netfields import InetAddressField, MACAddressField
 
 import django_ixctl.enum
 from django_ixctl.peeringdb import get_as_set
@@ -204,13 +206,9 @@ class InternetExchangeMember(PdbRefModel):
         related_name="member_set",
         on_delete=models.CASCADE,
     )
-    ipaddr4 = models.CharField(
-        max_length=255, blank=True, null=True, validators=[validate_ip4]
-    )
-    ipaddr6 = models.CharField(
-        max_length=255, blank=True, null=True, validators=[validate_ip6]
-    )
-    macaddr = MacAddressField(null=True, blank=True)
+    ipaddr4 = InetAddressField(blank=True, null=True, store_prefix_length=False)
+    ipaddr6 = InetAddressField(blank=True, null=True, store_prefix_length=False)
+    macaddr = MACAddressField(null=True, blank=True)
     as_macro = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_as_set]
     )
@@ -318,8 +316,8 @@ class Routeserver(HandleRefModel):
 
     asn = ASNField(help_text=_("ASN"))
 
-    router_id = IPAddressField(
-        version=4,
+    router_id = InetAddressField(
+        store_prefix_length=False,
         help_text=_("Router Id"),
     )
 
