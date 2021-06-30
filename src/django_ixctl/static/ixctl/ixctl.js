@@ -395,7 +395,6 @@ $ctl.application.Ixctl.Members = $tc.extend(
       var ix_id = $ctl.ixctl.ix()
       if(ix_id) {
         var exchange = $ctl.ixctl.exchanges[ix_id]
-        console.log(exchange.grainy)
         if(grainy.check(exchange.grainy, "r")) {
           this.show();
           this.apply_ordering();
@@ -487,7 +486,11 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
         row.find('a[data-action="edit_routeserver"]').click(() => {
           var routeserver = row.data("apiobject");
           new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug(), routeserver);
-        });
+        }).grainy_toggle(data.grainy+".?", "u");
+
+        if(!grainy.check(data.grainy, "d")) {
+          row.find('a[data-api-method="DELETE"]').hide();
+        }
 
         row.find('a[data-action="view_rsconf"]').mousedown(function() {
           var routeserver = row.data("apiobject");
@@ -496,6 +499,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           rsconfurl = rsconfurl.replace("__replace__me__", routeserver.name);
           $(this).attr("href", rsconfurl)
         });
+
       };
 
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
@@ -529,6 +533,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           this.$e.menu.find('[data-element="button_api_view"]').attr(
             "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
           )
+
+          this.$e.menu.find('[data-element="button_add_routeserver"]').grainy_toggle(exchange.grainy, "c");
+
         } else {
           this.hide();
         }
