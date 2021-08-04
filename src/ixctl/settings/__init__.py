@@ -99,6 +99,8 @@ USE_L10N = True
 ADMINS = [("Support", SERVER_EMAIL)]
 MANAGERS = ADMINS
 
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
 settings_manager.set_option("HOST_URL", "https://localhost:8000")
 
 settings_manager.set_option(
