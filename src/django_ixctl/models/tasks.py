@@ -2,6 +2,7 @@ from fullctl.django.models import Task
 from fullctl.django.tasks import register
 import django_ixctl.models.ixctl as models
 
+
 @register
 class RsConfGenerate(Task):
 
