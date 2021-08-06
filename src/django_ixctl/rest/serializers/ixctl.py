@@ -8,6 +8,7 @@ import yaml
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 from django_inet.rest import IPAddressField
+from fullctl.django.models.concrete.tasks import TaskLimitError
 from fullctl.django.rest.decorators import serializer_registry
 from fullctl.django.rest.serializers import (
     ModelSerializer,
@@ -238,7 +239,10 @@ class Routeserver(ModelSerializer):
 
     def save(self):
         r = super().save()
-        r.rsconf.queue_generate()
+        try:
+            r.rsconf.queue_generate()
+        except TaskLimitError:
+            pass
         return r
 
 
