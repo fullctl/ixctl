@@ -40,5 +40,3 @@ class RsConfGenerate(Task):
         """
         rsconf = models.RouteserverConfig.objects.get(id=rsconf_id)
         rsconf.generate()
-
-
