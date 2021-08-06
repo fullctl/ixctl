@@ -237,6 +237,11 @@ class Routeserver(ModelSerializer):
         return value
 
 
+    def save(self):
+        r = super().save()
+        r.rsconf.queue_generate()
+        return r
+
 @register
 class RouteserverConfig(ModelSerializer):
     class Meta:

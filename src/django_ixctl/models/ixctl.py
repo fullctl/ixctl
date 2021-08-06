@@ -1,4 +1,5 @@
 import os.path
+import io
 import subprocess
 import tempfile
 from secrets import token_urlsafe
@@ -27,6 +28,7 @@ from fullctl.django.models.concrete import Instance, Organization
 from netfields import InetAddressField, MACAddressField
 
 import django_ixctl.enum
+import django_ixctl.models.tasks
 from django_ixctl.peeringdb import get_as_set
 
 
@@ -524,6 +526,12 @@ class RouteserverConfig(HandleRefModel):
                 return True
         return False
 
+    def queue_generate(self):
+        """
+        Queue task to regenerate config
+        """
+        django_ixctl.models.tasks.RsConfGenerate.create_task(self.id)
+
     def generate(self):
 
         """
@@ -579,8 +587,15 @@ class RouteserverConfig(HandleRefModel):
         elif rs.ars_type == "bird2":
             cmd += ["--target-version", "2.0.7"]
 
-        process = subprocess.Popen(cmd)
-        process.wait(600)
+        process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+        _, err = process.communicate(timeout=600)
+
+        if process.returncode:
+            if err:
+                err = err.decode("utf-8")
+                raise IOError(err)
+            else:
+                raise IOError(f"Process returned {process.returncode}")
 
         with open(outfile) as fh:
             self.body = fh.read()
