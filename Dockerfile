@@ -6,6 +6,7 @@ ARG bgpq4_version=0.0.6
 ARG build_deps=" \
     postgresql-dev \
     g++ \
+    git \
     libffi-dev \
     libjpeg-turbo-dev \
     linux-headers \
