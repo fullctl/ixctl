@@ -8,6 +8,7 @@ import yaml
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 from django_inet.rest import IPAddressField
+from fullctl.django.models.concrete.tasks import TaskLimitError
 from fullctl.django.rest.decorators import serializer_registry
 from fullctl.django.rest.serializers import (
     ModelSerializer,
@@ -235,6 +236,14 @@ class Routeserver(ModelSerializer):
         if data and not isinstance(data, dict):
             raise serializers.ValidationError("Config object literal expected")
         return value
+
+    def save(self):
+        r = super().save()
+        try:
+            r.rsconf.queue_generate()
+        except TaskLimitError:
+            pass
+        return r
 
 
 @register
