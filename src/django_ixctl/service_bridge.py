@@ -1,5 +1,5 @@
 from django.conf import settings
-from fullctl.django.rest.urls.service_bridge import setup, proxy_api
+from fullctl.django.rest.urls.service_bridge import proxy_api, setup
 
 # set up service bridges
 

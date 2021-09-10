@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.forms import ModelForm
-from fullctl.django.models.concrete import OrganizationUser
 from fullctl.django.admin import BaseAdmin, BaseTabularAdmin
+from fullctl.django.models.concrete import OrganizationUser
 
 from django_ixctl.models import (
     InternetExchange,

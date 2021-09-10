@@ -1,5 +1,4 @@
 import os.path
-import io
 import subprocess
 import tempfile
 from secrets import token_urlsafe
@@ -21,10 +20,9 @@ from django_inet.models import ASNField
 from django_peeringdb.models.concrete import IXLan
 from django_peeringdb.models.concrete import Network as PeeringdbNetwork
 from django_peeringdb.models.concrete import NetworkIXLan
-from fullctl.django.inet.validators import validate_as_set, validate_ip4, validate_ip6
+from fullctl.django.inet.validators import validate_as_set
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
-
 from netfields import InetAddressField, MACAddressField
 
 import django_ixctl.enum

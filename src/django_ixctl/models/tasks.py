@@ -1,5 +1,6 @@
-from fullctl.django.models import Task, LimitAction
+from fullctl.django.models import Task
 from fullctl.django.tasks import register
+
 import django_ixctl.models.ixctl as models
 
 
