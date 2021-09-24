@@ -21,9 +21,12 @@ ctl:
       config:
         shell: true
         command:
-          - "poetry lock"
-          - "docker build -t $(basename $(pwd)):$(cat Ctl/VERSION) ."
-          - "docker tag $(basename $(pwd)):$(cat Ctl/VERSION) $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
+#          - "poetry lock"
+#          - "docker build -t $(basename $(pwd)):$(cat Ctl/VERSION) ."
+#          - "docker tag $(basename $(pwd)):$(cat Ctl/VERSION) $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
+          - "poetry install"
+          - "poetry run ../fullctl/Ctl/dev/compose.sh build aaactl_web"
+          - "docker tag dev_aaactl_web:latest $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
           - "docker push $REGISTRY/fullctl/$(basename $(pwd)):$(cat Ctl/VERSION)"
 
     - name: show_version
