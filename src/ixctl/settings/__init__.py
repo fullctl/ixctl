@@ -229,6 +229,10 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login"
 LOGIN_URL = "/login"
 
+# Fullctl service integration
+
+settings_manager.set_option("PDBCTL_HOST", "")
+
 # SINGLE - exchanges are operated by single organization
 # Organizations are not automatically permissioned to be
 # allowed to create their own exchanges.

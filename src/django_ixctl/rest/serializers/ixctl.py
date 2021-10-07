@@ -3,7 +3,6 @@ try:
 except ImportError:
     from yaml import Loader
 
-import django_peeringdb.models.concrete as pdb_models
 import yaml
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
@@ -15,6 +14,7 @@ from fullctl.django.rest.serializers import (
     RequireContext,
     SoftRequiredValidator,
 )
+import fullctl.service_bridge.pdbctl as pdbctl
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
@@ -42,9 +42,8 @@ class ImportOrganization(RequireContext, serializers.Serializer):
     def validate_pdb_org_id(self, value):
         if not value:
             return 0
-        try:
-            self.pdb_org = pdb_models.Organization.objects.get(id=value)
-        except pdb_models.Organization.DoesNotExist:
+        self.pdb_org = pdbctl.Organization().object(value)
+        if not self.pdb_org:
             raise ValidationError(_("Unknown peeringdb organization"))
         return self.pdb_org.id
 
@@ -72,10 +71,10 @@ class ImportExchange(RequireContext, serializers.Serializer):
         instance = self.context.get("instance")
         if not value:
             return 0
-        try:
-            self.pdb_ix = pdb_models.InternetExchange.objects.get(id=value)
-        except pdb_models.InternetExchange.DoesNotExist:
-            raise ValidationError(_("Unknown peeringdb organization"))
+
+        self.pdb_ix = pdbctl.InternetExchange().object(value)
+        if not self.pdb_ix:
+            raise ValidationError(_("Unknown peeringdb exchange"))
 
         qset = models.InternetExchange.objects.filter(
             instance=instance, pdb_id=self.pdb_ix.id
@@ -116,7 +115,15 @@ class InternetExchange(ModelSerializer):
 
     class Meta:
         model = models.InternetExchange
-        fields = ["pdb_id", "urlkey", "instance", "ixf_export_privacy", "name", "slug"]
+        fields = [
+            "pdb_id",
+            "urlkey",
+            "instance",
+            "ixf_export_privacy",
+            "name",
+            "slug",
+            "source_of_truth",
+        ]
 
     def validate(self, cleaned_data):
         instance = cleaned_data.get("instance")

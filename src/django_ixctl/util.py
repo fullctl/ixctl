@@ -1,5 +1,5 @@
-import django_peeringdb.models.concrete as pdb_models
 from fullctl.django.auth import permissions
+import fullctl.service_bridge.pdbctl as pdbctl
 
 from django_ixctl.models import Network
 
@@ -30,8 +30,8 @@ def create_networks_from_verified_asns(user):
             continue
 
         if not Network.objects.filter(instance=instance, asn=asn).exists():
-            try:
-                pdb_net = pdb_models.Network.objects.get(asn=asn)
+            pdb_net = pdbctl.Network().first(asn=asn)
+            if pdb_net:
                 Network.create_from_pdb(instance, pdb_net)
-            except pdb_models.Network.DoesNotExist:
+            else:
                 Network.objects.create(name=f"AS{asn}", asn=asn, instance=instance)
