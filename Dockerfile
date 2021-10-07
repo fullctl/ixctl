@@ -1,4 +1,4 @@
-FROM python:3.7-alpine as base
+FROM python:3.9-alpine as base
 
 ARG virtual_env=/venv
 ARG install_to=/srv/service
@@ -89,7 +89,7 @@ COPY Ctl/VERSION etc/
 COPY docs/ docs
 
 # XXX
-COPY ars_config/ /root/arouteserver
+# COPY ars_config/ /root/arouteserver
 
 #RUN Ctl/docker/manage.sh collectstatic --no-input
 
