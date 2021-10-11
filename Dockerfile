@@ -89,7 +89,7 @@ COPY Ctl/VERSION etc/
 COPY docs/ docs
 
 # XXX
-COPY ars_config/ /root/arouteserver
+# COPY ars_config/ /root/arouteserver
 
 #RUN Ctl/docker/manage.sh collectstatic --no-input
 
