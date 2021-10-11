@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "id": 21608,
+      "net": null,
+      "net_id": 20,
+      "ixlan_id": 239,
+      "ix_id": 239,
+      "ix": null,
+      "speed": 10000,
+      "asn": 63311,
+      "ipaddr4": "206.41.110.20",
+      "ipaddr6": "2001:504:41:110::20",
+      "is_rs_peer": true,
+      "operational": true,
+      "grainy": null,
+      "status": "ok",
+      "created": "2015-01-29T00:00:00Z",
+      "updated": "2017-10-24T17:24:02Z"
+    }
+  ],
+  "errors": {},
+  "profiling": {
+    "queries": 7
+  }
+}

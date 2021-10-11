@@ -1,0 +1,31 @@
+{
+  "data": [
+    {
+      "id": 239,
+      "org_id": 10843,
+      "name": "ChIX",
+      "name_long": "Chicago Internet Exchange",
+      "aka": "",
+      "city": "Chicago",
+      "country": "US",
+      "region_continent": "North America",
+      "tech_email": "neteng@unitedix.net",
+      "tech_phone": "",
+      "policy_email": "peering@unitedix.net",
+      "policy_phone": "",
+      "service_level": "24/7 Support",
+      "terms": "Not Disclosed",
+      "media": "Ethernet",
+      "url_stats": "https://unitedix.net/location/chicago/networks",
+      "website": "https://unitedix.net/location/chicago",
+      "grainy": null,
+      "status": "ok",
+      "created": "2010-07-29T00:00:00Z",
+      "updated": "2021-06-22T18:44:17Z"
+    }
+  ],
+  "errors": {},
+  "profiling": {
+    "queries": 1
+  }
+}

@@ -72,8 +72,10 @@ class ImportExchange(RequireContext, serializers.Serializer):
         if not value:
             return 0
 
-        self.pdb_ix = pdbctl.InternetExchange().object(value)
-        if not self.pdb_ix:
+
+        try:
+            self.pdb_ix = pdbctl.InternetExchange().object(value)
+        except KeyError:
             raise ValidationError(_("Unknown peeringdb exchange"))
 
         qset = models.InternetExchange.objects.filter(

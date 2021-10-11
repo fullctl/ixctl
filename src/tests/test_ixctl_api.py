@@ -28,7 +28,7 @@ def test_ix_import_peeringdb_invalid(db, pdb_data, account_objects):
     )
     assert response.status_code == 400
     data = response.json()
-    assert "Unknown peeringdb organization" in data["errors"]["pdb_ix_id"]
+    assert "Unknown peeringdb exchange" in data["errors"]["pdb_ix_id"]
 
 
 def test_ix_import_peeringdb_reimport(db, pdb_data, account_objects):
@@ -58,7 +58,7 @@ def test_ix_list(db, pdb_data, account_objects):
     assert len(data) == 1
     assert data[0]["pdb_id"] == ix.pdb_id
     assert data[0]["urlkey"] == ix.urlkey
-    assert data[0]["name"] == ix.pdb.ix.name
+    assert data[0]["name"] == ix.pdb.name
     assert data[0]["id"] == ix.id
     assert data[0]["status"] == ix.status
 
@@ -76,7 +76,7 @@ def test_ix_retrieve(db, pdb_data, account_objects):
     assert len(data) == 1
     assert data[0]["pdb_id"] == ix.pdb_id
     assert data[0]["urlkey"] == ix.urlkey
-    assert data[0]["name"] == ix.pdb.ix.name
+    assert data[0]["name"] == ix.pdb.name
     assert data[0]["id"] == ix.id
     assert data[0]["status"] == ix.status
 
@@ -224,15 +224,15 @@ def test_ix_members(db, pdb_data, account_objects):
 
     assert response.status_code == 200
     data = response.json()["data"]
-    assert len(data) == 1
+    assert len(data) == 2
     assert data[0]["pdb_id"] == ixmember.pdb_id
     assert data[0]["id"] == ixmember.id
     assert data[0]["status"] == ixmember.status
     assert data[0]["ixf_member_type"] == ixmember.ixf_member_type
     assert data[0]["ixf_state"] == ixmember.ixf_state
     assert data[0]["display_name"] == ixmember.display_name
-    assert data[0]["ipaddr4"] == ixmember.ipaddr4
-    assert data[0]["ipaddr6"] == ixmember.ipaddr6
+    assert data[0]["ipaddr4"] == f"{ixmember.ipaddr4}"
+    assert data[0]["ipaddr6"] == f"{ixmember.ipaddr6}"
     assert data[0]["is_rs_peer"] == ixmember.is_rs_peer
     assert data[0]["speed"] == ixmember.speed
 
@@ -299,7 +299,7 @@ def test_ix_create_member_invalid(db, pdb_data, account_objects):
                 "ixf_member_type": "peering",
                 "name": "",
                 "ippadr4": None,
-                "ipaddr6": ixmember.ipaddr6,
+                "ipaddr6": f"{ixmember.ipaddr6}",
                 "speed": 1000,
                 "is_rs_peer": False,
             }
@@ -342,8 +342,8 @@ def test_ix_edit_member(db, pdb_data, account_objects):
 
     ixmember.refresh_from_db()
     assert ixmember.name == "override"
-    assert ixmember.ipaddr4 == "206.41.111.20"
-    assert ixmember.ipaddr6 == "2001:504:41:111::20"
+    assert f"{ixmember.ipaddr4}" == "206.41.111.20"
+    assert f"{ixmember.ipaddr6}" == "2001:504:41:111::20"
 
 
 def test_ix_edit_member_invalid(db, pdb_data, account_objects):
@@ -493,7 +493,7 @@ def test_update_routeserver(db, pdb_data, account_objects):
 def test_retrieve_routeserverconfig(db, pdb_data, account_objects):
     rs = account_objects.routeserver
     rsconf = rs.rsconf
-    rsconf.generate()
+    #rsconf.generate()
     ix = account_objects.ix
     client = account_objects.api_client
     org = account_objects.org
