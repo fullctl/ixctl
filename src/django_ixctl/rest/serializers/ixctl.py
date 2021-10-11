@@ -3,6 +3,7 @@ try:
 except ImportError:
     from yaml import Loader
 
+import fullctl.service_bridge.pdbctl as pdbctl
 import yaml
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
@@ -14,7 +15,6 @@ from fullctl.django.rest.serializers import (
     RequireContext,
     SoftRequiredValidator,
 )
-import fullctl.service_bridge.pdbctl as pdbctl
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
@@ -71,7 +71,6 @@ class ImportExchange(RequireContext, serializers.Serializer):
         instance = self.context.get("instance")
         if not value:
             return 0
-
 
         try:
             self.pdb_ix = pdbctl.InternetExchange().object(value)

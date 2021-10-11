@@ -114,4 +114,3 @@ def test_view_ixf_export_error(db, pdb_data, account_objects, client_anon):
         )
     )
     assert response.status_code == 404
-

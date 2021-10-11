@@ -1,8 +1,8 @@
 import os.path
-import pytest
-from django.test import Client
 
 import fullctl.service_bridge.pdbctl as pdbctl
+import pytest
+from django.test import Client
 
 # lazy init for translations
 _ = lambda s: s  # noqa: E731
@@ -157,8 +157,10 @@ def account_objects():
 def account_objects_b():
     return make_account_objects("test_b")
 
+
 @pytest.fixture
 def pdb_data():
     import fullctl.service_bridge.client as client
+
     data_dir = os.path.join(os.path.dirname(__file__), "data")
     client.TEST_DATA_PATH = data_dir

@@ -26,4 +26,3 @@ def test_rsconf_generate_outdated(db, pdb_data, account_objects, capsys):
     rs.save()
     call_command("ixctl_rsconf_generate")
     assert models.RouteserverConfig.objects.count() == 1
-

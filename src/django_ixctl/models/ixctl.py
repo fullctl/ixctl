@@ -9,6 +9,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+import fullctl.service_bridge.pdbctl as pdbctl
 import reversion
 import yaml
 from django.contrib.auth import get_user_model
@@ -17,10 +18,6 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_grainy.decorators import grainy_model
 from django_inet.models import ASNField
-
-import fullctl.service_bridge.pdbctl as pdbctl
-
-
 from fullctl.django.inet.validators import validate_as_set
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization

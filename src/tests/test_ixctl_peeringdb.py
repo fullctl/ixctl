@@ -1,11 +1,8 @@
 import pytest
+from fullctl.service_bridge.pdbctl import InternetExchange, Network
+
 import django_ixctl.models as models
 from django_ixctl import peeringdb
-
-from fullctl.service_bridge.pdbctl import (
-    InternetExchange,
-    Network,
-)
 
 
 def test_import_exchange(db, pdb_data, account_objects):
@@ -15,6 +12,7 @@ def test_import_exchange(db, pdb_data, account_objects):
     assert isinstance(ix, models.InternetExchange)
     assert ix.name == pdb_ix.name
     assert ix.pdb_id == pdb_ix.id
+
 
 @pytest.mark.skip
 def test_import_exchanges(db, pdb_data, account_objects):

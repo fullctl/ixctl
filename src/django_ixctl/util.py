@@ -1,5 +1,5 @@
-from fullctl.django.auth import permissions
 import fullctl.service_bridge.pdbctl as pdbctl
+from fullctl.django.auth import permissions
 
 from django_ixctl.models import Network
 

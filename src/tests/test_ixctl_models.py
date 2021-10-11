@@ -5,10 +5,9 @@ import os
 import pytest
 from django.core.exceptions import ValidationError
 from django.urls import reverse
+from fullctl.service_bridge.pdbctl import NetworkIXLan
 
 import django_ixctl.models as models
-
-from fullctl.service_bridge.pdbctl import NetworkIXLan
 
 
 def test_instance(db, pdb_data, account_objects):
