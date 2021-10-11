@@ -208,7 +208,6 @@ INSTALLED_APPS += (
     "dal",
     "dal_select2",
     "django_handleref",
-    "django_peeringdb",
     "django_grainy",
     "rest_framework",
     "social_django",
