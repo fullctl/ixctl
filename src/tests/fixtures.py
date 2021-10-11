@@ -1,5 +1,6 @@
 import os.path
 
+import fullctl.service_bridge.pdbctl as pdbctl
 import pytest
 from django.test import Client
 
@@ -95,23 +96,15 @@ class AccountObjects:
 
     @property
     def pdb_net(self):
-        from django_peeringdb.models.concrete import Network
-
-        if not hasattr(self, "_pdb_net"):
-            self._pdb_net = Network.objects.get(asn=63311)
-        return self._pdb_net
+        return pdbctl.Network().object(20)
 
     @property
     def pdb_ix(self):
-        from django_peeringdb.models.concrete import InternetExchange
-
-        if not hasattr(self, "_pdb_ix"):
-            self._pdb_ix = InternetExchange.objects.get(id=239)
-        return self._pdb_ix
+        return pdbctl.InternetExchange().object(239)
 
     @property
     def pdb_ixlan(self):
-        return self.pdb_ix.ixlan_set.first()
+        return pdbctl.InternetExchange().object(239)
 
     @property
     def ix(self):
@@ -146,18 +139,6 @@ class AccountObjects:
         return self._rs
 
 
-@pytest.fixture
-def pdb_data():
-    """
-    import initial pdb data
-    """
-    from django.core.management import call_command
-
-    path = os.path.join(os.path.dirname(__file__), "data", "pdb", "pdb.json")
-    print(f"Loading from {path}")
-    call_command("loaddata", path)
-
-
 def make_account_objects(handle="test"):
     return AccountObjects(handle)
 
@@ -175,3 +156,11 @@ def account_objects():
 @pytest.fixture
 def account_objects_b():
     return make_account_objects("test_b")
+
+
+@pytest.fixture
+def pdb_data():
+    import fullctl.service_bridge.client as client
+
+    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    client.TEST_DATA_PATH = data_dir

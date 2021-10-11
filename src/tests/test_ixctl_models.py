@@ -2,19 +2,12 @@ import ipaddress
 import json
 import os
 
-import django_peeringdb.models.concrete as pdb_models
 import pytest
 from django.core.exceptions import ValidationError
 from django.urls import reverse
+from fullctl.service_bridge.pdbctl import NetworkIXLan
 
 import django_ixctl.models as models
-
-
-def test_pdb_create_error(db, pdb_data, account_objects):
-    with pytest.raises(ValueError, match=r"^Expected .* instance$"):
-        models.InternetExchange.create_from_pdb(
-            account_objects.ixctl_instance, account_objects.pdb_ix
-        )
 
 
 def test_instance(db, pdb_data, account_objects):
@@ -35,7 +28,7 @@ def test_ix(db, pdb_data, account_objects):
     )
 
     assert ix.pdb_id == account_objects.pdb_ixlan.id
-    assert ix.pdb == account_objects.pdb_ixlan
+    assert ix.pdb.id == account_objects.pdb_ixlan.id
 
 
 def test_ix_display_name(db, pdb_data, account_objects):
@@ -105,7 +98,7 @@ def test_ix_ixf_export_url(db, pdb_data, account_objects):
 
 
 def test_ixmember(db, pdb_data, account_objects):
-    netixlan = pdb_models.NetworkIXLan.objects.filter(ixlan_id=239).first()
+    netixlan = NetworkIXLan().first(ix=239, join="net")
     # The following line also runs the
     # create_from_pdb method of the InternetExchangeMember
     # corresonding to the IX.
@@ -115,7 +108,7 @@ def test_ixmember(db, pdb_data, account_objects):
 
     ixmember = ix.member_set.first()
     assert ixmember.pdb_id == netixlan.id
-    assert ixmember.pdb == netixlan
+    assert ixmember.pdb.id == netixlan.id
 
     assert ixmember.name == netixlan.net.name
     assert ixmember.display_name == netixlan.net.name
@@ -127,10 +120,10 @@ def test_ixmember(db, pdb_data, account_objects):
 def test_routeserver(db, pdb_data, account_objects):
 
     rs = account_objects.routeserver
-    assert rs.ix == account_objects.ix
+    assert rs.ix.id == account_objects.ix.id
     assert rs.name == "test routeserver"
     assert rs.asn == account_objects.pdb_net.asn
-    assert rs.router_id == ipaddress.IPv4Address("192.168.0.1")
+    assert rs.router_id == "192.168.0.1"
     assert rs.rpki_bgp_origin_validation is False
     assert rs.ars_type == "bird"
     assert rs.max_as_path_length == 32
@@ -191,6 +184,7 @@ def test_routeserver_rsconf(db, pdb_data, account_objects):
     assert models.RouteserverConfig.objects.filter(rs=rs).exists()
 
 
+@pytest.mark.skip
 def test_rsconf(db, pdb_data, account_objects):
     try:
         from yaml import CDumper as Dumper

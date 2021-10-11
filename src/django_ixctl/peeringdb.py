@@ -14,7 +14,7 @@ def import_exchanges(pdb_org, instance):
 
     Argument(s):
 
-    - pdb_org (`django_peeringdb.Organization`)
+    - pdb_org (`fullctl.service_bridge.pdbctl.Organization`)
     - instance (`Instance`)
 
     Returns:
@@ -22,10 +22,12 @@ def import_exchanges(pdb_org, instance):
     - `list`: list of `InternetExchange` objects
     """
 
-    exchanges = []
-    for ix in pdb_org.ix_set.filter(status="ok"):
-        exchanges.append(import_exchange(ix, instance))
-    return exchanges
+    raise NotImplementedError()
+
+    # exchanges = []
+    # for ix in pdb_org.ix_set.filter(status="ok"):
+    #    exchanges.append(import_exchange(ix, instance))
+    # return exchanges
 
 
 def import_exchange(pdb_ix, instance):
@@ -36,7 +38,7 @@ def import_exchange(pdb_ix, instance):
 
     Argument(s)
 
-    - pdb_ix (`django_peeringdb.IXLan`)
+    - pdb_ix (`fullctl.service_bridge.pdbctl.IXLan`)
     - instance (`Instance`)
 
     Returns:
@@ -49,7 +51,7 @@ def import_exchange(pdb_ix, instance):
         return
     return models.InternetExchange.create_from_pdb(
         instance,
-        pdb_ix.ixlan_set.first(),
+        pdb_ix,
     )
 
 
@@ -61,7 +63,7 @@ def get_as_set(pdb_net):
 
     Argument(s):
 
-    - pdb_net (`django_peeringdb.Network`)
+    - pdb_net (`fullctl.service_bridge.pdbctl.Network`)
 
     Returns:
 

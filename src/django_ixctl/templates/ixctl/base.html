@@ -5,7 +5,6 @@
 {% block "js" %}
 {{ block.super }}
 <script src="{% static "ixctl/ixctl.js" %}" type="text/javascript"></script>
-<script src="{% static "ixctl/ixctl.net.js" %}" type="text/javascript"></script>
 <script>
 {% if select_ix %}
 $(fullctl.application).on("initialized", function(e, ixctl, id) {
@@ -89,17 +88,7 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {% endblock %}
 
 {% block "app_content_main" %}
-{% if verified_asns %}
-<div class="row">
-  <div class="col-12">
-  {% for asn, network in verified_asns.items %}
-  <span class="net_name">{{ network.name }}</span> <span class="asn">(AS{{ asn }})</strong>{% if not forloop.last %}, {% endif %}
-  {% endfor %}
-  </div>
-</div>
-{% endif %}
 
-{% include "ixctl/tool/networks/main.html" %}
 {% include "ixctl/tool/routeservers/main.html" %}
 {% include "ixctl/tool/members/main.html" %}
 

@@ -9,6 +9,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+import fullctl.service_bridge.pdbctl as pdbctl
 import reversion
 import yaml
 from django.contrib.auth import get_user_model
@@ -17,9 +18,6 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_grainy.decorators import grainy_model
 from django_inet.models import ASNField
-from django_peeringdb.models.concrete import IXLan
-from django_peeringdb.models.concrete import Network as PeeringdbNetwork
-from django_peeringdb.models.concrete import NetworkIXLan
 from fullctl.django.inet.validators import validate_as_set
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
@@ -89,8 +87,15 @@ class InternetExchange(PdbRefModel):
         Instance, related_name="ix_set", on_delete=models.CASCADE, null=True
     )
 
+    source_of_truth = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Allows other fullctl services to see ixctl as the source of truth for this exchange"
+        ),
+    )
+
     class PdbRef(PdbRefModel.PdbRef):
-        model = IXLan
+        pdbctl = pdbctl.InternetExchange
 
     class HandleRef:
         tag = "ix"
@@ -114,7 +119,7 @@ class InternetExchange(PdbRefModel):
         Argument(s):
 
         - instance (`Instance`): instance that contains this exchange
-        - pdb_object (`django_peeringdb.IXLan`): pdb ixlan instance
+        - pdb_object (`fullctl.service_bridge.pdbctl.IXLan`): pdb ixlan instance
         - save (`bool`): if True commit to the database, otherwise dont
 
         Keyword Argument(s):
@@ -129,13 +134,13 @@ class InternetExchange(PdbRefModel):
 
         ix = super().create_from_pdb(pdb_object, save=save, instance=instance, **fields)
 
-        ix.name = pdb_object.ix.name
+        ix.name = pdb_object.name
         ix.slug = cls.default_slug(ix.name)
 
         if save:
             ix.save()
 
-        for netixlan in ix.pdb.netixlan_set.filter(status="ok"):
+        for netixlan in pdbctl.NetworkIXLan().objects(ix=pdb_object.id, join="net"):
             InternetExchangeMember.create_from_pdb(netixlan, ix=ix)
 
         return ix
@@ -225,7 +230,7 @@ class InternetExchangeMember(PdbRefModel):
     )
 
     class PdbRef(PdbRefModel.PdbRef):
-        model = NetworkIXLan
+        pdbctl = pdbctl.NetworkIXLan
 
     class HandleRef:
         tag = "member"
@@ -244,7 +249,7 @@ class InternetExchangeMember(PdbRefModel):
 
         Argument(s):
 
-        - pdb_object (`django_peeringdb.NetworkIXLan`): netixlan instance
+        - pdb_object (`fullctl.service_bridge.pdbctl.NetworkIXLan`): netixlan instance
         - ix (`InternetExchange`): member of this ix
 
         Keyword Argument(s):
@@ -427,7 +432,8 @@ class Routeserver(HandleRefModel):
         Generate and return `dirct` for ARouteserver clients config
         """
 
-        asns = {}
+        asns = []
+        asn_as_sets = {}
         clients = {}
 
         # TODO
@@ -435,13 +441,8 @@ class Routeserver(HandleRefModel):
         # peeringdb network ??
 
         for member in self.ix.member_set.filter(is_rs_peer=True):
-            asn = f"AS{member.asn}"
-            if asn not in asns:
-                if member.pdb_id:
-                    as_set = get_as_set(member.pdb.net)
-                    if as_set:
-                        asns[asn] = {"as_sets": [as_set]}
-
+            if member.asn not in asns:
+                asns.append(member.asn)
             if member.asn not in clients:
                 clients[member.asn] = {"asn": member.asn, "ip": [], "cfg": {}}
 
@@ -460,7 +461,13 @@ class Routeserver(HandleRefModel):
                     }
                 )
 
-        return {"asns": asns, "clients": list(clients.values())}
+        if asns:
+            for net in pdbctl.Network().objects(asns=asns):
+                as_set = get_as_set(net)
+                if as_set:
+                    asn_as_sets[f"AS{net.asn}"] = {"as_sets": [as_set]}
+
+        return {"asns": asn_as_sets, "clients": list(clients.values())}
 
     def __str__(self):
         return f"Routeserver {self.name} AS{self.asn}"
@@ -621,7 +628,7 @@ class Network(PdbRefModel):
     )
 
     class PdbRef(PdbRefModel.PdbRef):
-        model = PeeringdbNetwork
+        pdbctl = pdbctl.Network
         fields = {"asn": "pdb_id"}
 
     class HandleRef:
@@ -642,7 +649,7 @@ class Network(PdbRefModel):
         Argument(s):
 
         - instance (`Instance`): instance that contains this network
-        - pdb_object (`django_peeringdb.Network`): pdb network
+        - pdb_object (`fullctl.service_bridge.pdbctl.Network`): pdb network
         - save (`bool`): if True commit to the database, otherwise dont
 
         Keyword Argument(s):

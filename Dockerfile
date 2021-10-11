@@ -13,6 +13,7 @@ ARG build_deps=" \
     make \
     openssl-dev \
     curl \
+    git \
     "
 ARG run_deps=" \
     postgresql-libs \

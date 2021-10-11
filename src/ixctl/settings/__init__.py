@@ -208,7 +208,6 @@ INSTALLED_APPS += (
     "dal",
     "dal_select2",
     "django_handleref",
-    "django_peeringdb",
     "django_grainy",
     "rest_framework",
     "social_django",
@@ -228,6 +227,10 @@ TEMPLATES[0]["OPTIONS"]["context_processors"] += [
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login"
 LOGIN_URL = "/login"
+
+# Fullctl service integration
+
+settings_manager.set_option("PDBCTL_HOST", "")
 
 # SINGLE - exchanges are operated by single organization
 # Organizations are not automatically permissioned to be

@@ -53,8 +53,19 @@ On running `compose.sh up` any subsequent time, the Django app will be able to r
 
 ```sh
 Ctl/dev/run.sh createcachetable
-Ctl/dev/run.sh ixctl_peeringdb_sync
 ```
+
+### PeeringDB data
+
+Ixctl uses data sourced from PeeringDB to inform its peer information.
+
+This is however not directly done, but will instead use a [pdbctl](https://github.com/fullctl/pdbctl) instance.
+
+Pdbctl allows us to provide one coherent snapshot of peeringdb data to use in all fullctl services.
+
+Please refer to the pdbctl documentation on how to setup.
+
+Your `PDBCTL_HOST` setting should be specified to the host address of your pdbctl instance.
 
 ## On env variables
 
