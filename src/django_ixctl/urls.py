@@ -1,5 +1,6 @@
-import fullctl.django.rest.urls.service_bridge as service_bridge
 from django.urls import include, path
+
+import fullctl.django.rest.urls.service_bridge_proxy as service_bridge
 
 import django_ixctl.views as views
 
