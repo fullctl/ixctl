@@ -22,6 +22,7 @@ class InternetExchange(DataViewSet):
     valid_filters = [
         ("org", "org_id"),
         ("q", "name__icontains"),
+        ("sot", "source_of_truth")
     ]
     autocomplete = "name"
     allow_unfiltered = True
@@ -36,18 +37,18 @@ class InternetExchangeMember(DataViewSet):
     path_prefix = "/data"
     allowed_http_methods = ["GET"]
     valid_filters = [
-        ("ix", "ixlan_id"),
-        ("net", "net_id"),
-        ("asn", "net__asn"),
-        ("asns", "net__asn__in"),
+        ("ix", "ix_id"),
+        ("asn", "asn"),
+        ("asns", "asn__in"),
         ("peers", MethodFilter("peers")),
+        ("sot", "ix__source_of_truth")
     ]
 
-    join_xl = {"ix": ("ixlan", "ixlan__ix")}
+    join_xl = {"ix": ("ix",)}
 
     queryset = models.InternetExchangeMember.objects.filter(status="ok")
     serializer_class = Serializers.member
 
     def filter_peers(self, qset, value):
         member = self.get_queryset().filter(id=value).first()
-        return qset.filter(ixlan_id=member.ixlan_id, status="ok").exclude(id=value)
+        return qset.filter(ix=member.ix_id, status="ok").exclude(id=value)

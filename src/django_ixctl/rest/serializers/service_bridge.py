@@ -13,59 +13,41 @@ Serializers, register = serializer_registry()
 
 @register
 class InternetExchange(ModelSerializer):
+
+    org_id = serializers.SerializerMethodField()
+
     class Meta:
         model = models.InternetExchange
         fields = [
-            "id",
             "org_id",
+            "id",
             "name",
-            "name_long",
-            "aka",
-            "city",
-            "country",
-            "region_continent",
-            "tech_email",
-            "tech_phone",
-            "policy_email",
-            "policy_phone",
-            "service_level",
-            "terms",
-            "media",
-            "url_stats",
-            "website",
         ]
+
+
+    def get_org_id(self, ix):
+        return ix.instance.org.permission_id
 
 
 @register
 class InternetExchangeMember(ModelSerializer):
-    net = serializers.SerializerMethodField()
-    ix_id = serializers.IntegerField(source="ixlan_id")
     ix = serializers.SerializerMethodField()
 
     class Meta:
         model = models.InternetExchangeMember
         fields = [
             "id",
-            "net",
-            "net_id",
-            "ixlan_id",
             "ix_id",
             "ix",
+            "name",
             "speed",
             "asn",
             "ipaddr4",
             "ipaddr6",
             "is_rs_peer",
-            "operational",
         ]
 
-    def get_net(self, netixlan):
-        if "net" in self.context.get("joins", []):
-            return Network(instance=netixlan.net).data
-        return None
-
-    def get_ix(self, netixlan):
+    def get_ix(self, member):
         if "ix" in self.context.get("joins", []):
-            return InternetExchange(instance=netixlan.ixlan.ix).data
+            return InternetExchange(instance=member.ix).data
         return None
-

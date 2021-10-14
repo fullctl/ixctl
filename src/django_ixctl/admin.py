@@ -59,10 +59,30 @@ class RouteserverInline(BaseTabularAdmin):
 class InternetInternetExchangeAdmin(BaseAdmin):
     list_display = ("name", "id", "org")
     readonly_fields = ("org",)
-    inlines = (InternetExchangeMemberInline, RouteserverInline)
 
     def org(self, obj):
         return obj.instance.org
+
+@admin.register(InternetExchangeMember)
+class MemberAdmin(BaseAdmin):
+    list_display = ("ix", "org", "asn", "ipaddr4", "ipaddr6")
+    readonly_fields = ("org",)
+    search_fields = ("ix__name", "ix__instance__org__slug", "ix__instance__org__name", "ipaddr4", "ipaddr6")
+    form = MemberForm
+
+    def org(self, obj):
+        return obj.ix.instance.org
+
+
+@admin.register(Routeserver)
+class RouteserverAdmin(BaseAdmin):
+    list_display = ("ix", "org", "asn", "router_id", "name")
+    readonly_fields = ("org",)
+    search_fields = ("ix__name", "ix__instance__org__slug", "ix__instance__org__name", "router_id", "name")
+
+    def org(self, obj):
+        return obj.ix.instance.org
+
 
 
 @admin.register(RouteserverConfig)
