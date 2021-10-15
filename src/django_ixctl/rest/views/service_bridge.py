@@ -1,16 +1,7 @@
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Q
-from fullctl.django.rest.core import BadRequest
-from fullctl.django.rest.decorators import load_object
 from fullctl.django.rest.route.service_bridge import route
-from fullctl.django.rest.views.service_bridge import DataViewSet, MethodFilter, Exclude
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from fullctl.django.rest.views.service_bridge import DataViewSet, MethodFilter
 
 import django_ixctl.models.ixctl as models
-
-from django_ixctl.rest.decorators import grainy_endpoint
 from django_ixctl.rest.serializers.service_bridge import Serializers
 
 
@@ -22,7 +13,7 @@ class InternetExchange(DataViewSet):
     valid_filters = [
         ("org", "org_id"),
         ("q", "name__icontains"),
-        ("sot", "source_of_truth")
+        ("sot", "source_of_truth"),
     ]
     autocomplete = "name"
     allow_unfiltered = True
@@ -54,4 +45,6 @@ class InternetExchangeMember(DataViewSet):
         return qset.filter(ix_id=member.ix_id, status="ok").exclude(id=value)
 
     def filter_sot(self, qset, value):
-        return qset.filter(ix__source_of_truth=True).exclude(ix__pdb_id__isnull=True, ix__pdb_id=0)
+        return qset.filter(ix__source_of_truth=True).exclude(
+            ix__pdb_id__isnull=True, ix__pdb_id=0
+        )

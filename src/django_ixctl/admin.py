@@ -63,11 +63,18 @@ class InternetInternetExchangeAdmin(BaseAdmin):
     def org(self, obj):
         return obj.instance.org
 
+
 @admin.register(InternetExchangeMember)
 class MemberAdmin(BaseAdmin):
     list_display = ("ix", "org", "asn", "ipaddr4", "ipaddr6")
     readonly_fields = ("org",)
-    search_fields = ("ix__name", "ix__instance__org__slug", "ix__instance__org__name", "ipaddr4", "ipaddr6")
+    search_fields = (
+        "ix__name",
+        "ix__instance__org__slug",
+        "ix__instance__org__name",
+        "ipaddr4",
+        "ipaddr6",
+    )
     form = MemberForm
 
     def org(self, obj):
@@ -78,11 +85,16 @@ class MemberAdmin(BaseAdmin):
 class RouteserverAdmin(BaseAdmin):
     list_display = ("ix", "org", "asn", "router_id", "name")
     readonly_fields = ("org",)
-    search_fields = ("ix__name", "ix__instance__org__slug", "ix__instance__org__name", "router_id", "name")
+    search_fields = (
+        "ix__name",
+        "ix__instance__org__slug",
+        "ix__instance__org__name",
+        "router_id",
+        "name",
+    )
 
     def org(self, obj):
         return obj.ix.instance.org
-
 
 
 @admin.register(RouteserverConfig)

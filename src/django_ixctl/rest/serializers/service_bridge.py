@@ -1,12 +1,8 @@
-from django.utils.translation import ugettext_lazy as _
-from django_inet.rest import IPAddressField
 from fullctl.django.rest.decorators import serializer_registry
-from fullctl.django.rest.serializers import (
-    ModelSerializer,
-)
-import django_ixctl.models.ixctl as models
+from fullctl.django.rest.serializers import ModelSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+
+import django_ixctl.models.ixctl as models
 
 Serializers, register = serializer_registry()
 
@@ -24,7 +20,6 @@ class InternetExchange(ModelSerializer):
             "pdb_id",
             "name",
         ]
-
 
     def get_org_id(self, ix):
         return ix.instance.org.permission_id
