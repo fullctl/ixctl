@@ -21,6 +21,7 @@ class InternetExchange(ModelSerializer):
         fields = [
             "org_id",
             "id",
+            "pdb_id",
             "name",
         ]
 
@@ -32,12 +33,14 @@ class InternetExchange(ModelSerializer):
 @register
 class InternetExchangeMember(ModelSerializer):
     ix = serializers.SerializerMethodField()
+    pdb_ix_id = serializers.SerializerMethodField()
 
     class Meta:
         model = models.InternetExchangeMember
         fields = [
             "id",
             "ix_id",
+            "pdb_ix_id",
             "ix",
             "name",
             "speed",
@@ -51,3 +54,6 @@ class InternetExchangeMember(ModelSerializer):
         if "ix" in self.context.get("joins", []):
             return InternetExchange(instance=member.ix).data
         return None
+
+    def get_pdb_ix_id(self, member):
+        return member.ix.pdb_id

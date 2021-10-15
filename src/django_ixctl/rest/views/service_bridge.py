@@ -41,7 +41,7 @@ class InternetExchangeMember(DataViewSet):
         ("asn", "asn"),
         ("asns", "asn__in"),
         ("peers", MethodFilter("peers")),
-        ("sot", "ix__source_of_truth")
+        ("sot", MethodFilter("sot")),
     ]
 
     join_xl = {"ix": ("ix",)}
@@ -51,4 +51,7 @@ class InternetExchangeMember(DataViewSet):
 
     def filter_peers(self, qset, value):
         member = self.get_queryset().filter(id=value).first()
-        return qset.filter(ix=member.ix_id, status="ok").exclude(id=value)
+        return qset.filter(ix_id=member.ix_id, status="ok").exclude(id=value)
+
+    def filter_sot(self, qset, value):
+        return qset.filter(ix__source_of_truth=True).exclude(ix__pdb_id__isnull=True, ix__pdb_id=0)
