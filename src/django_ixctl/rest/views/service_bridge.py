@@ -1,5 +1,10 @@
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from fullctl.django.rest.route.service_bridge import route
 from fullctl.django.rest.views.service_bridge import DataViewSet, MethodFilter
+from fullctl.django.rest.decorators import load_object, grainy_endpoint
+from fullctl.django.rest.core import BadRequest
 
 import django_ixctl.models.ixctl as models
 from django_ixctl.rest.serializers.service_bridge import Serializers
@@ -48,3 +53,26 @@ class InternetExchangeMember(DataViewSet):
         return qset.filter(ix__source_of_truth=True).exclude(
             ix__pdb_id__isnull=True, ix__pdb_id=0
         )
+
+    @action(detail=True, methods=["PUT"], url_path="sync/mac-address")
+    @grainy_endpoint(namespace="service_bridge")
+    def mac_address(self, request, pk, *args, **kwargs):
+        member = self.get_object()
+        mac_address = request.data.get("mac_address")
+        member.macaddr = mac_address
+        member.save()
+        return Response(Serializers.member(instance=member).data)
+
+    @action(detail=False, methods=["PUT"], url_path="sync/as-macro")
+    @grainy_endpoint(namespace="service_bridge")
+    def as_macro(self, request, *args, **kwargs):
+        as_macro = request.data.get("as_macro")
+        asn = request.data.get("asn")
+
+        members = models.InternetExchangeMember.objects.filter(
+            ix__source_of_truth=True, asn=asn
+        )
+
+        members.update(as_macro=as_macro)
+
+        return Response(Serializers.member(instance=members, many=True).data)
