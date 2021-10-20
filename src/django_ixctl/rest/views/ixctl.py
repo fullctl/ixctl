@@ -178,8 +178,10 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         queryset = ordering_filter.filter_queryset(request, queryset, self)
 
+        members = models.InternetExchangeMember.preload_as_macro(queryset)
+
         serializer = Serializers.member(
-            instance=queryset,
+            instance=members,
             many=True,
         )
 

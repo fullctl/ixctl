@@ -10,6 +10,7 @@ except ImportError:
     from yaml import Loader, Dumper
 
 import fullctl.service_bridge.pdbctl as pdbctl
+import fullctl.service_bridge.sot as sot
 import reversion
 import yaml
 from django.contrib.auth import get_user_model
@@ -214,7 +215,7 @@ class InternetExchangeMember(PdbRefModel):
     ipaddr4 = InetAddressField(blank=True, null=True, store_prefix_length=False)
     ipaddr6 = InetAddressField(blank=True, null=True, store_prefix_length=False)
     macaddr = MACAddressField(null=True, blank=True)
-    as_macro = models.CharField(
+    as_macro_override = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_as_set]
     )
     is_rs_peer = models.BooleanField(default=False)
@@ -272,6 +273,18 @@ class InternetExchangeMember(PdbRefModel):
 
         return member
 
+    @classmethod
+    def preload_as_macro(cls, queryset):
+        asns = set([member.asn for member in queryset])
+        if not asns:
+            return queryset
+        asn_map = {}
+        for net in sot.ASSet().objects(asns=list(asns)):
+            asn_map[net.asn] = net
+        for member in queryset:
+            member._net = asn_map.get(member.asn)
+            yield member
+
     @property
     def display_name(self):
         return self.name or f"AS{self.asn}"
@@ -290,6 +303,26 @@ class InternetExchangeMember(PdbRefModel):
             return []
 
         return [as_set.strip() for as_set in self.as_macro.split(",")]
+
+    @property
+    def as_macro(self):
+        if self.as_macro_override:
+            return self.as_macro_override
+
+        if self.net:
+            if self.net.source == "peerctl":
+                return self.net.as_set
+            elif self.net.source == "pdbctl":
+                return self.net.irr_as_set
+        return ""
+
+    @property
+    def net(self):
+        if hasattr(self, "_net"):
+            return self._net
+
+        self._net = sot.ASSet().first(asn=self.asn)
+        return self._net
 
     def __str__(self):
         return f"AS{self.asn} - {self.ipaddr4} - {self.ipaddr6} ({self.id})"

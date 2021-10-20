@@ -319,6 +319,8 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
         form.form_action = member.id;
         form.fill(member);
 
+        form.element.find('#member-as-macro').attr('placeholder', member.as_macro)
+
         form.element.find('input[type="text"],select,input[type="checkbox"]').each(function() {
           if(!grainy.check(member.grainy+"."+$(this).attr("name"), "u")) {
             $(this).attr("disabled", true)

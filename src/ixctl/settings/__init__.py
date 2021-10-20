@@ -231,6 +231,7 @@ LOGIN_URL = "/login"
 # Fullctl service integration
 
 settings_manager.set_option("PDBCTL_HOST", "")
+settings_manager.set_option("PEERCTL_HOST", "")
 
 # SINGLE - exchanges are operated by single organization
 # Organizations are not automatically permissioned to be
