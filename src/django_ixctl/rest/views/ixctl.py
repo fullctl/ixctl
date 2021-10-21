@@ -346,6 +346,21 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
         # return Response(serializer.instance.body)
         return Response(serializer.instance.body)
 
+    @action(detail=True, methods=["POST"])
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="rsconf.{request.org.permission_id}",
+    )
+    def status(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = self.get_object()
+        rs_config.rs_response = request.data
+        rs_config.save()
+        serializer = Serializers.rsconf(
+            instance=rs_config,
+            many=False,
+        )
+        return Response(serializer.data)
+
 
 @route
 class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):

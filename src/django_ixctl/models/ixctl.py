@@ -420,6 +420,52 @@ class Routeserver(HandleRefModel):
         return self._rsconf
 
     @property
+    def rsconf_status_dict(self):
+        """
+        Returns a status dict for the current state of this routeserver's
+        configuration
+        """
+
+        rsconf = self.rsconf
+
+        task = rsconf.task
+
+        # no status
+
+        if not task and not rsconf.rs_response:
+            return {"status": None}
+
+        if not task:
+            return rsconf.rs_response
+
+        if task.status == "pending":
+            return {"status": "queued"}
+        if task.status == "running":
+            return {"status": "generating"}
+        if task.status == "cancelled":
+            return {"status": "canceled"}
+        if task.status == "failed":
+            return {"status": "error", "error": task.error}
+        if task.status == "completed":
+            if not rsconf.rs_response:
+                return {"status": "generated"}
+            return rsconf.rs_response
+
+        return {"status": None}
+
+    @property
+    def rsconf_status(self):
+        return self.rsconf_status_dict.get("status")
+
+    @property
+    def rsconf_response(self):
+        return self.rsconf.rs_response
+
+    @property
+    def rsconf_error(self):
+        return self.rsconf_status_dict.get("error")
+
+    @property
     def ars_general(self):
 
         """
@@ -539,6 +585,19 @@ class RouteserverConfig(HandleRefModel):
         help_text=("ARouteserver clients config"), null=True, blank=True
     )
 
+    rs_response = models.JSONField(
+        help_text=("Routeserver response"), null=True, blank=True
+    )
+
+    task = models.ForeignKey(
+        "django_ixctl.RsConfGenerate",
+        on_delete=models.CASCADE,
+        related_name="rsconf_set",
+        blank=True,
+        null=True,
+        help_text=_("Reference to most recent generate task for this rsconfig object"),
+    )
+
     class HandleRef:
         tag = "rsconf"
 
@@ -568,7 +627,9 @@ class RouteserverConfig(HandleRefModel):
         """
         Queue task to regenerate config
         """
-        django_ixctl.models.tasks.RsConfGenerate.create_task(self.id)
+        self.task = django_ixctl.models.tasks.RsConfGenerate.create_task(self.id)
+        self.rs_response = {}
+        self.save()
 
     def generate(self):
 

@@ -234,6 +234,9 @@ class Routeserver(ModelSerializer):
             "rpki_bgp_origin_validation",
             "graceful_shutdown",
             "extra_config",
+            "rsconf_status",
+            "rsconf_response",
+            "rsconf_error",
         ]
 
     def validate_extra_config(self, value):
@@ -261,6 +264,7 @@ class RouteserverConfig(ModelSerializer):
         model = models.RouteserverConfig
         fields = [
             "rs",
+            "generated",
             "body",
         ]
 

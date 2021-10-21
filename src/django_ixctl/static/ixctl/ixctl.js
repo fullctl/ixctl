@@ -504,7 +504,23 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
       };
 
+      this.$w.list.formatters.rsconf_status = (value, data, col) => {
+        if(!value)
+          return $('<span>')
+
+        var badge = new $ctl.widget.StatusBadge(
+          this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','rsconf_status'),
+          ["ok","error","cancelled"]
+        );
+
+        badge.render(value,data);
+
+        return badge.element;
+
+      };
+
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
+
 
       $(this.$w.list).on("api-read:before",function()  {
         let url = this.base_url.split("/").slice(0,-1);
