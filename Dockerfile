@@ -1,8 +1,9 @@
+ARG bgpq4_version=0.0.6
+
 FROM python:3.9-alpine as base
 
 ARG virtual_env=/venv
 ARG install_to=/srv/service
-ARG bgpq4_version=0.0.6
 ARG build_deps=" \
     postgresql-dev \
     g++ \
@@ -16,52 +17,29 @@ ARG build_deps=" \
     git \
     "
 ARG run_deps=" \
+    libgcc \
     postgresql-libs \
     "
 
 # env to pass to sub images
-ENV BGPQ4_VERSION=$bgpq4_version
 ENV BUILD_DEPS=$build_deps
 ENV RUN_DEPS=$run_deps
 ENV IXCTL_HOME=$install_to
 ENV VIRTUAL_ENV=$virtual_env
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV POETRY_VERSION=1.1.4
 
 
 # build container
-FROM base as builder
-
-RUN apk --update --no-cache add $BUILD_DEPS
-
-# Install Rust to install Poetry
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-
-# Use Pip to install Poetry
-RUN pip install "poetry==$POETRY_VERSION"
-
-# Create a VENV
-RUN python3 -m venv "$VIRTUAL_ENV"
+FROM ghcr.io/fullctl/fullctl-builder-alpine:prep-release as builder
+ARG bgpq4_version
 
 WORKDIR /build
 
-# build bgpq4 before venv, since it changes less often
-ADD https://github.com/bgp/bgpq4/archive/refs/tags/${BGPQ4_VERSION}.zip /build
-RUN unzip ${BGPQ4_VERSION}.zip
-WORKDIR /build/bgpq4-${BGPQ4_VERSION}
-RUN apk add autoconf automake
-RUN ./bootstrap
-RUN ./configure --prefix=/usr
-RUN make install
-
-# individual files here instead of COPY . . for caching
+# poetry install
 COPY pyproject.toml poetry.lock ./
-
-# Need to upgrade pip and wheel within Poetry for all its installs
-RUN poetry run pip install --upgrade pip
-RUN poetry run pip install --upgrade wheel
 RUN poetry install --no-root
+
+COPY Ctl/VERSION Ctl/
 
 
 #### final image
@@ -83,7 +61,6 @@ RUN adduser -Du $uid $USER
 WORKDIR $IXCTL_HOME
 
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
-COPY --from=builder /usr/bin/bgpq4 /usr/bin/bgpq4
 
 RUN mkdir -p etc locale media static
 COPY Ctl/VERSION etc/
