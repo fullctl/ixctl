@@ -18,10 +18,6 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {{ block.super }}
 {% endblock %}
 
-{% block "header_middle" %}
-<img src="{% static "common/icons/ixctl-logo-darkbg.svg" %}" alt="ixctl">
-{% endblock %}
-
 {% block "header_right" %}
 {% with app_id="ixctl" %}
 {{ block.super }}
@@ -33,14 +29,19 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 <div class="row">
   <div class="col-6 col-md-8">
-    <span class="inline-label">{% trans "Exchange:" %}</span>
-    <span class="toolbar-control">
-      <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
-    <select
-      data-api-load="yes"
-      data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
-      data-element="select_ix"></select>
-    </span>
+    <div class="toolbar-control-group">
+
+
+      <span class="inline-label">{% trans "Exchange:" %}</span>
+      <span class="toolbar-control">
+        <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+      <select
+        data-api-load="yes"
+        data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
+        data-element="select_ix"></select>
+      </span>
+
+    </div>
 
     <!-- ix tools: manage selected ix -->
     <div class="ix-mgmt">
@@ -57,6 +58,8 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
         {% trans "Delete" %}
       </button>
 
+
+
     </div>
 
 
@@ -66,15 +69,10 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
   <!-- button: create ix -->
 
-  <div class="col-3 col-md-2">
+  <div class="col-6 col-md-4 right">
       <button type="button" class="button" style="display:none" data-element="button_create_ix">
       <span class="icon ixctl icon-add"></span>
       {% trans "Create" %}</button>
-  </div>
-
-  <!-- button: import ix from pdb -->
-
-  <div class="col-3 col-md-2">
       <button type="button" class="button" style="display:none" data-element="button_import_ix">
       <span class="icon ixctl icon-add"></span>
       {% trans "Import" %}</button>
