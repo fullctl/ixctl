@@ -22,16 +22,17 @@
       <td data-field="controls" class="right">
         <div class="row">
           <div class="col-xs-12 col-lg-3">
-            <a data-action="view_rsconf"><span class="icon ixctl icon-download"></span><span class="label ixctl">{% trans "Config" %}</span></a>
+            <a class="button" data-action="view_rsconf"><span class="icon ixctl icon-download"></span><span class="label ixctl">{% trans "Config" %}</span></a>
           </div>
           <div class="col-xs-12 col-lg-3 left">
             <span data-field="rsconf_status"></span>
           </div>
           <div class="col-xs-12 col-lg-3">
-            <a data-action="edit_routeserver"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
+            <a class="button" data-action="edit_routeserver"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
           </div>
           <div class="col-xs-12 col-lg-3">
         <a
+          class="button"
           data-api-action="{id}"
           data-api-callback="remove"
           data-confirm="Remove routeserver?"

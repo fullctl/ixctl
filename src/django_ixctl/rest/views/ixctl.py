@@ -5,6 +5,7 @@ from fullctl.django.rest.decorators import billable, load_object
 from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
 from fullctl.django.rest.mixins import CachedObjectMixin, OrgQuerysetMixin
 from fullctl.django.rest.renderers import PlainTextRenderer
+import fullctl.service_bridge.pdbctl as pdbctl
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -361,6 +362,20 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
         )
         return Response(serializer.data)
 
+@route
+class PeeringDBRouteservers(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
+    serializer_class = Serializers.pdbrs
+    queryset = models.Routeserver.objects.all()
+    ix_tag_needed = True
+    ref_tag = "pdbrs"
+
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(namespace="rs.{request.org.permission_id}")
+    def list(self, request, org, instance, ix, *args, **kwargs):
+        if not ix.pdb_id:
+            return Response(self.serializer_class([], many=True).data)
+        candidates = list(pdbctl.NetworkIXLan().objects(ix=ix.pdb_id, routeserver=1))
+        return Response(self.serializer_class(candidates, many=True).data)
 
 @route
 class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):

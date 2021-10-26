@@ -5,6 +5,7 @@
 {% block "js" %}
 {{ block.super }}
 <script src="{% static "ixctl/ixctl.js" %}" type="text/javascript"></script>
+<script src="{% static "ixctl/ixctl.settings.js" %}" type="text/javascript"></script>
 <script>
 {% if select_ix %}
 $(fullctl.application).on("initialized", function(e, ixctl, id) {
@@ -17,6 +18,31 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {% block "css" %}
 {{ block.super }}
 {% endblock %}
+
+
+{% block "header_middle" %}
+<div class="app-pages-nav" data-component="pages">
+  <nav class="nav justify-content-center">
+
+    <a class="nav-link active"
+      id="tab-overview"
+      data-toggle="tab"
+      role="tab"
+      aria-controls="overview"
+      aria-selected="true"
+      href="#overview">{% trans "Members" %}</a>
+
+    <a class="nav-link"
+      data-toggle="tab"
+      role="tab"
+      aria-controls="settings"
+      aria-selected="false"
+      id="settings-tab"
+      href="#settings">{% trans "Settings" %}</a>
+  </nav>
+</div>
+{% endblock %}
+
 
 {% block "header_right" %}
 {% with app_id="ixctl" %}
@@ -43,26 +69,6 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
     </div>
 
-    <!-- ix tools: manage selected ix -->
-    <div class="ix-mgmt">
-
-      <!-- button: configure currently select ix -->
-      <button type="button" class="button mt-3" style="display:none;" data-element="button_update_ix">
-        <span class="icon ixctl icon-settings"></span>
-        {% trans "Configure" %}
-      </button>
-
-      <!-- button: delete currently selected ix -->
-      <button type="button btn-danger" class="button mt-3" style="display:none;" data-element="button_delete_ix">
-        <span class="icon ixctl icon-delete"></span>
-        {% trans "Delete" %}
-      </button>
-
-
-
-    </div>
-
-
   </div>
 
   <!-- ix tools: create ix, import ix -->
@@ -71,11 +77,13 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
   <div class="col-6 col-md-4 right">
       <button type="button" class="button" style="display:none" data-element="button_create_ix">
-      <span class="icon ixctl icon-add"></span>
-      {% trans "Create" %}</button>
+        <span class="icon ixctl icon-add"></span>
+        <span class="label">{% trans "Create" %}</span>
+      </button>
       <button type="button" class="button" style="display:none" data-element="button_import_ix">
-      <span class="icon ixctl icon-add"></span>
-      {% trans "Import" %}</button>
+        <span class="icon ixctl icon-add"></span>
+        <span class="label">{% trans "Import" %}</span>
+      </button>
   </div>
 </div>
 
@@ -87,8 +95,18 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 {% block "app_content_main" %}
 
-{% include "ixctl/tool/routeservers/main.html" %}
-{% include "ixctl/tool/members/main.html" %}
+<div class="tab-content" id="app-pages">
+  <div class="tab-pane show active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
+		{% include "ixctl/tool/routeservers/main.html" %}
+		{% include "ixctl/tool/members/main.html" %}
+  </div>
+
+  <div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="tab-settings">
+		{% include "ixctl/tool/settings/main.html" %}
+  </div>
+</div>
+
+
 
 {% endblock %}
 
@@ -96,7 +114,5 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {{ block.super }}
 {% include "ixctl/form-import.html" %}
 {% include "ixctl/form-create-ix.html" %}
-{% include "ixctl/form-update-ix.html" %}
-{% include "ixctl/form-delete-ix.html" %}
 
 {% endblock %}

@@ -89,14 +89,6 @@ $ctl.application.Ixctl = $tc.extend(
       let ix = this.exchanges[this.ix()];
       let org = $ctl.org.id;
 
-      if(ix) {
-        $e.button_update_ix.grainy_toggle(ix.grainy, "u");
-        $e.button_delete_ix.grainy_toggle(ix.grainy, "d");
-      } else {
-        $e.button_update_ix.hide();
-        $e.button_delete_ix.hide();
-      }
-
       $e.button_create_ix.grainy_toggle(`ix.${org}`, "c");
       $e.button_import_ix.grainy_toggle(`ix.${org}`, "c");
     },
@@ -127,8 +119,10 @@ $ctl.application.Ixctl = $tc.extend(
     select_ix : function(id) {
       if(id)
         this.$c.toolbar.$e.select_ix.val(id);
-      else
-        this.$c.toolbar.$e.select_ix.val(this.$c.toolbar.$e.select_ix.find('option').val());
+      else {
+        id = this.$c.toolbar.$e.select_ix.find('option').val();
+        this.$c.toolbar.$e.select_ix.val(id);
+      }
 
       this.sync();
       this.sync_url(id);
@@ -487,7 +481,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       this.$w.list.formatters.row = (row, data) => {
         row.find('a[data-action="edit_routeserver"]').click(() => {
           var routeserver = row.data("apiobject");
-          new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug(), routeserver);
+          fullctl.ixctl.page("settings");
+          fullctl.ixctl.$t.settings.edit_routeserver(routeserver);
+          //new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug(), routeserver);
         }).grainy_toggle(data.grainy+".?", "u");
 
         if(!grainy.check(data.grainy, "d")) {
@@ -534,7 +530,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
     menu : function() {
       var menu = this.Tool_menu();
       menu.find('[data-element="button_add_routeserver"]').click(() => {
-        return new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug());
+        fullctl.ixctl.page("settings");
+        fullctl.ixctl.$t.settings.create_routeserver();
+        // return new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug());
       });
       return menu;
     },

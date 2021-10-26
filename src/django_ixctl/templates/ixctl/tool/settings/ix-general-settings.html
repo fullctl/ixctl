@@ -1,0 +1,51 @@
+{% load static i18n %}
+<form
+  class="controls"
+  data-template="form_general_settings"
+  data-api-base="{% url "ixctl_api:ix-detail" org_tag=request.org.slug ix_tag="ix_tag" %}"
+  data-api-method="PUT">
+
+  <div class="row controls">
+    <div class="col-12">
+      <div class="form-group" data-api-submit="yes">
+        <label for="edit_ix_name">{% trans "Exchange Name" %}:</label>
+        <input
+          type="text"
+          class="form-control mb-3"
+          name="name"
+          id="edit_ix_name">
+        </input>
+        <label for="edit_ix_slug">{% trans "Exchange Identifier (also used as URL slug)" %}:</label>
+        <input
+          type="text"
+          class="form-control mb-3"
+          name="slug"
+          id="edit_ix_slug">
+        </input>
+        <label for="ixf_export_privacy">{% trans "IX-F Export Privacy Setting" %}</label>
+          <span class="modal-control">
+          <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+          <select class="form-control mb-3" id="ixf_export_privacy" name="ixf_export_privacy">
+            <option value="public">{% trans "Public (Anyone can view)" %}</option>
+            <option value="private">{% trans "Private (Requires secret key to view)" %}</option>
+          <select>
+          </span>
+      <label for="urlkey">{% trans "Secret Key" %}:</label>
+        <input
+          type="text"
+          class="form-control mb-3"
+          name="urlkey"
+          id="urlkey">
+        </input>
+      </div>
+    </div>
+  </div>
+  <div class="row controls marg-top-lg">
+    <div class="col-6 left">
+    </div>
+    <div class="col-6 right">
+      <button class="submit"><span class="icon fullctl icon-edit"></span><span class="label">{% trans "Save" %}</span></a>
+    </div>
+  </div>
+
+</form>

@@ -270,6 +270,28 @@ class RouteserverConfig(ModelSerializer):
 
 
 @register
+class PeeringDBRouteserver(serializers.Serializer):
+    ref_tag = "pdbrs"
+
+
+    id = serializers.IntegerField();
+    router_id = serializers.SerializerMethodField()
+    name = serializers.CharField(read_only=True)
+    asn = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        fields = [
+            "id",
+            "router_id",
+            "name",
+            "asn"
+        ]
+
+    def get_router_id(self, obj):
+        return obj.ipaddr4 or ""
+
+
+@register
 class Network(ModelSerializer):
     class Meta:
         model = models.Network
