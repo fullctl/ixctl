@@ -95,6 +95,16 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 {% block "app_content_main" %}
 
+<div style="display:none" class="notification row marg-top-lg" id="no-ix-notify">
+  <div class="col-12 center">
+    <p>
+    {% blocktrans %}
+    There are currently no internet exchanges in this organization.
+    {% endblocktrans %}
+    </p>
+  </div>
+</div>
+
 <div class="tab-content" id="app-pages">
   <div class="tab-pane show active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
 		{% include "ixctl/tool/routeservers/main.html" %}

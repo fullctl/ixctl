@@ -130,10 +130,15 @@ $ctl.application.Ixctl = $tc.extend(
 
     sync_url: function(id) {
       var ix = this.exchanges[id];
-      if(!ix)
-        return;
       var url = new URL(window.location)
-      url.pathname = `/${fullctl.org.slug}/${ix.slug}/`
+      console.log("SUP", ix)
+      if(!ix) {
+        $('#no-ix-notify').show();
+        url.pathname = `/${fullctl.org.slug}/`
+      } else {
+        url.pathname = `/${fullctl.org.slug}/${ix.slug}/`
+        $('#no-ix-notify').hide();
+      }
       window.history.pushState({}, '', url);
     },
 
