@@ -15,6 +15,9 @@ ARG run_deps=" \
     libpq \
     python39 \
     "
+ARG debug_deps=" \
+    vim \
+    "
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4 as base
 
@@ -95,13 +98,17 @@ RUN chown -R $uid:$uid locale media
 #### entry point from final image, not tester
 FROM final
 
+ARG debug_deps
 ARG user
 ARG uid
+ARG ars_home=/arouteserver
 
 #ENV UWSGI_SOCKET=127.0.0.1:6002
 
 WORKDIR $SERVICE_HOME
 
+RUN microdnf -y install --nodocs $debug_deps \
+    && microdnf clean all
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
 
@@ -110,6 +117,11 @@ RUN ln -s /venv $SERVICE_HOME/venv
 
 COPY Ctl/docker/django-uwsgi.ini etc/
 COPY Ctl/docker/manage.sh /usr/bin/manage
+
+
+# this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
+RUN mkdir -p "$ars_home" && chown -R $uid:$uid "$ars_home" && chmod 777 "$ars_home"
+VOLUME ${ars_home}
 
 USER $uid
 

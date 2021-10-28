@@ -42,7 +42,7 @@ case "$@" in
     echo dropping to shell
     exec "/bin/sh"
     ;;
-  "/bin/sh" )
+  "/bin/sh|bash" )
     echo dropping to shell "$1" - "$@"
     exec $@
     ;;
