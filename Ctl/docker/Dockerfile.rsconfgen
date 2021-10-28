@@ -1,43 +1,22 @@
 ARG bgpq4_version=1.4
 ARG poetry_version=1.1.11
-ARG python_version=3.9
+ARG uid=6300
+ARG user=fullctl
 
 ARG virtual_env=/venv
 ARG install_to=/srv/service
-# ARG build_deps=" \
-#     postgresql-dev \
-#     g++ \
-#     git \
-#     libffi-dev \
-#    libjpeg-turbo-dev \
-#    libtool \
-#    linux-headers \
-#    make \
-#    openssl-dev \
-#    curl \
-#    git \
-#    "
 ARG build_deps=" \
-    postgresql-dev \
-    g++ \
+    gcc \
     git \
-    libffi-dev \
-    libjpeg-turbo-dev \
-    libtool \
-    linux-headers \
-    make \
-    openssl-dev \
-    curl \
-    git \
+    python39-devel \
+    bgpq4 \
     "
-#ARG run_deps=" \
-#    libgcc \
-##    postgresql-libs \
-#    "
-ARG run_deps="libpq"
+ARG run_deps=" \
+    libpq \
+    python39 \
+    "
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4 as base
-# quay.io/centos/centos:stream
 
 ARG install_to
 ARG virtual_env
@@ -47,50 +26,37 @@ ENV SERVICE_HOME=$install_to
 ENV VIRTUAL_ENV=$virtual_env
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# XXX are not used / set
-ENV BUILD_DEPS=$build_deps
-ENV RUN_DEPS=$run_deps
-
-
 # build container
 # FROM ghcr.io/fullctl/fullctl-builder-alpine:prep-release as builder
-# XXX try minimal
 FROM registry.access.redhat.com/ubi8/ubi:8.4 as builder
-# FROM ubi8/s2i-core:rhel8.4 as builder
 
+# TODO pin bgpq4
+ARG build_deps
 ARG bgpq4_version
-# XXX poetry_version
+ARG virtual_env
+ARG poetry_version
 
-# libpq
-ENV POETRY_VERSION=1.1.11
-
-#RUN INSTALL_PKGS="go-toolset" && \
-#    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
-#    rpm -V $INSTALL_PKGS && \
-#    yum clean all -y
-#
-
-#RUN dnf --disableplugin=subscription-manager install -by --nodocs gcc gcc-c++ make cmake patch bzip2 zlib-devel openssl-devel curl-devel pcre2-devel libicu-devel libffi-devel \
-#    && dnf --disableplugin=subscription-manager config-manager --add-repo ${RHEL_REPOSITORY} \
-#    && dnf --disableplugin=subscription-manager --enablerepo=rhel-8-for-x86_64-* install -yb --nodocs readline-devel \
-#    && mkdir -p ${BUILD_DIR}
-
+ENV VIRTUAL_ENV=$virtual_env
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 WORKDIR /build
 #RUN dnf --disableplugin=subscription-manager install -by --nodocs gcc gcc-c++ make cmake patch bzip2 zlib-devel openssl-devel curl-devel pcre2-devel libicu-devel libffi-devel \
 
-RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-RUN yum install -y gcc git bgpq4 python39-devel
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
+    && dnf --disableplugin=subscription-manager install -by --nodocs $build_deps
 
 # Use Pip to install Poetry
-RUN pip3 install "poetry==$POETRY_VERSION"
+RUN pip3 install "poetry==$poetry_version"
 
 # Create a VENV
 RUN python3 -m venv "$VIRTUAL_ENV"
+# TODO should be able to replace these by adding to pyproject?
+RUN pip3 install --upgrade pip wheel
 
 # poetry install
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-root
+RUN poetry run pip install --upgrade pip wheel
 
 
 #### final image
@@ -98,25 +64,21 @@ RUN poetry install --no-root
 FROM base as final
 
 ARG run_deps
-ARG uid=5002
-ARG user=fullctl
-
+ARG uid
+ARG user
 
 # extra settings file if needed
 # TODO keep in until final production deploy
 ARG COPY_SETTINGS_FILE=src/ixctl/settings/dev.py
 
 # add dependencies
-#RUN dnf install -by $run_deps
-RUN microdnf -y install --nodocs $run_deps && \
-    microdnf clean all
+RUN microdnf -y install --nodocs $run_deps \
+    && microdnf clean all
 
 # XXX RUN useradd -m -u $uid $user
 
-
-
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
-# XXX COPY --from=builder /usr/bin/bgpq4 /usr/bin/bgpq4
+COPY --from=builder /usr/bin/bgpq4 /usr/bin/bgpq4
 
 WORKDIR $SERVICE_HOME
 RUN mkdir -p etc locale media static
@@ -136,7 +98,9 @@ FROM final
 ARG user
 ARG uid
 
-#  XXX ARG USER=fullctl
+#ENV UWSGI_SOCKET=127.0.0.1:6002
+
+WORKDIR $SERVICE_HOME
 
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
@@ -146,9 +110,6 @@ RUN ln -s /venv $SERVICE_HOME/venv
 
 COPY Ctl/docker/django-uwsgi.ini etc/
 COPY Ctl/docker/manage.sh /usr/bin/manage
-
-
-#ENV UWSGI_SOCKET=127.0.0.1:6002
 
 USER $uid
 
