@@ -130,6 +130,8 @@ $ctl.application.Ixctl = $tc.extend(
 
     sync_url: function(id) {
       var ix = this.exchanges[id];
+      if(!ix)
+        return;
       var url = new URL(window.location)
       url.pathname = `/${fullctl.org.slug}/${ix.slug}/`
       window.history.pushState({}, '', url);
