@@ -362,8 +362,11 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
         )
         return Response(serializer.data)
 
+
 @route
-class PeeringDBRouteservers(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
+class PeeringDBRouteservers(
+    CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
+):
     serializer_class = Serializers.pdbrs
     queryset = models.Routeserver.objects.all()
     ix_tag_needed = True
@@ -376,6 +379,7 @@ class PeeringDBRouteservers(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.Gene
             return Response(self.serializer_class([], many=True).data)
         candidates = list(pdbctl.NetworkIXLan().objects(ix=ix.pdb_id, routeserver=1))
         return Response(self.serializer_class(candidates, many=True).data)
+
 
 @route
 class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):

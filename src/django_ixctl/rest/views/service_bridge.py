@@ -1,13 +1,19 @@
 from fullctl.django.rest.core import BadRequest
 from fullctl.django.rest.decorators import grainy_endpoint, load_object
 from fullctl.django.rest.route.service_bridge import route
-from fullctl.django.rest.views.service_bridge import DataViewSet, MethodFilter, StatusViewSet, HeartbeatViewSet
+from fullctl.django.rest.views.service_bridge import (
+    DataViewSet,
+    MethodFilter,
+    StatusViewSet,
+    HeartbeatViewSet,
+)
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 import django_ixctl.models.ixctl as models
 from django_ixctl.rest.serializers.service_bridge import Serializers
+
 
 @route
 class Status(StatusViewSet):
@@ -17,6 +23,7 @@ class Status(StatusViewSet):
 @route
 class Heartbeat(HeartbeatViewSet):
     pass
+
 
 @route
 class InternetExchange(DataViewSet):

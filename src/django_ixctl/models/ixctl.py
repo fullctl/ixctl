@@ -518,7 +518,9 @@ class Routeserver(HandleRefModel):
         # TODO
         # where to get ASN sets from ??
         # peeringdb network ??
-        rs_peers = InternetExchangeMember.preload_as_macro(self.ix.member_set.filter(is_rs_peer=True))
+        rs_peers = InternetExchangeMember.preload_as_macro(
+            self.ix.member_set.filter(is_rs_peer=True)
+        )
 
         for member in rs_peers:
             if member.asn not in asns:

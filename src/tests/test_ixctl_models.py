@@ -174,6 +174,7 @@ def test_routeserver_ars_clients(db, pdb_data, account_objects):
     )
     with open(fn) as file:
         expected = json.load(file)
+
     assert rs.ars_clients == expected
 
 
