@@ -51,7 +51,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
       this.$w.routeservers.load();
       if(exchange) {
         this.$e.menu.find('[data-element="button_add_routeserver"]').grainy_toggle(exchange.grainy, "c");
-        this.$e.menu.find('[data-element="button_delete_exchange"]').grainy_toggle(exchange.grainy, "d");
+        this.$e.menu.find('[data-element="button_delete_ix"]').grainy_toggle(exchange.grainy, "d");
         this.$e.menu.find('[data-element="button_general_settings"]').grainy_toggle(exchange.grainy, "u");
       } else {
         this.$e.menu.find('[data-element="button_delete_exchange"]').hide();
