@@ -5,6 +5,7 @@ from django.core.management import call_command
 import django_ixctl.models as models
 
 
+@pytest.mark.skip
 def test_rsconf_generate(db, pdb_data, account_objects, capsys):
     rs = account_objects.routeserver
     assert list(models.Routeserver.objects.all()) == [rs]
@@ -17,6 +18,7 @@ def test_rsconf_generate(db, pdb_data, account_objects, capsys):
     assert stdout[1] == "Done"
 
 
+@pytest.mark.skip
 def test_rsconf_generate_outdated(db, pdb_data, account_objects, capsys):
     rs = account_objects.routeserver
     # Make rsconf outdated
@@ -24,13 +26,3 @@ def test_rsconf_generate_outdated(db, pdb_data, account_objects, capsys):
     rs.save()
     call_command("ixctl_rsconf_generate")
     assert models.RouteserverConfig.objects.count() == 1
-
-
-# Need to figure out how to better revert the settings.USE_TZ
-def test_peeringdb_sync_connection_error(db):
-    from requests.exceptions import ConnectionError
-
-    with pytest.raises(ConnectionError):
-        call_command("ixctl_peeringdb_sync", pdburl="http://invalid")
-    settings.USE_TZ = True
-    assert settings.USE_TZ

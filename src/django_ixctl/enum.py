@@ -7,6 +7,14 @@ IXF_MEMBER_TYPE = (
     ("probono", _("probono")),
 )
 
+MEMBER_STATE = (
+    ("active", _("Active")),
+    ("awaiting-cross-connect", _("Awaiting cross connect")),
+    ("provisioning", _("Provisioning")),
+    ("suspended", _("Suspended")),
+    ("pending-deletion", _("Pending deletion")),
+)
+
 ARS_TYPES = (
     ("bird", _("Bird")),
     ("bird2", _("Bird 2")),

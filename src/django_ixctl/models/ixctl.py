@@ -9,6 +9,8 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+import fullctl.service_bridge.pdbctl as pdbctl
+import fullctl.service_bridge.sot as sot
 import reversion
 import yaml
 from django.contrib.auth import get_user_model
@@ -16,15 +18,14 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_grainy.decorators import grainy_model
-from django_inet.models import ASNField, IPAddressField, MacAddressField
-from django_peeringdb.models.concrete import IXLan
-from django_peeringdb.models.concrete import Network as PeeringdbNetwork
-from django_peeringdb.models.concrete import NetworkIXLan
-from fullctl.django.inet.validators import validate_as_set, validate_ip4, validate_ip6
+from django_inet.models import ASNField
+from fullctl.django.inet.validators import validate_as_set
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
+from netfields import InetAddressField, MACAddressField
 
 import django_ixctl.enum
+import django_ixctl.models.tasks
 from django_ixctl.peeringdb import get_as_set
 
 
@@ -81,14 +82,21 @@ class InternetExchange(PdbRefModel):
         default="public",
     )
 
-    slug = models.SlugField(max_length=64, unique=False, blank=True, null=False)
+    slug = models.SlugField(max_length=64, unique=False, blank=False, null=False)
 
     instance = models.ForeignKey(
         Instance, related_name="ix_set", on_delete=models.CASCADE, null=True
     )
 
+    source_of_truth = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Allows other fullctl services to see ixctl as the source of truth for this exchange"
+        ),
+    )
+
     class PdbRef(PdbRefModel.PdbRef):
-        model = IXLan
+        pdbctl = pdbctl.InternetExchange
 
     class HandleRef:
         tag = "ix"
@@ -112,7 +120,7 @@ class InternetExchange(PdbRefModel):
         Argument(s):
 
         - instance (`Instance`): instance that contains this exchange
-        - pdb_object (`django_peeringdb.IXLan`): pdb ixlan instance
+        - pdb_object (`fullctl.service_bridge.pdbctl.IXLan`): pdb ixlan instance
         - save (`bool`): if True commit to the database, otherwise dont
 
         Keyword Argument(s):
@@ -127,12 +135,13 @@ class InternetExchange(PdbRefModel):
 
         ix = super().create_from_pdb(pdb_object, save=save, instance=instance, **fields)
 
-        ix.name = pdb_object.ix.name
+        ix.name = pdb_object.name
+        ix.slug = cls.default_slug(ix.name)
 
         if save:
             ix.save()
 
-        for netixlan in ix.pdb.netixlan_set.filter(status="ok"):
+        for netixlan in pdbctl.NetworkIXLan().objects(ix=pdb_object.id, join="net"):
             InternetExchangeMember.create_from_pdb(netixlan, ix=ix)
 
         return ix
@@ -174,17 +183,12 @@ class InternetExchange(PdbRefModel):
     def org(self):
         return self.instance.org
 
-    def _default_slug(self):
-        slug = self.name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
-        return slug
+    @classmethod
+    def default_slug(cls, name):
+        return name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
 
     def __str__(self):
         return f"{self.name} ({self.id})"
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = self._default_slug()
-        super().save(*args, **kwargs)
 
 
 @reversion.register()
@@ -208,14 +212,10 @@ class InternetExchangeMember(PdbRefModel):
         related_name="member_set",
         on_delete=models.CASCADE,
     )
-    ipaddr4 = models.CharField(
-        max_length=255, blank=True, null=True, validators=[validate_ip4]
-    )
-    ipaddr6 = models.CharField(
-        max_length=255, blank=True, null=True, validators=[validate_ip6]
-    )
-    macaddr = MacAddressField(null=True, blank=True)
-    as_macro = models.CharField(
+    ipaddr4 = InetAddressField(blank=True, null=True, store_prefix_length=False)
+    ipaddr6 = InetAddressField(blank=True, null=True, store_prefix_length=False)
+    macaddr = MACAddressField(null=True, blank=True)
+    as_macro_override = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_as_set]
     )
     is_rs_peer = models.BooleanField(default=False)
@@ -223,13 +223,15 @@ class InternetExchangeMember(PdbRefModel):
     asn = models.PositiveIntegerField()
     name = models.CharField(max_length=255, blank=True, null=True)
 
-    ixf_state = models.CharField(max_length=255, default="active")
+    ixf_state = models.CharField(
+        max_length=255, default="active", choices=django_ixctl.enum.MEMBER_STATE
+    )
     ixf_member_type = models.CharField(
         max_length=255, choices=django_ixctl.enum.IXF_MEMBER_TYPE, default="peering"
     )
 
     class PdbRef(PdbRefModel.PdbRef):
-        model = NetworkIXLan
+        pdbctl = pdbctl.NetworkIXLan
 
     class HandleRef:
         tag = "member"
@@ -248,7 +250,7 @@ class InternetExchangeMember(PdbRefModel):
 
         Argument(s):
 
-        - pdb_object (`django_peeringdb.NetworkIXLan`): netixlan instance
+        - pdb_object (`fullctl.service_bridge.pdbctl.NetworkIXLan`): netixlan instance
         - ix (`InternetExchange`): member of this ix
 
         Keyword Argument(s):
@@ -271,6 +273,18 @@ class InternetExchangeMember(PdbRefModel):
 
         return member
 
+    @classmethod
+    def preload_as_macro(cls, queryset):
+        asns = set([member.asn for member in queryset])
+        if not asns:
+            return queryset
+        asn_map = {}
+        for net in sot.ASSet().objects(asns=list(asns)):
+            asn_map[net.asn] = net
+        for member in queryset:
+            member._net = asn_map.get(member.asn)
+            yield member
+
     @property
     def display_name(self):
         return self.name or f"AS{self.asn}"
@@ -289,6 +303,29 @@ class InternetExchangeMember(PdbRefModel):
             return []
 
         return [as_set.strip() for as_set in self.as_macro.split(",")]
+
+    @property
+    def as_macro(self):
+        if self.as_macro_override:
+            return self.as_macro_override
+
+        if self.net:
+            if self.net.source == "peerctl":
+                return self.net.as_set
+            elif self.net.source == "pdbctl":
+                return self.net.irr_as_set
+        return ""
+
+    @property
+    def net(self):
+        if hasattr(self, "_net"):
+            return self._net
+
+        self._net = sot.ASSet().first(asn=self.asn)
+        return self._net
+
+    def __str__(self):
+        return f"AS{self.asn} - {self.ipaddr4} - {self.ipaddr6} ({self.id})"
 
 
 @reversion.register
@@ -319,8 +356,8 @@ class Routeserver(HandleRefModel):
 
     asn = ASNField(help_text=_("ASN"))
 
-    router_id = IPAddressField(
-        version=4,
+    router_id = InetAddressField(
+        store_prefix_length=False,
         help_text=_("Router Id"),
     )
 
@@ -383,6 +420,52 @@ class Routeserver(HandleRefModel):
         return self._rsconf
 
     @property
+    def rsconf_status_dict(self):
+        """
+        Returns a status dict for the current state of this routeserver's
+        configuration
+        """
+
+        rsconf = self.rsconf
+
+        task = rsconf.task
+
+        # no status
+
+        if not task and not rsconf.rs_response:
+            return {"status": None}
+
+        if not task:
+            return rsconf.rs_response
+
+        if task.status == "pending":
+            return {"status": "queued"}
+        if task.status == "running":
+            return {"status": "generating"}
+        if task.status == "cancelled":
+            return {"status": "canceled"}
+        if task.status == "failed":
+            return {"status": "error", "error": task.error}
+        if task.status == "completed":
+            if not rsconf.rs_response:
+                return {"status": "generated"}
+            return rsconf.rs_response
+
+        return {"status": None}
+
+    @property
+    def rsconf_status(self):
+        return self.rsconf_status_dict.get("status")
+
+    @property
+    def rsconf_response(self):
+        return self.rsconf.rs_response
+
+    @property
+    def rsconf_error(self):
+        return self.rsconf_status_dict.get("error")
+
+    @property
     def ars_general(self):
 
         """
@@ -428,21 +511,20 @@ class Routeserver(HandleRefModel):
         Generate and return `dirct` for ARouteserver clients config
         """
 
-        asns = {}
+        asns = []
+        asn_as_sets = {}
         clients = {}
 
         # TODO
         # where to get ASN sets from ??
         # peeringdb network ??
+        rs_peers = InternetExchangeMember.preload_as_macro(
+            self.ix.member_set.filter(is_rs_peer=True)
+        )
 
-        for member in self.ix.member_set.filter(is_rs_peer=True):
-            asn = f"AS{member.asn}"
-            if asn not in asns:
-                if member.pdb_id:
-                    as_set = get_as_set(member.pdb.net)
-                    if as_set:
-                        asns[asn] = {"as_sets": [as_set]}
-
+        for member in rs_peers:
+            if member.asn not in asns:
+                asns.append(member.asn)
             if member.asn not in clients:
                 clients[member.asn] = {"asn": member.asn, "ip": [], "cfg": {}}
 
@@ -461,7 +543,15 @@ class Routeserver(HandleRefModel):
                     }
                 )
 
-        return {"asns": asns, "clients": list(clients.values())}
+        if asns:
+            for net in pdbctl.Network().objects(asns=asns):
+                as_set = get_as_set(net)
+                if as_set:
+                    asn_as_sets[f"AS{net.asn}"] = {"as_sets": [as_set]}
+
+        print(asn_as_sets)
+
+        return {"asns": asn_as_sets, "clients": list(clients.values())}
 
     def __str__(self):
         return f"Routeserver {self.name} AS{self.asn}"
@@ -500,6 +590,19 @@ class RouteserverConfig(HandleRefModel):
         help_text=("ARouteserver clients config"), null=True, blank=True
     )
 
+    rs_response = models.JSONField(
+        help_text=("Routeserver response"), null=True, blank=True
+    )
+
+    task = models.ForeignKey(
+        "django_ixctl.RsConfGenerate",
+        on_delete=models.CASCADE,
+        related_name="rsconf_set",
+        blank=True,
+        null=True,
+        help_text=_("Reference to most recent generate task for this rsconfig object"),
+    )
+
     class HandleRef:
         tag = "rsconf"
 
@@ -524,6 +627,14 @@ class RouteserverConfig(HandleRefModel):
             if self.generated < member.updated:
                 return True
         return False
+
+    def queue_generate(self):
+        """
+        Queue task to regenerate config
+        """
+        self.task = django_ixctl.models.tasks.RsConfGenerate.create_task(self.id)
+        self.rs_response = {}
+        self.save()
 
     def generate(self):
 
@@ -580,8 +691,15 @@ class RouteserverConfig(HandleRefModel):
         elif rs.ars_type == "bird2":
             cmd += ["--target-version", "2.0.7"]
 
-        process = subprocess.Popen(cmd)
-        process.wait(600)
+        process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+        _, err = process.communicate(timeout=600)
+
+        if process.returncode:
+            if err:
+                err = err.decode("utf-8")
+                raise IOError(err)
+            else:
+                raise IOError(f"Process returned {process.returncode}")
 
         with open(outfile) as fh:
             self.body = fh.read()
@@ -609,7 +727,7 @@ class Network(PdbRefModel):
     )
 
     class PdbRef(PdbRefModel.PdbRef):
-        model = PeeringdbNetwork
+        pdbctl = pdbctl.Network
         fields = {"asn": "pdb_id"}
 
     class HandleRef:
@@ -630,7 +748,7 @@ class Network(PdbRefModel):
         Argument(s):
 
         - instance (`Instance`): instance that contains this network
-        - pdb_object (`django_peeringdb.Network`): pdb network
+        - pdb_object (`fullctl.service_bridge.pdbctl.Network`): pdb network
         - save (`bool`): if True commit to the database, otherwise dont
 
         Keyword Argument(s):

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "ixctl"
 repository = "https://github.com/fullctl/ixctl"
-version = "0.1.0"
+version = "3.0.0-rc2"
 description = "ix control"
 authors = ["20C <code@20c.com>"]
 license = "Apache-2.0"
@@ -20,35 +20,31 @@ ixctl = "ixctl.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-django-handleref = ">=0.5"
-djangorestframework = ">=3.11,<4"
-Django = ">=2.2,<3"
-django-peeringdb = "*"
-psycopg2-binary = ">2.8,<3"
-django-reversion = "<4"
-django-inet = "*"
-django-autocomplete-light = ">=3,<3.8"
-social-auth-app-django = "<4"
-grainy = ">=1.6.0,<2"
-django-grainy = ">=1.9.0,<2"
-pyyaml = "*"
-pip = "*"
-arouteserver = "*"
-celery = "<6,>=5"
-fullctl = { url = "https://github.com/fullctl/fullctl/archive/master.zip" }
-peeringdb = { url = "https://github.com/peeringdb/peeringdb-py/archive/july_updates.zip"}
-confu = ">=1.5,<2"
+fullctl = { git = "https://github.com/fullctl/fullctl.git", branch = "prep-release" }
+arouteserver = "^1.11.0"
+
 
 [tool.poetry.dev-dependencies]
+docker-compose = "^1.29.1"
 # tests
+codecov = ">=2"
+coverage = ">=5"
 pytest = ">=6.0.1"
 pytest-django = ">=3.8.0"
 pytest-cov = "*"
+
 # linting
 bandit = "^1.6.2"
-black = "^20.8b1"
+black = {version = ">=20", allow-prereleases = true}
 isort = "^5.7.0"
 flake8 = "^3.8.4"
+pre-commit = "^2.13.0"
+pyupgrade = "^2.19.4"
+
+#ctl
+ctl = "^1.0.0"
+jinja2 = "^2.11.2"
+tmpl = "^1"
 
 [tool.isort]
 profile = "black"

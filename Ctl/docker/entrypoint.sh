@@ -5,14 +5,23 @@ function migrate_all() {
   manage migrate
 }
 
+function collect_static() {
+  echo collecting static files
+  manage collectstatic --no-input
+}
 
-cd $IXCTL_HOME
+
+cd $SERVICE_HOME
 case "$@" in
   "uwsgi" )
     echo starting uwsgi
     if [[ -z "$NO_MIGRATE" ]]; then
       migrate_all
     fi
+    if [[ -z "$NO_COLLECT_STATIC" ]]; then
+      collect_static
+    fi
+    echo launching uwsgi ${UWSGI_HTTP}
     exec venv/bin/uwsgi --ini etc/django-uwsgi.ini
     ;;
 	# good to keep it as a separate arg incase we end up with multi stage migrations tho
@@ -21,6 +30,9 @@ case "$@" in
     ;;
   "run_tests" )
     source venv/bin/activate
+    export DJANGO_SETTINGS_MODULE=ixctl.settings
+    export RELEASE_ENV=run_tests
+    export PDBCTL_HOST=test://pdbctl
     cd main
     pytest tests/ -vv --cov-report=term-missing --cov-report=xml --cov=django_ixctl --cov=ixctl
     ;;
@@ -30,7 +42,7 @@ case "$@" in
     echo dropping to shell
     exec "/bin/sh"
     ;;
-  "/bin/sh" )
+  "/bin/sh|bash" )
     echo dropping to shell "$1" - "$@"
     exec $@
     ;;

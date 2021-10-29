@@ -6,9 +6,9 @@
   data-template="list">
   <thead>
     <tr>
-      <th>{% trans "ASN" %}</th>
-      <th>{% trans "Name" %}</th>
-      <th>{% trans "Router ID" %}</th>
+      <th class="sortable-button" data-sort-target="asn" data-sort-secondary="router_id">{% trans "ASN" %}</th>
+      <th class="sortable-button" data-sort-initial="yes" data-sort-target="name" data-sort-secondary="router_id">{% trans "Name" %}</th>
+      <th class="sortable-button" data-sort-target="router_id">{% trans "Router ID" %}</th>
       <th></th>
     </tr>
   </thead>
@@ -21,14 +21,18 @@
       <td data-field="router_id"></td>
       <td data-field="controls" class="right">
         <div class="row">
-          <div class="col-xs-12 col-lg-4">
-            <a data-action="view_rsconf"><span class="icon ixctl icon-download"></span><span class="label ixctl">{% trans "Config" %}</span></a>
+          <div class="col-xs-12 col-lg-3">
+            <a class="button" data-action="view_rsconf"><span class="icon ixctl icon-download"></span><span class="label ixctl">{% trans "Config" %}</span></a>
           </div>
-          <div class="col-xs-12 col-lg-4">
-            <a data-action="edit_routeserver"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
+          <div class="col-xs-12 col-lg-3 left">
+            <span data-field="rsconf_status"></span>
           </div>
-          <div class="col-xs-12 col-lg-4">
+          <div class="col-xs-12 col-lg-3">
+            <a class="button" data-action="edit_routeserver"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
+          </div>
+          <div class="col-xs-12 col-lg-3">
         <a
+          class="button"
           data-api-action="{id}"
           data-api-callback="remove"
           data-confirm="Remove routeserver?"

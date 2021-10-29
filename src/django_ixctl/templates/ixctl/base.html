@@ -5,16 +5,44 @@
 {% block "js" %}
 {{ block.super }}
 <script src="{% static "ixctl/ixctl.js" %}" type="text/javascript"></script>
-<script src="{% static "ixctl/ixctl.net.js" %}" type="text/javascript"></script>
+<script src="{% static "ixctl/ixctl.settings.js" %}" type="text/javascript"></script>
+<script>
+{% if select_ix %}
+$(fullctl.application).on("initialized", function(e, ixctl, id) {
+  ixctl.preselect_ix = {{ select_ix.id }};
+});
+{% endif %}
+</script>
 {% endblock %}
 
 {% block "css" %}
 {{ block.super }}
 {% endblock %}
 
+
 {% block "header_middle" %}
-<img src="{% static "common/icons/ixctl-logo-darkbg.svg" %}" alt="ixctl">
+<div class="app-pages-nav" data-component="pages">
+  <nav class="nav justify-content-center">
+
+    <a class="nav-link active"
+      id="tab-overview"
+      data-toggle="tab"
+      role="tab"
+      aria-controls="overview"
+      aria-selected="true"
+      href="#overview">{% trans "Members" %}</a>
+
+    <a class="nav-link"
+      data-toggle="tab"
+      role="tab"
+      aria-controls="settings"
+      aria-selected="false"
+      id="settings-tab"
+      href="#settings">{% trans "Settings" %}</a>
+  </nav>
+</div>
 {% endblock %}
+
 
 {% block "header_right" %}
 {% with app_id="ixctl" %}
@@ -27,37 +55,35 @@
 
 <div class="row">
   <div class="col-6 col-md-8">
-    <span class="inline-label">{% trans "Exchange:" %}</span>
-    <span class="toolbar-control">
-      <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
-    <select
-      data-api-load="yes"
-      data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
-      data-element="select_ix"></select>
-    </span>
-    {% if permissions.update_instance %}
-    <div>
-    <button type="button" class="button mt-3" data-element="button_update_ix">
-      <span class="icon icon-settings"></span>
-      {% trans "Configure" %}
-      </button>
+    <div class="toolbar-control-group">
+
+
+      <span class="inline-label">{% trans "Exchange:" %}</span>
+      <span class="toolbar-control">
+        <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+      <select
+        data-api-load="yes"
+        data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
+        data-element="select_ix"></select>
+      </span>
+
     </div>
-    {% endif %}
 
   </div>
-  <div class="col-3 col-md-2">
-      {% if permissions.update_instance %}
-      <button type="button" class="button" data-element="button_create_ix">
-      <span class="icon ixctl icon-add"></span>
-      {% trans "Create" %}</button>
-      {% endif %}
-  </div>
-  <div class="col-3 col-md-2">
-      {% if permissions.update_instance %}
-      <button type="button" class="button" data-element="button_import">
-      <span class="icon ixctl icon-add"></span>
-      {% trans "Import" %}</button>
-      {% endif %}
+
+  <!-- ix tools: create ix, import ix -->
+
+  <!-- button: create ix -->
+
+  <div class="col-6 col-md-4 right">
+      <button type="button" class="button" style="display:none" data-element="button_create_ix">
+        <span class="icon ixctl icon-add"></span>
+        <span class="label">{% trans "Create" %}</span>
+      </button>
+      <button type="button" class="button" style="display:none" data-element="button_import_ix">
+        <span class="icon ixctl icon-add"></span>
+        <span class="label">{% trans "Import" %}</span>
+      </button>
   </div>
 </div>
 
@@ -68,19 +94,29 @@
 {% endblock %}
 
 {% block "app_content_main" %}
-{% if verified_asns %}
-<div class="row">
-  <div class="col-12">
-  {% for asn, network in verified_asns.items %}
-  <span class="net_name">{{ network.name }}</span> <span class="asn">(AS{{ asn }})</strong>{% if not forloop.last %}, {% endif %}
-  {% endfor %}
+
+<div style="display:none" class="notification row marg-top-lg" id="no-ix-notify">
+  <div class="col-12 center">
+    <p>
+    {% blocktrans %}
+    There are currently no internet exchanges in this organization.
+    {% endblocktrans %}
+    </p>
   </div>
 </div>
-{% endif %}
 
-{% include "ixctl/tool/networks/main.html" %}
-{% include "ixctl/tool/routeservers/main.html" %}
-{% include "ixctl/tool/members/main.html" %}
+<div class="tab-content" id="app-pages">
+  <div class="tab-pane show active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
+		{% include "ixctl/tool/routeservers/main.html" %}
+		{% include "ixctl/tool/members/main.html" %}
+  </div>
+
+  <div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="tab-settings">
+		{% include "ixctl/tool/settings/main.html" %}
+  </div>
+</div>
+
+
 
 {% endblock %}
 
@@ -88,6 +124,5 @@
 {{ block.super }}
 {% include "ixctl/form-import.html" %}
 {% include "ixctl/form-create-ix.html" %}
-{% include "ixctl/form-update-ix.html" %}
 
 {% endblock %}

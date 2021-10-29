@@ -1,4 +1,4 @@
-IXCTL_HOME=/srv/ixctl
+IXCTL_HOME=/srv/service
 
 . $IXCTL_HOME/venv/bin/activate
 cd $IXCTL_HOME/main

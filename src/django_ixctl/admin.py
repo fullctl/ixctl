@@ -1,6 +1,7 @@
 from django.contrib import admin
-from django_handleref.admin import VersionAdmin
-from fullctl.django.models.concrete import APIKey, OrganizationUser
+from django.forms import ModelForm
+from fullctl.django.admin import BaseAdmin, BaseTabularAdmin
+from fullctl.django.models.concrete import OrganizationUser
 
 from django_ixctl.models import (
     InternetExchange,
@@ -11,19 +12,6 @@ from django_ixctl.models import (
     Routeserver,
     RouteserverConfig,
 )
-
-
-class BaseAdmin(VersionAdmin):
-    readonly_fields = ("version",)
-
-
-class BaseTabularAdmin(admin.TabularInline):
-    readonly_fields = ("version",)
-
-
-@admin.register(APIKey)
-class APIKeyAdmin(BaseAdmin):
-    list_display = ("id", "user", "key")
 
 
 class OrganizationUserInline(admin.TabularInline):
@@ -38,8 +26,29 @@ class OrganizationAdmin(BaseAdmin):
     inlines = (OrganizationUserInline,)
 
 
+class MemberForm(ModelForm):
+    def clean_macaddr(self):
+        macaddr = self.cleaned_data["macaddr"]
+        if not macaddr:
+            return None
+        return macaddr
+
+    def clean_ipaddr4(self):
+        ipaddr4 = self.cleaned_data["ipaddr4"]
+        if not ipaddr4:
+            return None
+        return ipaddr4
+
+    def clean_ipaddr6(self):
+        ipaddr6 = self.cleaned_data["ipaddr6"]
+        if not ipaddr6:
+            return None
+        return ipaddr6
+
+
 class InternetExchangeMemberInline(BaseTabularAdmin):
     model = InternetExchangeMember
+    form = MemberForm
 
 
 class RouteserverInline(BaseTabularAdmin):
@@ -50,10 +59,42 @@ class RouteserverInline(BaseTabularAdmin):
 class InternetInternetExchangeAdmin(BaseAdmin):
     list_display = ("name", "id", "org")
     readonly_fields = ("org",)
-    inlines = (InternetExchangeMemberInline, RouteserverInline)
 
     def org(self, obj):
         return obj.instance.org
+
+
+@admin.register(InternetExchangeMember)
+class MemberAdmin(BaseAdmin):
+    list_display = ("ix", "org", "asn", "ipaddr4", "ipaddr6")
+    readonly_fields = ("org",)
+    search_fields = (
+        "ix__name",
+        "ix__instance__org__slug",
+        "ix__instance__org__name",
+        "ipaddr4",
+        "ipaddr6",
+    )
+    form = MemberForm
+
+    def org(self, obj):
+        return obj.ix.instance.org
+
+
+@admin.register(Routeserver)
+class RouteserverAdmin(BaseAdmin):
+    list_display = ("ix", "org", "asn", "router_id", "name")
+    readonly_fields = ("org",)
+    search_fields = (
+        "ix__name",
+        "ix__instance__org__slug",
+        "ix__instance__org__name",
+        "router_id",
+        "name",
+    )
+
+    def org(self, obj):
+        return obj.ix.instance.org
 
 
 @admin.register(RouteserverConfig)
@@ -67,7 +108,9 @@ class NetworkAdmin(BaseAdmin):
     readonly_fields = ("org",)
 
     def org(self, obj):
-        return obj.instance.org
+        if obj.instance:
+            return obj.instance.org
+        return "<orphan>"
 
 
 @admin.register(PermissionRequest)

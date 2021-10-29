@@ -1,0 +1,129 @@
+ARG bgpq4_version=1.4
+ARG poetry_version=1.1.11
+ARG uid=6300
+ARG user=fullctl
+
+ARG virtual_env=/venv
+ARG install_to=/srv/service
+ARG build_deps=" \
+    gcc \
+    git \
+    python39-devel \
+    bgpq4 \
+    "
+ARG run_deps=" \
+    libpq \
+    python39 \
+    "
+ARG debug_deps=" \
+    vim \
+    "
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4 as base
+
+ARG install_to
+ARG virtual_env
+
+# env to pass to sub images
+ENV SERVICE_HOME=$install_to
+ENV VIRTUAL_ENV=$virtual_env
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# build container
+# FROM ghcr.io/fullctl/fullctl-builder-alpine:prep-release as builder
+FROM registry.access.redhat.com/ubi8/ubi:8.4 as builder
+
+# TODO pin bgpq4
+ARG build_deps
+ARG bgpq4_version
+ARG virtual_env
+ARG poetry_version
+
+ENV VIRTUAL_ENV=$virtual_env
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+WORKDIR /build
+#RUN dnf --disableplugin=subscription-manager install -by --nodocs gcc gcc-c++ make cmake patch bzip2 zlib-devel openssl-devel curl-devel pcre2-devel libicu-devel libffi-devel \
+
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
+    && dnf --disableplugin=subscription-manager install -by --nodocs $build_deps
+
+# Use Pip to install Poetry
+RUN pip3 install "poetry==$poetry_version"
+
+# Create a VENV
+RUN python3 -m venv "$VIRTUAL_ENV"
+# TODO should be able to replace these by adding to pyproject?
+RUN pip3 install --upgrade pip wheel
+
+# poetry install
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-root
+RUN poetry run pip install --upgrade pip wheel
+
+
+#### final image
+
+FROM base as final
+
+ARG run_deps
+ARG uid
+ARG user
+
+# extra settings file if needed
+# TODO keep in until final production deploy
+ARG COPY_SETTINGS_FILE=src/ixctl/settings/dev.py
+
+# add dependencies
+RUN microdnf -y install --nodocs $run_deps \
+    && microdnf clean all
+
+# XXX RUN useradd -m -u $uid $user
+
+COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
+COPY --from=builder /usr/bin/bgpq4 /usr/bin/bgpq4
+
+WORKDIR $SERVICE_HOME
+RUN mkdir -p etc locale media static
+COPY Ctl/VERSION etc/
+COPY docs/ docs
+
+# XXX
+# COPY ars_config/ /root/arouteserver
+
+#RUN Ctl/docker/manage.sh collectstatic --no-input
+
+RUN chown -R $uid:$uid locale media
+
+#### entry point from final image, not tester
+FROM final
+
+ARG debug_deps
+ARG user
+ARG uid
+ARG ars_home=/arouteserver
+
+#ENV UWSGI_SOCKET=127.0.0.1:6002
+
+WORKDIR $SERVICE_HOME
+
+RUN microdnf -y install --nodocs $debug_deps \
+    && microdnf clean all
+COPY src/ main/
+COPY Ctl/docker/entrypoint.sh .
+
+RUN ln -s $SERVICE_HOME/entrypoint.sh /entrypoint
+RUN ln -s /venv $SERVICE_HOME/venv
+
+COPY Ctl/docker/django-uwsgi.ini etc/
+COPY Ctl/docker/manage.sh /usr/bin/manage
+
+
+# this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
+RUN mkdir -p "$ars_home" && chown -R $uid:$uid "$ars_home" && chmod 777 "$ars_home"
+VOLUME ${ars_home}
+
+USER $uid
+
+ENTRYPOINT ["/entrypoint"]
+CMD ["runserver"]

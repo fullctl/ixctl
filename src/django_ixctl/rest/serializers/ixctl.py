@@ -3,11 +3,12 @@ try:
 except ImportError:
     from yaml import Loader
 
-import django_peeringdb.models.concrete as pdb_models
+import fullctl.service_bridge.pdbctl as pdbctl
 import yaml
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 from django_inet.rest import IPAddressField
+from fullctl.django.models.concrete.tasks import TaskLimitError
 from fullctl.django.rest.decorators import serializer_registry
 from fullctl.django.rest.serializers import (
     ModelSerializer,
@@ -41,9 +42,8 @@ class ImportOrganization(RequireContext, serializers.Serializer):
     def validate_pdb_org_id(self, value):
         if not value:
             return 0
-        try:
-            self.pdb_org = pdb_models.Organization.objects.get(id=value)
-        except pdb_models.Organization.DoesNotExist:
+        self.pdb_org = pdbctl.Organization().object(value)
+        if not self.pdb_org:
             raise ValidationError(_("Unknown peeringdb organization"))
         return self.pdb_org.id
 
@@ -71,10 +71,11 @@ class ImportExchange(RequireContext, serializers.Serializer):
         instance = self.context.get("instance")
         if not value:
             return 0
+
         try:
-            self.pdb_ix = pdb_models.InternetExchange.objects.get(id=value)
-        except pdb_models.InternetExchange.DoesNotExist:
-            raise ValidationError(_("Unknown peeringdb organization"))
+            self.pdb_ix = pdbctl.InternetExchange().object(value)
+        except KeyError:
+            raise ValidationError(_("Unknown peeringdb exchange"))
 
         qset = models.InternetExchange.objects.filter(
             instance=instance, pdb_id=self.pdb_ix.id
@@ -84,6 +85,16 @@ class ImportExchange(RequireContext, serializers.Serializer):
             raise ValidationError(_("You have already imported this exchange"))
 
         return self.pdb_ix.id
+
+    def validate(self, cleaned_data):
+        instance = self.context.get("instance")
+        slug = models.InternetExchange.default_slug(self.pdb_ix.name)
+        qset = models.InternetExchange.objects.filter(instance=instance, slug=slug)
+        if qset.exists():
+            raise ValidationError(
+                _("You already have an exchange with the identifier `{}`").format(slug)
+            )
+        return cleaned_data
 
     def save(self):
         instance = self.context.get("instance")
@@ -100,9 +111,34 @@ class PermissionRequest(ModelSerializer):
 
 @register
 class InternetExchange(ModelSerializer):
+
+    slug = serializers.SlugField(required=False)
+
     class Meta:
         model = models.InternetExchange
-        fields = ["pdb_id", "urlkey", "ixf_export_privacy", "name", "slug"]
+        fields = [
+            "pdb_id",
+            "urlkey",
+            "instance",
+            "ixf_export_privacy",
+            "name",
+            "slug",
+            "source_of_truth",
+        ]
+
+    def validate(self, cleaned_data):
+        instance = cleaned_data.get("instance")
+        slug = cleaned_data.get("slug")
+        if not slug:
+            slug = models.InternetExchange.default_slug(cleaned_data["name"])
+        print("checking", instance, slug)
+        qset = models.InternetExchange.objects.filter(instance=instance, slug=slug)
+        if qset.exists():
+            raise ValidationError(
+                _("You already have an exchange with the identifier `{}`").format(slug)
+            )
+        cleaned_data["slug"] = slug
+        return cleaned_data
 
 
 @register
@@ -139,6 +175,7 @@ class InternetExchangeMember(ModelSerializer):
             "ipaddr6",
             "macaddr",
             "as_macro",
+            "as_macro_override",
             "is_rs_peer",
             "speed",
         ]
@@ -197,6 +234,9 @@ class Routeserver(ModelSerializer):
             "rpki_bgp_origin_validation",
             "graceful_shutdown",
             "extra_config",
+            "rsconf_status",
+            "rsconf_response",
+            "rsconf_error",
         ]
 
     def validate_extra_config(self, value):
@@ -209,6 +249,14 @@ class Routeserver(ModelSerializer):
             raise serializers.ValidationError("Config object literal expected")
         return value
 
+    def save(self):
+        r = super().save()
+        try:
+            r.rsconf.queue_generate()
+        except TaskLimitError:
+            pass
+        return r
+
 
 @register
 class RouteserverConfig(ModelSerializer):
@@ -216,8 +264,25 @@ class RouteserverConfig(ModelSerializer):
         model = models.RouteserverConfig
         fields = [
             "rs",
+            "generated",
             "body",
         ]
+
+
+@register
+class PeeringDBRouteserver(serializers.Serializer):
+    ref_tag = "pdbrs"
+
+    id = serializers.IntegerField()
+    router_id = serializers.SerializerMethodField()
+    name = serializers.CharField(read_only=True)
+    asn = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        fields = ["id", "router_id", "name", "asn"]
+
+    def get_router_id(self, obj):
+        return obj.ipaddr4 or ""
 
 
 @register
