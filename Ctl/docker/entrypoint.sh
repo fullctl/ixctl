@@ -11,7 +11,7 @@ function collect_static() {
 }
 
 
-cd $IXCTL_HOME
+cd $SERVICE_HOME
 case "$@" in
   "uwsgi" )
     echo starting uwsgi
