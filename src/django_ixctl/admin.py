@@ -14,18 +14,6 @@ from django_ixctl.models import (
 )
 
 
-class OrganizationUserInline(admin.TabularInline):
-    model = OrganizationUser
-    extra = 0
-    fields = ("status", "user")
-
-
-@admin.register(Organization)
-class OrganizationAdmin(BaseAdmin):
-    list_display = ("id", "name", "slug")
-    inlines = (OrganizationUserInline,)
-
-
 class MemberForm(ModelForm):
     def clean_macaddr(self):
         macaddr = self.cleaned_data["macaddr"]
