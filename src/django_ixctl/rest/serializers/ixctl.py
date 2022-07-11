@@ -263,7 +263,7 @@ class RouteserverConfig(ModelSerializer):
     class Meta:
         model = models.RouteserverConfig
         fields = [
-            "rs",
+            "routeserver",
             "generated",
             "body",
         ]
@@ -271,7 +271,7 @@ class RouteserverConfig(ModelSerializer):
 
 @register
 class PeeringDBRouteserver(serializers.Serializer):
-    ref_tag = "pdbrs"
+    ref_tag = "pdbrouteserver"
 
     id = serializers.IntegerField()
     router_id = serializers.SerializerMethodField()

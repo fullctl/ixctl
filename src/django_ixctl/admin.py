@@ -87,7 +87,7 @@ class RouteserverAdmin(BaseAdmin):
 
 @admin.register(RouteserverConfig)
 class RouteserverConfigAdmin(BaseAdmin):
-    list_display = ("rs", "created", "updated", "generated")
+    list_display = ("routeserver", "created", "updated", "generated")
 
 
 @admin.register(Network)

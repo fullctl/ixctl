@@ -548,7 +548,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       var ix_id = $ctl.ixctl.ix()
       if(ix_id) {
         var exchange = $ctl.ixctl.exchanges[ix_id]
-        var rs_namespace =exchange.grainy.replace(/^ix\./, "rs.")+".?"
+        var rs_namespace =exchange.grainy.replace(/^ix\./, "routeserver.")+".?"
         if(grainy.check(rs_namespace, "r")) {
           this.show();
           this.apply_ordering();

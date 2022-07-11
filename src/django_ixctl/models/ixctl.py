@@ -332,7 +332,7 @@ class InternetExchangeMember(PdbRefModel):
 @grainy_model(
     namespace="rs",
     namespace_instance=(
-        "rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+        "routeserver.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
     ),
 )
 class Routeserver(HandleRefModel):
@@ -397,7 +397,7 @@ class Routeserver(HandleRefModel):
         unique_together = (("ix", "router_id"),)
 
     class HandleRef:
-        tag = "rs"
+        tag = "routeserver"
 
     @property
     def org(self):
@@ -415,7 +415,7 @@ class Routeserver(HandleRefModel):
         Will create the config_routeserver instance if it does not exist yet
         """
         if not hasattr(self, "_config_routeserver"):
-            config_routeserver, created = RouteserverConfig.objects.get_or_create(rs=self)
+            config_routeserver, created = RouteserverConfig.objects.get_or_create(routeserver=self)
             self._config_routeserver = config_routeserver
         return self._config_routeserver
 
@@ -549,8 +549,6 @@ class Routeserver(HandleRefModel):
                 if as_set:
                     asn_as_sets[f"AS{net.asn}"] = {"as_sets": [as_set]}
 
-        print(asn_as_sets)
-
         return {"asns": asn_as_sets, "clients": list(clients.values())}
 
     def __str__(self):
@@ -565,7 +563,7 @@ class RouteserverConfig(HandleRefModel):
     `Routeserver` instance
     """
 
-    rs = models.OneToOneField(
+    routeserver = models.OneToOneField(
         Routeserver,
         on_delete=models.CASCADE,
         null=True,
@@ -618,12 +616,12 @@ class RouteserverConfig(HandleRefModel):
 
         # Route server has been updated since last generation,
 
-        if not self.generated or self.generated < self.rs.updated:
+        if not self.generated or self.generated < self.routeserver.updated:
             return True
 
         # RS Peer has been updated since last generation
 
-        for member in self.rs.ix.member_set.filter(is_rs_peer=True):
+        for member in self.routeserver.ix.member_set.filter(is_rs_peer=True):
             if self.generated < member.updated:
                 return True
         return False
@@ -642,9 +640,9 @@ class RouteserverConfig(HandleRefModel):
         Generate the route server config using arouteserver
         """
 
-        rs = self.rs
-        ars_general = rs.ars_general
-        ars_clients = rs.ars_clients
+        routeserver = self.routeserver
+        ars_general = routeserver.ars_general
+        ars_clients = routeserver.ars_clients
 
         config_dir = tempfile.mkdtemp(prefix="ixctl_config_routeserver")
 
@@ -665,10 +663,10 @@ class RouteserverConfig(HandleRefModel):
         # no reasonable way found to call an arouteserve
         # python api - so lets just run the command
 
-        if rs.ars_type in ["bird", "bird2"]:
+        if routeserver.ars_type in ["bird", "bird2"]:
             ars_type = "bird"
         else:
-            ars_type = rs.ars_type
+            ars_type = routeserver.ars_type
 
         cmd = [
             "arouteserver",
@@ -686,9 +684,9 @@ class RouteserverConfig(HandleRefModel):
         #
         # how to store?
 
-        if rs.ars_type == "bird":
+        if routeserver.ars_type == "bird":
             cmd += ["--ip-ver", "4"]
-        elif rs.ars_type == "bird2":
+        elif routeserver.ars_type == "bird2":
             cmd += ["--target-version", "2.0.7"]
 
         process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
