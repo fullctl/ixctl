@@ -408,35 +408,35 @@ class Routeserver(HandleRefModel):
         return self.name
 
     @property
-    def rsconf(self):
+    def config_routeserver(self):
         """
-        Return the rsconf instance for this routeserver
+        Return the config_routeserver instance for this routeserver
 
-        Will create the rsconf instance if it does not exist yet
+        Will create the config_routeserver instance if it does not exist yet
         """
-        if not hasattr(self, "_rsconf"):
-            rsconf, created = RouteserverConfig.objects.get_or_create(rs=self)
-            self._rsconf = rsconf
-        return self._rsconf
+        if not hasattr(self, "_config_routeserver"):
+            config_routeserver, created = RouteserverConfig.objects.get_or_create(rs=self)
+            self._config_routeserver = config_routeserver
+        return self._config_routeserver
 
     @property
-    def rsconf_status_dict(self):
+    def config_routeserver_status_dict(self):
         """
         Returns a status dict for the current state of this routeserver's
         configuration
         """
 
-        rsconf = self.rsconf
+        config_routeserver = self.config_routeserver
 
-        task = rsconf.task
+        task = config_routeserver.task
 
         # no status
 
-        if not task and not rsconf.rs_response:
+        if not task and not config_routeserver.rs_response:
             return {"status": None}
 
         if not task:
-            return rsconf.rs_response
+            return config_routeserver.rs_response
 
         if task.status == "pending":
             return {"status": "queued"}
@@ -447,23 +447,23 @@ class Routeserver(HandleRefModel):
         if task.status == "failed":
             return {"status": "error", "error": task.error}
         if task.status == "completed":
-            if not rsconf.rs_response:
+            if not config_routeserver.rs_response:
                 return {"status": "generated"}
-            return rsconf.rs_response
+            return config_routeserver.rs_response
 
         return {"status": None}
 
     @property
-    def rsconf_status(self):
-        return self.rsconf_status_dict.get("status")
+    def config_routeserver_status(self):
+        return self.config_routeserver_status_dict.get("status")
 
     @property
-    def rsconf_response(self):
-        return self.rsconf.rs_response
+    def config_routeserver_response(self):
+        return self.config_routeserver.rs_response
 
     @property
-    def rsconf_error(self):
-        return self.rsconf_status_dict.get("error")
+    def config_routeserver_error(self):
+        return self.config_routeserver_status_dict.get("error")
 
     @property
     def ars_general(self):
@@ -597,14 +597,14 @@ class RouteserverConfig(HandleRefModel):
     task = models.ForeignKey(
         "django_ixctl.RsConfGenerate",
         on_delete=models.CASCADE,
-        related_name="rsconf_set",
+        related_name="config_routeserver_set",
         blank=True,
         null=True,
-        help_text=_("Reference to most recent generate task for this rsconfig object"),
+        help_text=_("Reference to most recent generate task for this config_routeserverig object"),
     )
 
     class HandleRef:
-        tag = "rsconf"
+        tag = "config.routeserver"
 
     class Meta:
         db_table = "ixctl_rsconf"
@@ -646,7 +646,7 @@ class RouteserverConfig(HandleRefModel):
         ars_general = rs.ars_general
         ars_clients = rs.ars_clients
 
-        config_dir = tempfile.mkdtemp(prefix="ixctl_rsconf")
+        config_dir = tempfile.mkdtemp(prefix="ixctl_config_routeserver")
 
         general_config_file = os.path.join(config_dir, "general.yaml")
         clients_config_file = os.path.join(config_dir, "clients.yaml")

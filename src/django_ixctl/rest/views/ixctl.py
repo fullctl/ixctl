@@ -312,22 +312,22 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
 @route
 class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
-    serializer_class = Serializers.rsconf
+    serializer_class = Serializers.config__routeserver
     queryset = models.RouteserverConfig.objects.all()
     lookup_value_regex = r"[^\/]+"  # noqa: W605
     lookup_url_kwarg = "name"
     lookup_field = "rs__name"
-    ref_tag = "rsconf"
+    ref_tag = "config/routeserver"
     ix_tag_needed = True
     ix_lookup_field = "rs__ix"
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="rsconf.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
         rs_config = self.get_object()
-        serializer = Serializers.rsconf(
+        serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
         )
@@ -336,11 +336,11 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
     @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="rsconf.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def plain(self, request, org, instance, ix, name, *args, **kwargs):
         rs_config = self.get_object()
-        serializer = Serializers.rsconf(
+        serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
         )
@@ -350,13 +350,13 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
     @action(detail=True, methods=["POST"])
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="rsconf.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def status(self, request, org, instance, ix, name, *args, **kwargs):
         rs_config = self.get_object()
         rs_config.rs_response = request.data
         rs_config.save()
-        serializer = Serializers.rsconf(
+        serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
         )

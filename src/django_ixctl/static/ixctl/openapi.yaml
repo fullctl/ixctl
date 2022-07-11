@@ -241,7 +241,7 @@ paths:
           description: ''
       tags:
       - api
-  /api/{org_tag}/rsconf/{name}/:
+  /api/{org_tag}/config/routeserver/{name}/:
     get:
       operationId: retrieveRouteserverConfig
       description: ''
@@ -267,7 +267,7 @@ paths:
           description: ''
       tags:
       - api
-  /api/{org_tag}/rsconf/{name}/plain/:
+  /api/{org_tag}/config/routeserver/{name}/plain/:
     get:
       operationId: plainRouteserverConfig
       description: ''

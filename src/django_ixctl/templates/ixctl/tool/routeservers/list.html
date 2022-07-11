@@ -15,17 +15,17 @@
   <tbody class="list-body">
   </tbody>
   <tbody class="templates">
-    <tr data-template="row" data-rsconfurl="{% url "ixctl_api:rsconf-plain" org_tag=request.org.slug ix_tag="default" name="__replace__me__" %}">
+    <tr data-template="row" data-config_routeserver_url="{% url "ixctl_api:config/routeserver-plain" org_tag=request.org.slug ix_tag="default" name="__replace__me__" %}">
       <td data-field="asn"></td>
       <td data-field="display_name" class="highlight"></td>
       <td data-field="router_id"></td>
       <td data-field="controls" class="right">
         <div class="row">
           <div class="col-xs-12 col-lg-3">
-            <a class="button" data-action="view_rsconf"><span class="icon ixctl icon-download"></span><span class="label ixctl">{% trans "Config" %}</span></a>
+            <a class="button" data-action="view_config_routeserver"><span class="icon ixctl icon-download"></span><span class="label ixctl">{% trans "Config" %}</span></a>
           </div>
           <div class="col-xs-12 col-lg-3 left">
-            <span data-field="rsconf_status"></span>
+            <span data-field="config_routeserver_status"></span>
           </div>
           <div class="col-xs-12 col-lg-3">
             <a class="button" data-action="edit_routeserver"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
