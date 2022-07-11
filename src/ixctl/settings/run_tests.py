@@ -7,7 +7,7 @@ USE_LOCAL_PERMISSIONS = True
 DEBUG = True
 BILLING_INTEGRATION = False
 
-PDBCTL_HOST = "cache://pdbctl"
+PDBCTL_URL = "cache://pdbctl"
 
 LOGGING = {
     "version": 1,
