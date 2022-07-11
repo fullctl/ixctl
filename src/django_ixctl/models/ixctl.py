@@ -275,7 +275,7 @@ class InternetExchangeMember(PdbRefModel):
 
     @classmethod
     def preload_as_macro(cls, queryset):
-        asns = set([member.asn for member in queryset])
+        asns = {member.asn for member in queryset}
         if not asns:
             return queryset
         asn_map = {}
@@ -697,9 +697,9 @@ class RouteserverConfig(HandleRefModel):
         if process.returncode:
             if err:
                 err = err.decode("utf-8")
-                raise IOError(err)
+                raise OSError(err)
             else:
-                raise IOError(f"Process returned {process.returncode}")
+                raise OSError(f"Process returned {process.returncode}")
 
         with open(outfile) as fh:
             self.body = fh.read()

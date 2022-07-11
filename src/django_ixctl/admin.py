@@ -1,17 +1,17 @@
 from django.contrib import admin
 from django.forms import ModelForm
 from fullctl.django.admin import BaseAdmin, BaseTabularAdmin
-from fullctl.django.models.concrete import OrganizationUser
 
 from django_ixctl.models import (
     InternetExchange,
     InternetExchangeMember,
     Network,
-    Organization,
     PermissionRequest,
     Routeserver,
     RouteserverConfig,
 )
+
+# from fullctl.django.models.concrete import OrganizationUser
 
 
 class MemberForm(ModelForm):

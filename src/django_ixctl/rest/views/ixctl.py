@@ -314,7 +314,7 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     serializer_class = Serializers.rsconf
     queryset = models.RouteserverConfig.objects.all()
-    lookup_value_regex = "[^\/]+"  # noqa: W605
+    lookup_value_regex = r"[^\/]+"  # noqa: W605
     lookup_url_kwarg = "name"
     lookup_field = "rs__name"
     ref_tag = "rsconf"
@@ -398,7 +398,7 @@ class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
         return Response(serializer.data)
 
     @action(
-        detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)"  # noqa: W605
+        detail=False, methods=["GET"], url_path=r"presence/(?P<asn>[\d]+)"  # noqa: W605
     )
     @grainy_endpoint(namespace="net.{request.org.permission_id}.{asn}")
     @load_object("net", models.Network, asn="asn", instance="instance")
