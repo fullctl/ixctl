@@ -415,7 +415,9 @@ class Routeserver(HandleRefModel):
         Will create the config_routeserver instance if it does not exist yet
         """
         if not hasattr(self, "_config_routeserver"):
-            config_routeserver, created = RouteserverConfig.objects.get_or_create(routeserver=self)
+            config_routeserver, created = RouteserverConfig.objects.get_or_create(
+                routeserver=self
+            )
             self._config_routeserver = config_routeserver
         return self._config_routeserver
 
@@ -598,7 +600,9 @@ class RouteserverConfig(HandleRefModel):
         related_name="config_routeserver_set",
         blank=True,
         null=True,
-        help_text=_("Reference to most recent generate task for this config_routeserverig object"),
+        help_text=_(
+            "Reference to most recent generate task for this config_routeserverig object"
+        ),
     )
 
     class HandleRef:

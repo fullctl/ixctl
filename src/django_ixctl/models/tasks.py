@@ -39,5 +39,7 @@ class RsConfGenerate(Task):
         """
         Regenerate the config_routeserverig
         """
-        config_routeserver = models.RouteserverConfig.objects.get(id=config_routeserver_id)
+        config_routeserver = models.RouteserverConfig.objects.get(
+            id=config_routeserver_id
+        )
         config_routeserver.generate()
