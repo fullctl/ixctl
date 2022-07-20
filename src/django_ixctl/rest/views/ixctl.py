@@ -316,10 +316,10 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
     queryset = models.RouteserverConfig.objects.all()
     lookup_value_regex = r"[^\/]+"  # noqa: W605
     lookup_url_kwarg = "name"
-    lookup_field = "rs__name"
+    lookup_field = "routeserver__name"
     ref_tag = "config/routeserver"
     ix_tag_needed = True
-    ix_lookup_field = "rs__ix"
+    ix_lookup_field = "routeserver__ix"
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(

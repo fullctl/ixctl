@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 help_text="Reference to most recent generate task for this rsconfig object",
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="config_routeserver_set",
+                related_name="routeserver_config_set",
                 to="django_ixctl.rsconfgenerate",
             ),
         ),

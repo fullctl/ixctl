@@ -35,10 +35,10 @@ class Migration(migrations.Migration):
             name="task",
             field=models.ForeignKey(
                 blank=True,
-                help_text="Reference to most recent generate task for this config_routeserverig object",
+                help_text="Reference to most recent generate task for this routeserver_config object",
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="config_routeserver_set",
+                related_name="routeserver_config_set",
                 to="django_ixctl.rsconfgenerate",
             ),
         ),

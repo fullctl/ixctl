@@ -394,7 +394,7 @@ class Routeserver(HandleRefModel):
 
     class Meta:
         db_table = "ixctl_rs"
-        unique_together = (("ix", "router_id"),)
+        unique_together = (("ix", "router_id"), ("ix", "name"))
 
     class HandleRef:
         tag = "routeserver"
@@ -408,37 +408,37 @@ class Routeserver(HandleRefModel):
         return self.name
 
     @property
-    def config_routeserver(self):
+    def routeserver_config(self):
         """
-        Return the config_routeserver instance for this routeserver
+        Return the routeserver_config instance for this routeserver
 
-        Will create the config_routeserver instance if it does not exist yet
+        Will create the routeserver_config instance if it does not exist yet
         """
-        if not hasattr(self, "_config_routeserver"):
-            config_routeserver, created = RouteserverConfig.objects.get_or_create(
+        if not hasattr(self, "_routeserver_config"):
+            routeserver_config, created = RouteserverConfig.objects.get_or_create(
                 routeserver=self
             )
-            self._config_routeserver = config_routeserver
-        return self._config_routeserver
+            self._routeserver_config = routeserver_config
+        return self._routeserver_config
 
     @property
-    def config_routeserver_status_dict(self):
+    def routeserver_config_status_dict(self):
         """
         Returns a status dict for the current state of this routeserver's
         configuration
         """
 
-        config_routeserver = self.config_routeserver
+        routeserver_config = self.routeserver_config
 
-        task = config_routeserver.task
+        task = routeserver_config.task
 
         # no status
 
-        if not task and not config_routeserver.rs_response:
+        if not task and not routeserver_config.rs_response:
             return {"status": None}
 
         if not task:
-            return config_routeserver.rs_response
+            return routeserver_config.rs_response
 
         if task.status == "pending":
             return {"status": "queued"}
@@ -449,23 +449,23 @@ class Routeserver(HandleRefModel):
         if task.status == "failed":
             return {"status": "error", "error": task.error}
         if task.status == "completed":
-            if not config_routeserver.rs_response:
+            if not routeserver_config.rs_response:
                 return {"status": "generated"}
-            return config_routeserver.rs_response
+            return routeserver_config.rs_response
 
         return {"status": None}
 
     @property
-    def config_routeserver_status(self):
-        return self.config_routeserver_status_dict.get("status")
+    def routeserver_config_status(self):
+        return self.routeserver_config_status_dict.get("status")
 
     @property
-    def config_routeserver_response(self):
-        return self.config_routeserver.rs_response
+    def routeserver_config_response(self):
+        return self.routeserver_config.rs_response
 
     @property
-    def config_routeserver_error(self):
-        return self.config_routeserver_status_dict.get("error")
+    def routeserver_config_error(self):
+        return self.routeserver_config_status_dict.get("error")
 
     @property
     def ars_general(self):
@@ -597,11 +597,11 @@ class RouteserverConfig(HandleRefModel):
     task = models.ForeignKey(
         "django_ixctl.RsConfGenerate",
         on_delete=models.CASCADE,
-        related_name="config_routeserver_set",
+        related_name="routeserver_config_set",
         blank=True,
         null=True,
         help_text=_(
-            "Reference to most recent generate task for this config_routeserverig object"
+            "Reference to most recent generate task for this routeserver_config object"
         ),
     )
 
@@ -648,7 +648,7 @@ class RouteserverConfig(HandleRefModel):
         ars_general = routeserver.ars_general
         ars_clients = routeserver.ars_clients
 
-        config_dir = tempfile.mkdtemp(prefix="ixctl_config_routeserver")
+        config_dir = tempfile.mkdtemp(prefix="ixctl_routeserver_config")
 
         general_config_file = os.path.join(config_dir, "general.yaml")
         clients_config_file = os.path.join(config_dir, "clients.yaml")

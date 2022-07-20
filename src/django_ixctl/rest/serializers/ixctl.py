@@ -234,9 +234,9 @@ class Routeserver(ModelSerializer):
             "rpki_bgp_origin_validation",
             "graceful_shutdown",
             "extra_config",
-            "config_routeserver_status",
-            "config_routeserver_response",
-            "config_routeserver_error",
+            "routeserver_config_status",
+            "routeserver_config_response",
+            "routeserver_config_error",
         ]
 
     def validate_extra_config(self, value):
@@ -252,7 +252,7 @@ class Routeserver(ModelSerializer):
     def save(self):
         r = super().save()
         try:
-            r.config_routeserver.queue_generate()
+            r.routeserver_config.queue_generate()
         except TaskLimitError:
             pass
         return r

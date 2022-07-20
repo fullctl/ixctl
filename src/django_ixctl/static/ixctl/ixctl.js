@@ -497,22 +497,22 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           row.find('a[data-api-method="DELETE"]').hide();
         }
 
-        row.find('a[data-action="view_config_routeserver"]').mousedown(function() {
+        row.find('a[data-action="view_routeserver_config"]').mousedown(function() {
           var routeserver = row.data("apiobject");
-          let config_routeserver_url = row.data("config_routeserver_url");
-          config_routeserver_url = config_routeserver_url.replace("default", $ctl.ixctl.ix_slug());
-          config_routeserver_url = config_routeserver_url.replace("__replace__me__", routeserver.name);
-          $(this).attr("href", config_routeserver_url)
+          let routeserver_config_url = row.data("routeserver_config_url");
+          routeserver_config_url = routeserver_config_url.replace("default", $ctl.ixctl.ix_slug());
+          routeserver_config_url = routeserver_config_url.replace("__replace__me__", routeserver.name);
+          $(this).attr("href", routeserver_config_url)
         });
 
       };
 
-      this.$w.list.formatters.config_routeserver_status = (value, data, col) => {
+      this.$w.list.formatters.routeserver_config_status = (value, data, col) => {
         if(!value)
           return $('<span>')
 
         var badge = new $ctl.widget.StatusBadge(
-          this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','config_routeserver_status'),
+          this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','routeserver_config_status'),
           ["ok","error","cancelled"]
         );
 
