@@ -497,22 +497,22 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           row.find('a[data-api-method="DELETE"]').hide();
         }
 
-        row.find('a[data-action="view_rsconf"]').mousedown(function() {
+        row.find('a[data-action="view_routeserver_config"]').mousedown(function() {
           var routeserver = row.data("apiobject");
-          let rsconfurl = row.data("rsconfurl");
-          rsconfurl = rsconfurl.replace("default", $ctl.ixctl.ix_slug());
-          rsconfurl = rsconfurl.replace("__replace__me__", routeserver.name);
-          $(this).attr("href", rsconfurl)
+          let routeserver_config_url = row.data("routeserver_config_url");
+          routeserver_config_url = routeserver_config_url.replace("default", $ctl.ixctl.ix_slug());
+          routeserver_config_url = routeserver_config_url.replace("__replace__me__", routeserver.name);
+          $(this).attr("href", routeserver_config_url)
         });
 
       };
 
-      this.$w.list.formatters.rsconf_status = (value, data, col) => {
+      this.$w.list.formatters.routeserver_config_status = (value, data, col) => {
         if(!value)
           return $('<span>')
 
         var badge = new $ctl.widget.StatusBadge(
-          this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','rsconf_status'),
+          this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','routeserver_config_status'),
           ["ok","error","cancelled"]
         );
 
@@ -548,7 +548,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       var ix_id = $ctl.ixctl.ix()
       if(ix_id) {
         var exchange = $ctl.ixctl.exchanges[ix_id]
-        var rs_namespace =exchange.grainy.replace(/^ix\./, "rs.")+".?"
+        var rs_namespace =exchange.grainy.replace(/^ix\./, "routeserver.")+".?"
         if(grainy.check(rs_namespace, "r")) {
           this.show();
           this.apply_ordering();

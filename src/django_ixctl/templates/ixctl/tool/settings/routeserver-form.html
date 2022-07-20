@@ -1,6 +1,6 @@
 {% load static i18n %}
 <form data-template="form_routeserver_page"
-  data-api-base="{% url "ixctl_api:rs-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
+  data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
   data-api-action=""
   data-api-method="POST"
   >
@@ -93,7 +93,7 @@
     <div class="col-6 left">
       <button data-element="rs_delete"
         data-confirm="{% trans "Are you sure you want to delete this routeserver?" %}"
-        data-api-base="{% url "ixctl_api:rs-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
+        data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
         data-api-action=""
         data-api-method="delete"><span class="icon fullctl icon-delete"></span><span class="label">{% trans "Delete" %}</span></a>
     </div>

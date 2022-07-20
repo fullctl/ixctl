@@ -275,7 +275,7 @@ class InternetExchangeMember(PdbRefModel):
 
     @classmethod
     def preload_as_macro(cls, queryset):
-        asns = set([member.asn for member in queryset])
+        asns = {member.asn for member in queryset}
         if not asns:
             return queryset
         asn_map = {}
@@ -332,7 +332,7 @@ class InternetExchangeMember(PdbRefModel):
 @grainy_model(
     namespace="rs",
     namespace_instance=(
-        "rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+        "routeserver.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
     ),
 )
 class Routeserver(HandleRefModel):
@@ -394,10 +394,10 @@ class Routeserver(HandleRefModel):
 
     class Meta:
         db_table = "ixctl_rs"
-        unique_together = (("ix", "router_id"),)
+        unique_together = (("ix", "router_id"), ("ix", "name"))
 
     class HandleRef:
-        tag = "rs"
+        tag = "routeserver"
 
     @property
     def org(self):
@@ -408,35 +408,37 @@ class Routeserver(HandleRefModel):
         return self.name
 
     @property
-    def rsconf(self):
+    def routeserver_config(self):
         """
-        Return the rsconf instance for this routeserver
+        Return the routeserver_config instance for this routeserver
 
-        Will create the rsconf instance if it does not exist yet
+        Will create the routeserver_config instance if it does not exist yet
         """
-        if not hasattr(self, "_rsconf"):
-            rsconf, created = RouteserverConfig.objects.get_or_create(rs=self)
-            self._rsconf = rsconf
-        return self._rsconf
+        if not hasattr(self, "_routeserver_config"):
+            routeserver_config, created = RouteserverConfig.objects.get_or_create(
+                routeserver=self
+            )
+            self._routeserver_config = routeserver_config
+        return self._routeserver_config
 
     @property
-    def rsconf_status_dict(self):
+    def routeserver_config_status_dict(self):
         """
         Returns a status dict for the current state of this routeserver's
         configuration
         """
 
-        rsconf = self.rsconf
+        routeserver_config = self.routeserver_config
 
-        task = rsconf.task
+        task = routeserver_config.task
 
         # no status
 
-        if not task and not rsconf.rs_response:
+        if not task and not routeserver_config.rs_response:
             return {"status": None}
 
         if not task:
-            return rsconf.rs_response
+            return routeserver_config.rs_response
 
         if task.status == "pending":
             return {"status": "queued"}
@@ -447,23 +449,23 @@ class Routeserver(HandleRefModel):
         if task.status == "failed":
             return {"status": "error", "error": task.error}
         if task.status == "completed":
-            if not rsconf.rs_response:
+            if not routeserver_config.rs_response:
                 return {"status": "generated"}
-            return rsconf.rs_response
+            return routeserver_config.rs_response
 
         return {"status": None}
 
     @property
-    def rsconf_status(self):
-        return self.rsconf_status_dict.get("status")
+    def routeserver_config_status(self):
+        return self.routeserver_config_status_dict.get("status")
 
     @property
-    def rsconf_response(self):
-        return self.rsconf.rs_response
+    def routeserver_config_response(self):
+        return self.routeserver_config.rs_response
 
     @property
-    def rsconf_error(self):
-        return self.rsconf_status_dict.get("error")
+    def routeserver_config_error(self):
+        return self.routeserver_config_status_dict.get("error")
 
     @property
     def ars_general(self):
@@ -549,8 +551,6 @@ class Routeserver(HandleRefModel):
                 if as_set:
                     asn_as_sets[f"AS{net.asn}"] = {"as_sets": [as_set]}
 
-        print(asn_as_sets)
-
         return {"asns": asn_as_sets, "clients": list(clients.values())}
 
     def __str__(self):
@@ -565,7 +565,7 @@ class RouteserverConfig(HandleRefModel):
     `Routeserver` instance
     """
 
-    rs = models.OneToOneField(
+    routeserver = models.OneToOneField(
         Routeserver,
         on_delete=models.CASCADE,
         null=True,
@@ -597,14 +597,16 @@ class RouteserverConfig(HandleRefModel):
     task = models.ForeignKey(
         "django_ixctl.RsConfGenerate",
         on_delete=models.CASCADE,
-        related_name="rsconf_set",
+        related_name="routeserver_config_set",
         blank=True,
         null=True,
-        help_text=_("Reference to most recent generate task for this rsconfig object"),
+        help_text=_(
+            "Reference to most recent generate task for this routeserver_config object"
+        ),
     )
 
     class HandleRef:
-        tag = "rsconf"
+        tag = "config.routeserver"
 
     class Meta:
         db_table = "ixctl_rsconf"
@@ -618,12 +620,12 @@ class RouteserverConfig(HandleRefModel):
 
         # Route server has been updated since last generation,
 
-        if not self.generated or self.generated < self.rs.updated:
+        if not self.generated or self.generated < self.routeserver.updated:
             return True
 
         # RS Peer has been updated since last generation
 
-        for member in self.rs.ix.member_set.filter(is_rs_peer=True):
+        for member in self.routeserver.ix.member_set.filter(is_rs_peer=True):
             if self.generated < member.updated:
                 return True
         return False
@@ -642,11 +644,11 @@ class RouteserverConfig(HandleRefModel):
         Generate the route server config using arouteserver
         """
 
-        rs = self.rs
-        ars_general = rs.ars_general
-        ars_clients = rs.ars_clients
+        routeserver = self.routeserver
+        ars_general = routeserver.ars_general
+        ars_clients = routeserver.ars_clients
 
-        config_dir = tempfile.mkdtemp(prefix="ixctl_rsconf")
+        config_dir = tempfile.mkdtemp(prefix="ixctl_routeserver_config")
 
         general_config_file = os.path.join(config_dir, "general.yaml")
         clients_config_file = os.path.join(config_dir, "clients.yaml")
@@ -665,10 +667,10 @@ class RouteserverConfig(HandleRefModel):
         # no reasonable way found to call an arouteserve
         # python api - so lets just run the command
 
-        if rs.ars_type in ["bird", "bird2"]:
+        if routeserver.ars_type in ["bird", "bird2"]:
             ars_type = "bird"
         else:
-            ars_type = rs.ars_type
+            ars_type = routeserver.ars_type
 
         cmd = [
             "arouteserver",
@@ -686,9 +688,9 @@ class RouteserverConfig(HandleRefModel):
         #
         # how to store?
 
-        if rs.ars_type == "bird":
+        if routeserver.ars_type == "bird":
             cmd += ["--ip-ver", "4"]
-        elif rs.ars_type == "bird2":
+        elif routeserver.ars_type == "bird2":
             cmd += ["--target-version", "2.0.7"]
 
         process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
@@ -697,9 +699,9 @@ class RouteserverConfig(HandleRefModel):
         if process.returncode:
             if err:
                 err = err.decode("utf-8")
-                raise IOError(err)
+                raise OSError(err)
             else:
-                raise IOError(f"Process returned {process.returncode}")
+                raise OSError(f"Process returned {process.returncode}")
 
         with open(outfile) as fh:
             self.body = fh.read()

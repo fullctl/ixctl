@@ -234,9 +234,9 @@ class Routeserver(ModelSerializer):
             "rpki_bgp_origin_validation",
             "graceful_shutdown",
             "extra_config",
-            "rsconf_status",
-            "rsconf_response",
-            "rsconf_error",
+            "routeserver_config_status",
+            "routeserver_config_response",
+            "routeserver_config_error",
         ]
 
     def validate_extra_config(self, value):
@@ -252,7 +252,7 @@ class Routeserver(ModelSerializer):
     def save(self):
         r = super().save()
         try:
-            r.rsconf.queue_generate()
+            r.routeserver_config.queue_generate()
         except TaskLimitError:
             pass
         return r
@@ -263,7 +263,7 @@ class RouteserverConfig(ModelSerializer):
     class Meta:
         model = models.RouteserverConfig
         fields = [
-            "rs",
+            "routeserver",
             "generated",
             "body",
         ]
@@ -271,7 +271,7 @@ class RouteserverConfig(ModelSerializer):
 
 @register
 class PeeringDBRouteserver(serializers.Serializer):
-    ref_tag = "pdbrs"
+    ref_tag = "pdbrouteserver"
 
     id = serializers.IntegerField()
     router_id = serializers.SerializerMethodField()
