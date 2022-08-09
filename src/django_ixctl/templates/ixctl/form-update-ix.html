@@ -6,30 +6,30 @@
 
   <div class="row">
     <div class="col-12">
-      <div class="form-group" data-api-submit="yes">
-        <label for="edit_ix_name">{% trans "Exchange Name" %}:</label>
+      <div class="mb-3" data-api-submit="yes">
+        <label class="form-label" for="edit_ix_name">{% trans "Exchange Name" %}:</label>
         <input
           type="text"
           class="form-control mb-3"
           name="name"
           id="edit_ix_name">
         </input>
-        <label for="edit_ix_slug">{% trans "Exchange Identifier (also used as URL slug)" %}:</label>
+        <label class="form-label" for="edit_ix_slug">{% trans "Exchange Identifier (also used as URL slug)" %}:</label>
         <input
           type="text"
           class="form-control mb-3"
           name="slug"
           id="edit_ix_slug">
         </input>
-        <label for="ixf_export_privacy">{% trans "IX-F Export Privacy Setting" %}</label>
-          <span class="modal-control">
+        <label class="form-label" for="ixf_export_privacy">{% trans "IX-F Export Privacy Setting" %}</label>
+        <span class="modal-control">
           <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
           <select class="form-control mb-3" id="ixf_export_privacy" name="ixf_export_privacy">
             <option value="public">{% trans "Public (Anyone can view)" %}</option>
             <option value="private">{% trans "Private (Requires secret key to view)" %}</option>
           <select>
-          </span>
-      <label for="urlkey">{% trans "Secret Key" %}:</label>
+        </span>
+        <label class="form-label" for="urlkey">{% trans "Secret Key" %}:</label>
         <input
           type="text"
           class="form-control mb-3"
