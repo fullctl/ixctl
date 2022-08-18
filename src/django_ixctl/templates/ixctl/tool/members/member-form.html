@@ -4,21 +4,21 @@
   data-api-action=""
   data-api-method="POST"
   >
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-name">{% trans "Name" %}</label>
+      <label class="form-label" for="member-name">{% trans "Name" %}</label>
       <input type="text" class="form-control" id="member-name" name="name" />
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-asn">{% trans "ASN" %}</label>
+      <label class="form-label" for="member-asn">{% trans "ASN" %}</label>
       <input type="text" class="form-control" id="member-asn" name="asn" />
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-state">{% trans "State" %}</label>
+      <label class="form-label" for="member-state">{% trans "State" %}</label>
       <span class="modal-control">
       <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
       <select
@@ -33,9 +33,9 @@
       </span>
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-type">{% trans "Member Type" %}</label>
+      <label class="form-label" for="member-type">{% trans "Member Type" %}</label>
       <span class="modal-control">
       <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
       <select
@@ -49,39 +49,39 @@
       </span>
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-ipaddr4">{% trans "IPv4 Address" %}</label>
+      <label class="form-label" for="member-ipaddr4">{% trans "IPv4 Address" %}</label>
       <input type="text" class="form-control" id="member-ipaddr4" name="ipaddr4" />
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-ipaddr6">{% trans "IPv6 Address" %}</label>
+      <label class="form-label" for="member-ipaddr6">{% trans "IPv6 Address" %}</label>
       <input type="text" class="form-control" id="member-ipaddr6" name="ipaddr6" />
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-macaddr">{% trans "MAC Address" %}</label>
+      <label class="form-label" for="member-macaddr">{% trans "MAC Address" %}</label>
       <input type="text" class="form-control" id="member-macaddr" name="macaddr" />
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-as-macro">{% trans "AS Macro" %}</label>
+      <label class="form-label" for="member-as-macro">{% trans "AS Macro" %}</label>
       <input type="text" class="form-control" id="member-as-macro" name="as_macro_override" />
     </div>
   </div>
-  <div class="row form-check">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
       <input type="checkbox" class="form-check-input" id="member-is-rs-peer" name="is_rs_peer" />
       <label for="member-is-rs-peer" class="form-check-label">{% trans "Route Server" %}</label>
     </div>
   </div>
-  <div class="row form-group">
+  <div class="row mb-3">
     <div class="col-12" data-api-submit="yes">
-      <label for="member-speed">{% trans "Speed" %}</label>
+      <label class="form-label" for="member-speed">{% trans "Speed" %}</label>
       <input type="text" class="form-control" id="member-speed" name="speed" />
     </div>
   </div>

@@ -7,28 +7,28 @@
   <div class="row controls" style="display:flex">
     <div class="col-6">
 
-      <div class="row form-group">
+      <div class="row mb-3">
         <div class="col-12" data-api-submit="yes">
-          <label for="routeserver-name">{% trans "Name" %}</label>
+          <label class="form-label" for="routeserver-name">{% trans "Name" %}</label>
           <input type="text" class="form-control" id="routeserver-name" name="name" />
         </div>
       </div>
-      <div class="row form-group">
+      <div class="row mb-3">
         <div class="col-12" data-api-submit="yes">
-          <label for="routeserver-asn">{% trans "ASN" %}</label>
+          <label class="form-label" for="routeserver-asn">{% trans "ASN" %}</label>
           <input type="text" class="form-control" id="routeserver-asn" name="asn" />
         </div>
       </div>
-      <div class="row form-group">
+      <div class="row mb-3">
         <div class="col-12" data-api-submit="yes">
-          <label for="routeserver-router_id">{% trans "Router ID" %}</label>
+          <label class="form-label" for="routeserver-router_id">{% trans "Router ID" %}</label>
           <input type="text" class="form-control" id="routeserver-router_id" name="router_id" />
         </div>
       </div>
       <h5>{% trans "Arouteserver configuration" %}</h5>
-      <div class="row form-group">
+      <div class="row mb-3">
         <div class="col-12" data-api-submit="yes">
-          <label for="routeserver-ars-type">{% trans "Type" %}</label>
+          <label class="form-label" for="routeserver-ars-type">{% trans "Type" %}</label>
           <span class="modal-control">
           <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
           <select class="form-control" id="routeserver-ars-type" name="ars_type">
@@ -39,9 +39,9 @@
           </span>
         </div>
       </div>
-      <div class="row form-group">
+      <div class="row mb-3">
         <div class="col-12" data-api-submit="yes">
-          <label for="routeserver-max_as_path_length">{% trans "Max. AS_PATH length" %}</label>
+          <label class="form-label" for="routeserver-max_as_path_length">{% trans "Max. AS_PATH length" %}</label>
           <input type="text" value="32" class="form-control" id="routeserver-max-as-path-length" name="max_as_path_length" />
         </div>
       </div>
@@ -59,9 +59,9 @@
           <label for="routeserver-graceful-shutdown" class="form-check-label">{% trans "Graceful shutdown" %}</label>
         </div>
       </div>
-      <div class="row form-group">
+      <div class="row mb-3">
         <div class="col-12" data-api-submit="yes">
-          <label for="routeserver-no-export-action">{% trans "No export action" %}</label>
+          <label class="form-label" for="routeserver-no-export-action">{% trans "No export action" %}</label>
           <span class="modal-control">
           <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
           <select class="form-control" id="routeserver-no-export-action" name="no_export_action">
@@ -75,9 +75,9 @@
     </div>
     <div class="col-6">
 
-      <div class="row form-group" style="height:100%">
+      <div class="row mb-3" style="height:100%">
         <div class="col-12" data-api-submit="yes">
-          <label for="routeserver-extra-config">{% trans "Aroutserver extra config (yaml)" %}</label>
+          <label class="form-label" for="routeserver-extra-config">{% trans "Aroutserver extra config (yaml)" %}</label>
           <textarea type="text" value="32" style="height:93%" class="form-control" id="routeserver-extra-config" name="extra_config" /></textarea>
         </div>
       </div>
