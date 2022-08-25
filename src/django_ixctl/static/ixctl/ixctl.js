@@ -190,10 +190,18 @@ $ctl.application.Ixctl.ModalImport = $tc.extend(
         modal.hide();
       });
       this.Modal("continue", "Import from PeeringDB", form.element);
-      // remove dupe
-      if(form.element.find("span.select2").length > 1) {
-        form.element.find("span.select2").last().detach()
-      }
+      form.element.find("#pdb_ix_id").select2({
+        dropdownParent : $(".modal")[0],
+        ajax: {
+          url: '/autocomplete/pdb/ix',
+          dataType: 'json',
+        },
+        width: '20em'
+      });
+      $(document).on('select2:open', () => {
+        document.querySelector('.select2-search__field').focus();
+      });
+
       form.wire_submit(this.$e.button_submit);
     }
   },
@@ -576,5 +584,6 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 $(document).ready(function() {
   $ctl.ixctl = new $ctl.application.Ixctl();
 });
+
 
 })(jQuery, twentyc.cls, fullctl);

@@ -4,7 +4,6 @@ from django.shortcuts import redirect, render
 from fullctl.django.decorators import load_instance, require_auth
 
 import django_ixctl.exporters.ixf
-import django_ixctl.forms
 from django_ixctl.models import InternetExchange
 
 # Create your views here.
@@ -20,7 +19,6 @@ def make_env(request, **kwargs):
 @load_instance()
 def view_instance(request, instance, **kwargs):
     env = make_env(request, instance=instance, org=instance.org)
-    env["forms"] = {"import_ix": django_ixctl.forms.ImportIXForm()}
 
     return render(request, "ixctl/index.html", env)
 
@@ -34,7 +32,6 @@ def view_instance_load_ix(request, instance, ix_tag, **kwargs):
         raise Http404
 
     env = make_env(request, instance=instance, org=instance.org)
-    env["forms"] = {"import_ix": django_ixctl.forms.ImportIXForm()}
     env["select_ix"] = ix
 
     return render(request, "ixctl/index.html", env)
