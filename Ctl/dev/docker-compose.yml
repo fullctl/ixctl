@@ -23,7 +23,7 @@ services:
         max-size: 100m
         max-file: "3"
     volumes:
-      - ../../src:/srv/ixctl/main
+      - ../../src:/srv/service/main:Z
       - ../../ars_config:/root/arouteserver
     depends_on:
       - postgres
