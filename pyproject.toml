@@ -25,7 +25,6 @@ arouteserver = "^1.11.0"
 
 
 [tool.poetry.dev-dependencies]
-docker-compose = "^1.29.1"
 # testing
 codecov = ">=2"
 coverage = ">=5"
@@ -51,9 +50,6 @@ mkdocs = "^1.2.3"
 ctl = ">=1"
 jinja2 = ">=2"
 tmpl = ">=1"
-# v4 released 2022-03-31
-twine = "^3.3.0"
-
 
 [tool.isort]
 profile = "black"
