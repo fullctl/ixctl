@@ -12,6 +12,7 @@ except ImportError:
 import fullctl.service_bridge.pdbctl as pdbctl
 import fullctl.service_bridge.sot as sot
 import reversion
+import structlog
 import yaml
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -27,6 +28,8 @@ from netfields import InetAddressField, MACAddressField
 import django_ixctl.enum
 import django_ixctl.models.tasks
 from django_ixctl.peeringdb import get_as_set
+
+logger = structlog.get_logger(__name__)
 
 
 def generate_secret():
@@ -510,7 +513,7 @@ class Routeserver(HandleRefModel):
     def ars_clients(self):
 
         """
-        Generate and return `dirct` for ARouteserver clients config
+        Generate and return `dict` for ARouteserver clients config
         """
 
         asns = []
@@ -682,6 +685,7 @@ class RouteserverConfig(HandleRefModel):
             "-o",
             outfile,
         ]
+        logger.debug(f"running command {cmd}")
 
         # TODO: bird v1 needs to generate
         # separate for each ip version
@@ -691,7 +695,7 @@ class RouteserverConfig(HandleRefModel):
         if routeserver.ars_type == "bird":
             cmd += ["--ip-ver", "4"]
         elif routeserver.ars_type == "bird2":
-            cmd += ["--target-version", "2.0.7"]
+            cmd += ["--target-version", "2.0.10"]
 
         process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
         _, err = process.communicate(timeout=600)
