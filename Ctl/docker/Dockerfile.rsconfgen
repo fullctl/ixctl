@@ -21,7 +21,7 @@ ARG debug_deps=" \
     vim \
     "
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4 as base
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.7 as base
 
 ARG install_to
 ARG virtual_env
