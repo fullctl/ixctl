@@ -1,8 +1,8 @@
-from datetime import datetime
 import os.path
 import re
 import subprocess
 import tempfile
+from datetime import datetime
 from secrets import token_urlsafe
 
 try:
@@ -37,7 +37,7 @@ def generate_secret():
     return token_urlsafe()
 
 
-def get_as_set(as_set_sting):
+def get_as_set(as_set_string):
     return [as_set.strip() for as_set in re.split(r"[, ]+", as_set_string)]
 
 
