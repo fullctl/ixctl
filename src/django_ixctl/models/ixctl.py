@@ -554,12 +554,15 @@ class Routeserver(HandleRefModel):
                     }
                 )
 
-        if asns:
-            for net in pdbctl.Network().objects(asns=asns):
-                if net.irr_as_set:
-                    asn_as_sets[f"AS{net.asn}"] = {
-                        "as_sets": get_as_set(net.irr_as_set)
-                    }
+        # these aren't needed since they're already defined from SoT in the
+        # more specific members list
+        #
+        # if asns:
+        #     for net in pdbctl.Network().objects(asns=asns):
+        #         if net.irr_as_set:
+        #             asn_as_sets[f"AS{net.asn}"] = {
+        #                 "as_sets": get_as_set(net.irr_as_set)
+        #             }
 
         return {"asns": asn_as_sets, "clients": list(clients.values())}
 
