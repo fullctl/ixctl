@@ -178,6 +178,7 @@ class InternetExchangeMember(ModelSerializer):
             "as_macro_override",
             "is_rs_peer",
             "speed",
+            "md5",
         ]
         validators = [
             SoftRequiredValidator(
@@ -210,6 +211,11 @@ class InternetExchangeMember(ModelSerializer):
         if not macaddr:
             return None
         return macaddr
+
+    def validate_md5(self, md5):
+        if not md5:
+            return None
+        return md5
 
 
 @register
