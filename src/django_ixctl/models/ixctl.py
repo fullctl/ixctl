@@ -218,6 +218,7 @@ class InternetExchangeMember(PdbRefModel):
     as_macro_override = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_as_set]
     )
+    md5 = models.CharField(max_length=255, null=True, blank=True)
     is_rs_peer = models.BooleanField(default=False)
     speed = models.PositiveIntegerField()
     asn = models.PositiveIntegerField()
