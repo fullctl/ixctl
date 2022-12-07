@@ -555,6 +555,9 @@ class Routeserver(HandleRefModel):
                     }
                 )
 
+            if member.md5:
+                clients[member.asn]["password"] = f"{member.md5}"
+
         # these aren't needed since they're already defined from SoT in the
         # more specific members list
         #
