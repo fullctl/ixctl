@@ -683,7 +683,7 @@ class RouteserverConfig(HandleRefModel):
             self.ars_clients = as_yaml
             fh.write(as_yaml)
 
-        # no reasonable way found to call an arouteserve
+        # no reasonable way found to call an arouteserver
         # python api - so lets just run the command
 
         if routeserver.ars_type in ["bird", "bird2"]:
@@ -698,6 +698,10 @@ class RouteserverConfig(HandleRefModel):
             general_config_file,
             "--clients",
             clients_config_file,
+            "--use-local-files",
+            "logging",
+            "--local-files-dir",
+            "/srv/bird/etc",
             "-o",
             outfile,
         ]
