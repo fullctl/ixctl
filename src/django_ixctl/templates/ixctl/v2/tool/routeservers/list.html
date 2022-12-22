@@ -1,0 +1,83 @@
+{% load static i18n %}
+<table
+  class="table table-borderless"
+  data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="default" %}"
+  data-api-action=""
+  data-template="list">
+  <thead>
+    <tr>
+      <th class="sortable-button" data-sort-target="asn" data-sort-secondary="router_id">{% trans "ASN" %}</th>
+      <th class="sortable-button" data-sort-initial="yes" data-sort-target="name" data-sort-secondary="router_id">{% trans "Name" %}</th>
+      <th class="sortable-button" data-sort-target="router_id">{% trans "Router ID" %}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody class="list-body">
+  </tbody>
+  <tbody class="templates">
+    <tr data-template="row" data-routeserver_config_url="{% url "ixctl_api:config/routeserver-plain" org_tag=request.org.slug ix_tag="default" name="__replace__me__" %}">
+      <td data-field="asn"></td>
+      <td data-field="display_name" class="highlight"></td>
+      <td data-field="router_id"></td>
+      <td data-field="controls" class="right">
+        <div class="row">
+          <div class="col-xs-12 col-lg-3">
+            <a class="button" data-action="view_routeserver_config"><span class="icon ixctl icon-download"></span><span class="label ixctl">{% trans "Config" %}</span></a>
+          </div>
+          <div class="col-xs-12 col-lg-3 left">
+            <span data-field="routeserver_config_status"></span>
+          </div>
+          <div class="col-xs-12 col-lg-3">
+            <a class="button" data-action="edit_routeserver"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
+          </div>
+          <div class="col-xs-12 col-lg-3">
+        <a
+          class="button"
+          data-api-action="{id}"
+          data-api-callback="remove"
+          data-confirm="Remove routeserver?"
+          data-api-method="DELETE"><span class="icon ixctl icon-delete"></span><span class="ixctl label">{% trans "Delete" %}</span></a>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr data-template="row" class="secondary">
+      <td class="indent"></td>
+      <td class="property" colspan="4">
+        <div class="row">
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            {% trans "Type" %}:
+            <span class="highlight" data-field="ars_type"></span>
+          </div>
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            {% trans "Max. AS_PATH length" %}:
+            <span class="highlight" data-field="max_as_path_length"></span>
+          </div>
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            {% trans "No export action" %}:
+            <span class="highlight" data-field="no_export_action"></span>
+          </div>
+          <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
+            <div>
+            {% trans "RPKI BGP Origin Validation" %}:
+            <span data-field="rpki_bgp_origin_validation" data-toggle="checked">
+              <img data-false src="{% static "common/icons/Indicator/X-Ind/X.svg" %}" class="icon filled">
+              <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
+            </span>
+            </div>
+
+            <div>
+            {% trans "Graceful shutdown" %}:
+            <span data-field="graceful_shutdown" data-toggle="checked">
+              <img data-false src="{% static "common/icons/Indicator/X-Ind/X.svg" %}" class="icon filled">
+              <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
+            </span>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+

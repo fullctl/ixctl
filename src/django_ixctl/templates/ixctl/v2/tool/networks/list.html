@@ -1,0 +1,37 @@
+{% load static i18n %}
+<table
+  class="table table-borderless"
+  data-api-base="{% url "ixctl_api:net-presence" org_tag=request.org.slug asn=0 %}"
+  data-api-action=""
+  data-template="list">
+  <thead>
+    <tr>
+      <th>{% trans "ASN" %}</th>
+      <th>{% trans "Organization" %}</th>
+      <th>{% trans "Exchange" %}</th>
+      <th>{% trans "Access" %}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody class="list-body">
+  </tbody>
+  <tbody class="templates">
+    <tr data-template="row">
+      <td data-field="asn"></td>
+      <td data-field="org_name"></td>
+      <td data-field="ix_name"></td>
+      <td data-field="access"></td>
+      <td data-field="controls" class="right">
+        <div class="row">
+          <div class="col-xs-12">
+        <a
+          data-api-action="permreq/"
+          data-api-method="POST"><span class="icon ixctl icon-edit"></span><span class="ixctl label">{% trans "Request Access" %}</span></a>
+          </div>
+        </div>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+

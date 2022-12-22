@@ -1,0 +1,41 @@
+{% load static i18n %}
+<div
+  class="section tabs"
+  data-template="menu">
+  <h4>{% trans "Exchange" %}</h4>
+
+  <a type="button" class="button" data-element="button_general_settings">
+    <span class="icon fullctl icon-settings"></span>
+    <span class="label">{% trans "General settings" %}</span>
+  </a>
+
+  <a type="button" class="button" data-element="button_delete_ix">
+    <span class="icon fullctl icon-delete"></span>
+    <span class="label">{% trans "Delete" %}</span>
+  </a>
+
+
+  <h4>{% trans "Routeservers" %}</h4>
+
+  <div class="routeservers"></div>
+</div>
+<div
+  data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
+  data-api-action=""
+  data-template="routeservers">
+
+  <div class="list-constant">
+     <button data-template="row" class="button" data-element="button_add_routeserver">
+      <span class="icon ixctl icon-add"></span>
+      <span class="label">{% trans "Create" %}</span>
+    </button>
+  </div>
+  <div class="list-body"></div>
+  <div class="templates">
+    <button data-template="row" class="button">
+      <span class="icon ixctl icon-edit"></span>
+      <span class="label" data-field="name"></span>
+    </button>
+  </div>
+</div>
+

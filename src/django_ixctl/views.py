@@ -20,7 +20,7 @@ def make_env(request, **kwargs):
 def view_instance(request, instance, **kwargs):
     env = make_env(request, instance=instance, org=instance.org)
 
-    return render(request, "ixctl/index.html", env)
+    return render(request, "theme-select.html", env)
 
 
 @require_auth()
@@ -34,7 +34,7 @@ def view_instance_load_ix(request, instance, ix_tag, **kwargs):
     env = make_env(request, instance=instance, org=instance.org)
     env["select_ix"] = ix
 
-    return render(request, "ixctl/index.html", env)
+    return render(request, "theme-select.html", env)
 
 
 @require_auth()
