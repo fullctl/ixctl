@@ -10,12 +10,19 @@
       {% endblocktrans %}
       </p>
       <p class="center marg-top-lg">
-        <button data-element="button_delete_ix_proceed"
+        <button 
+          class="btn"
+          data-btn-type="delete"
+          data-element="button_delete_ix_proceed"
           data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
           data-api-method="delete"
           data-api-action="ix_id">
-          <span class="icon icon-delete fullctl"></span>
-          <span class="label">{% trans "Delete this exchange" %}</span>
+          <div class="row">
+            <div class="col label pe-0">{% trans "Delete this exchange" %}</div>
+            <div class="col-auto">
+              <span class="icon icon-delete"></span>
+            </div>
+          </div>
         </button>
       </p>
     </div>

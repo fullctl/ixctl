@@ -1,9 +1,9 @@
 {% load i18n %}
 <div data-template="routeserver_wizard" class="wizard wiz-step-1">
   <p class="wiz-step wiz-step-1">
-  {% blocktrans %}
-  We have found some connections in PeeringDB that we think could be used to inform your new routeserver - click continue on any of the entries below to use them as a starting point.
-  {% endblocktrans %}
+    {% blocktrans %}
+    We have found some connections in PeeringDB that we think could be used to inform your new routeserver - click continue on any of the entries below to use them as a starting point.
+    {% endblocktrans %}
   </p>
 
 
@@ -12,9 +12,13 @@
   </div>
 
   <p class="center marg-top-lg wiz-step wiz-step-1">
-    <button data-element="button_start_fresh" data-wizard-step="2">
-      <span class="icon icon-edit fullctl"></span>
-      <span class="label">{% trans "No thanks, i want to start fresh" %}</span>
+    <button class="primary btn" data-element="button_start_fresh" data-wizard-step="2">
+      <div class="row align-items-center">
+        <div class="col label pe-0">{% trans "No thanks, i want to start fresh" %}</div>
+        <div class="col-auto">
+          <span class="icon icon-edit"></span>
+        </div>
+      </div>
     </button>
   </p>
 
@@ -50,9 +54,13 @@
       <td data-field="name"></td>
       <td data-field="router_id"></td>
       <td class="right">
-        <button class="button">
-          <span class="icon fullctl icon-edit"></span>
-          <span class="label">{% trans "Continue" %}</span>
+        <button class="button primary btn | small">
+          <div class="row align-items-center">
+            <div class="col label pe-0">{% trans "Continue" %}</div>
+            <div class="col-auto">
+              <span class="icon icon-edit"></span>
+            </div>
+          </div>
         </button>
       </td>
     </tr>

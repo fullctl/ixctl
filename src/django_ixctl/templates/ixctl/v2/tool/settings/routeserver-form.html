@@ -91,14 +91,27 @@
   </div>
   <div class="row controls marg-top-lg">
     <div class="col-6 left">
-      <button data-element="rs_delete"
+      <button 
+        class="btn"
+        data-btn-type="delete"
+        data-element="rs_delete"
         data-confirm="{% trans "Are you sure you want to delete this routeserver?" %}"
         data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
         data-api-action=""
-        data-api-method="delete"><span class="icon fullctl icon-delete"></span><span class="label">{% trans "Delete" %}</span></a>
+        data-api-method="delete">
+        <span class="icon fullctl icon-delete"></span>
+        <span class="label">{% trans "Delete" %}</span>
+    </button>
     </div>
     <div class="col-6 right">
-      <button class="submit"><span class="icon fullctl icon-edit"></span><span class="label">{% trans "Save" %}</span></a>
+      <button class="submit primary btn">
+        <div class="row align-items-center">
+          <div class="col label pe-0">{% trans "Save" %}</div>
+          <div class="col-auto">
+            <span class="icon icon-edit"></span>
+          </div>
+        </div>
+      </button>
     </div>
   </div>
 </form>
