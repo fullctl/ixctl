@@ -4,7 +4,7 @@
 
 {% block "js" %}
 {{ block.super }}
-<script src="{% static "ixctl/ixctl.js" %}" type="text/javascript"></script>
+<script src="{% static "ixctl/v2/ixctl.js" %}" type="text/javascript"></script>
 <script src="{% static "ixctl/ixctl.settings.js" %}" type="text/javascript"></script>
 <script>
 {% if select_ix %}
@@ -21,9 +21,7 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 
 {% block "header_middle" %}
-<div class="app-pages-nav" data-component="pages">
-  <nav class="nav justify-content-center">
-
+<div class="app-pages-nav | nav h-100" data-component="pages">
     <a class="nav-link active"
       id="tab-overview"
       data-bs-toggle="tab"
@@ -39,7 +37,6 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
       aria-selected="false"
       id="settings-tab"
       href="#settings">{% trans "Settings" %}</a>
-  </nav>
 </div>
 {% endblock %}
 
@@ -49,7 +46,6 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {{ block.super }}
 {% endwith %}
 {% endblock %}
-
 
 {% block "app_content_toolbar" %}
 
@@ -107,12 +103,12 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 <div class="tab-content" id="app-pages">
   <div class="tab-pane show active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
-		{% include "ixctl/tool/routeservers/main.html" %}
-		{% include "ixctl/tool/members/main.html" %}
+		{% include "ixctl/v2/tool/routeservers/main.html" %}
+		{% include "ixctl/v2/tool/members/main.html" %}
   </div>
 
   <div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="tab-settings">
-		{% include "ixctl/tool/settings/main.html" %}
+		{% include "ixctl/v2/tool/settings/main.html" %}
   </div>
 </div>
 
@@ -122,7 +118,7 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 {% block "templates" %}
 {{ block.super }}
-{% include "ixctl/form-import.html" %}
-{% include "ixctl/form-create-ix.html" %}
+{% include "ixctl/v2/form-import.html" %}
+{% include "ixctl/v2/form-create-ix.html" %}
 
 {% endblock %}

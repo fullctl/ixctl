@@ -1,6 +1,6 @@
 {% load static i18n %}
 <table
-  class="table table-borderless"
+  class="table table-borderless list-table"
   data-api-base="{% url "ixctl_api:member-list" org_tag=request.org.slug ix_tag="default" %}"
   data-api-action=""
   data-template="list">
@@ -11,7 +11,7 @@
       <th data-sort-target="ipaddr4" class="sortable-button">{% trans "IPv4" %}</th>
       <th data-sort-target="ipaddr6" class="sortable-button">{% trans "IPv6" %}</th>
       <th data-sort-target="speed" data-sort-secondary="name,ipaddr4,ipaddr6"  class="sortable-button">{% trans "Speed" %}</th>
-      <th></th>
+      <th class="right">Options</th>
     </tr>
   </thead>
   <tbody class="list-body">
@@ -24,18 +24,21 @@
       <td data-field="ipaddr6"></td>
       <td data-field="speed"></td>
       <td data-field="controls" class="right">
-        <div class="row">
-          <div class="col-xs-12 col-lg-6">
-            <a class="button" data-action="edit_member"><span class="icon ixctl icon-edit"></span><span class="label ixctl">{% trans "Edit" %}</span></a>
-          </div>
-          <div class="col-xs-12 col-lg-6">
-        <a class="button"
+        <a class="button btn" data-hover="show" data-action="edit_member">
+          <span class="icon ixctl icon-edit"></span>
+        </a>
+        <a class="button btn"
+          data-hover="show"
           data-api-action="{id}"
           data-api-callback="remove"
           data-confirm="Remove member?"
-          data-api-method="DELETE"><span class="icon ixctl icon-delete"></span><span class="ixctl label">{% trans "Delete" %}</span></a>
-          </div>
-        </div>
+          data-api-method="DELETE"
+        >
+          <span class="icon ixctl icon-delete"></span>
+        </a>
+        <button class="btn">
+          <span class="icon icon-options"></span>
+        </button>
       </td>
     </tr>
     <tr data-template="row" class="secondary">
