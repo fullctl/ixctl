@@ -12,36 +12,36 @@ $ctl.application.Ixctl = $tc.extend(
       this.initial_load = false
 
       this.$c.header.app_slug = "ix";
-      this.$c.toolbar.widget("select_ix", ($e) => {
-        var w = new twentyc.rest.Select($e.select_ix);
-        $(w).on("load:after", (event, element, data) => {
-          var i;
-          for(i = 0; i < data.length; i++) {
-            this.urlkeys[data[i].id] = data[i].urlkey;
-            this.exchanges[data[i].id] = data[i];
-            console.log(data[i]);
-            this.ix_slugs[data[i].id] = data[i].slug;
-          }
 
-          if(data.length == 0) {
-            $e.select_ix.attr('disabled', true);
-            this.permission_ui();
-          } else {
-            $e.select_ix.attr('disabled', false)
-            this.permission_ui();
-          }
+      this.$c.header.widget("ix_dropdown", ($e) => {
+        let w = new twentyc.rest.List($('.org-select'));
+        $(w).on("insert:after", (e, row, data) => {
+          row.attr('href', '/?org='+ data.slug);
+          row.attr('data-id', data.id);
+          row.click(() => {
+            this.select_ix(data.id)
+          })
+          this.urlkeys[data.id] = data.urlkey;
+          this.exchanges[data.id] = data;
+          this.ix_slugs[data.id] = data.slug;
+
+          this.permission_ui();
         });
-        return w
-
+        return w;
       });
 
-      $(this.$c.toolbar.$w.select_ix).one("load:after", () => {
-        if(this.preselect_ix) {
-          this.select_ix(this.preselect_ix)
-        } else {
-          this.sync();
-          this.sync_url(this.$c.toolbar.$e.select_ix.val());
-        }
+      $(this.$c.header.$w.ix_dropdown).one("load:after", ()=> {
+        this.select_ix(this.preselect_ix);
+      });
+
+      this.$c.header.$w.ix_dropdown.load();
+
+      $(this.$c.header.$e.button_create_ix).click(() => {
+        this.prompt_create_exchange();
+      });
+
+      $(this.$c.header.$e.button_import_ix).click(() => {
+        this.prompt_import();
       });
 
       this.tool("members", () => {
@@ -52,32 +52,7 @@ $ctl.application.Ixctl = $tc.extend(
         return new $ctl.application.Ixctl.Routeservers();
       });
 
-
       $($ctl).trigger("init_tools", [this]);
-
-
-      $(this.$c.toolbar.$e.select_ix).on("change", () => {
-        this.sync();
-        this.sync_url(this.$c.toolbar.$e.select_ix.val())
-      });
-
-      $(this.$c.toolbar.$e.button_import_ix).click(() => {
-        this.prompt_import();
-      });
-
-      $(this.$c.toolbar.$e.button_create_ix).click(() => {
-        this.prompt_create_exchange();
-      });
-
-      $(this.$c.toolbar.$e.button_update_ix).click(() => {
-        this.prompt_update_exchange();
-      });
-
-      $(this.$c.toolbar.$e.button_delete_ix).click(() => {
-        this.prompt_delete_exchange();
-      });
-
-
 
       this.$t.members.activate();
       this.$t.routeservers.activate();
@@ -86,7 +61,7 @@ $ctl.application.Ixctl = $tc.extend(
 
 
     permission_ui : function() {
-      let $e = this.$c.toolbar.$e;
+      let $e = this.$c.header.$e;
       let ix = this.exchanges[this.ix()];
       let org = $ctl.org.id;
 
@@ -95,7 +70,7 @@ $ctl.application.Ixctl = $tc.extend(
     },
 
     ix : function() {
-      return this.$c.toolbar.$w.select_ix.element.val();
+      return this.$c.header.$w.ix_dropdown.list_body.find('[data-selected]').attr('data-id');
     },
 
     ix_slug : function() {
@@ -118,12 +93,19 @@ $ctl.application.Ixctl = $tc.extend(
 
 
     select_ix : function(id) {
-      if(id)
-        this.$c.toolbar.$e.select_ix.val(id);
-      else {
-        id = this.$c.toolbar.$e.select_ix.find('option').val();
-        this.$c.toolbar.$e.select_ix.val(id);
+      let dropdown = this.$c.header.$w.ix_dropdown.list_body;
+      dropdown.find('[data-selected]').removeAttr('data-selected');
+      if(id) {
+        dropdown.find(`[data-id="${id}"]`).attr("data-selected", "");
+      } else {
+        id = dropdown.find('.ix-item').first().attr("data-id");
+        dropdown.find('.ix-item').first().attr("data-selected", "")
       }
+
+      let dropdown_header = this.$c.header.$w.ix_dropdown.list_head;
+      dropdown_header.find(".ix-dropdown-label").text(
+        dropdown.find("[data-selected]").text()
+      );
 
       this.sync();
       this.sync_url(id);

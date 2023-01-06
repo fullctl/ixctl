@@ -47,42 +47,62 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {% endwith %}
 {% endblock %}
 
+{% block "header_account_panel" %}
+{% with app_id="ixctl" %}
+
+        <div
+          class="dropdown org-select header-control d-flex align-items-center h-100"
+          data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
+          >
+          <div class="custom-divider h-100">
+            <div
+              class="d-flex align-items-center px-3 ms-2 h-100 list-header"
+              id="dropdownMenuLink"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <span class="icon icon-list"></span>
+              <span class="ps-2 pe-4 ix-dropdown-label"></span>
+              <span class="icon icon-caret-down"></span>
+            </div>
+            <div
+              class="dropdown-menu org-select-menu dd-box-shadow"
+              aria-labelledby="dropdownMenuLink"
+            >
+              <div class="list-body">
+
+              </div>
+              <div
+                class="dropdown-item text-body"
+                type="button"
+                data-element="button_create_ix"
+              >
+                + {% trans "Create Exchange" %}
+              </div>
+              <div
+                class="dropdown-item text-body"
+                type="button"
+                data-element="button_import_ix"
+              >
+                + {% trans "Import" %}
+              </div>
+            </div>
+          </div>
+          <div class="templates" style="display:none">
+              <div data-template="row" class="dropdown-item ix-item" type="button">
+                <span data-field="name"></span>
+              </div>
+          </div>
+       </div>
+
+{{ block.super }}
+{% endwith %}
+{% endblock %}
+
+
 {% block "app_content_toolbar" %}
-
-<div class="row">
-  <div class="col-6 col-md-8">
-    <div class="toolbar-control-group">
-
-
-      <span class="inline-label">{% trans "Exchange:" %}</span>
-      <span class="toolbar-control">
-        <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
-      <select
-        data-api-load="yes"
-        data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
-        data-element="select_ix"></select>
-      </span>
-
-    </div>
-
-  </div>
-
-  <!-- ix tools: create ix, import ix -->
-
-  <!-- button: create ix -->
-
-  <div class="col-6 col-md-4 right">
-      <button type="button" class="button" style="display:none" data-element="button_create_ix">
-        <span class="icon ixctl icon-add"></span>
-        <span class="label">{% trans "Create" %}</span>
-      </button>
-      <button type="button" class="button" style="display:none" data-element="button_import_ix">
-        <span class="icon ixctl icon-add"></span>
-        <span class="label">{% trans "Import" %}</span>
-      </button>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block "app_content_menu" %}
