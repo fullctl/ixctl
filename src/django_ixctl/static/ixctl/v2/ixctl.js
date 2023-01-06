@@ -130,7 +130,7 @@ $ctl.application.Ixctl = $tc.extend(
     },
 
     refresh_select_ix : function() {
-      return this.$c.toolbar.$w.select_ix.refresh();
+      return this.$c.header.$w.ix_dropdown.load();
     },
 
     prompt_import : function(first_import) {
@@ -198,16 +198,12 @@ $ctl.application.Ixctl.ModalCreateIX = $tc.extend(
   "ModalCreateIX",
   {
     ModalCreateIX : function() {
-      // console.log($ctl.template("form_create_ix"));
-      var form = this.form = new twentyc.rest.Form(
+      let form = this.form = new twentyc.rest.Form(
         $ctl.template("form_create_ix")
       );
 
-      // console.log(form);
-      var modal = this;
-
+      let modal = this;
       $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
-        // console.log(response.content.data)
         $ctl.ixctl.refresh().then(
           () => { $ctl.ixctl.select_ix(response.content.data[0].id) }
         );
