@@ -13,6 +13,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       this.$c.header.app_slug = "ix";
 
+      // v2 - move ix select to header
       this.$c.header.widget("ix_dropdown", ($e) => {
         let w = new twentyc.rest.List($('.org-select'));
         $(w).on("insert:after", (e, row, data) => {
