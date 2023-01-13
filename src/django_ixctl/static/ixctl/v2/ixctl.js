@@ -16,7 +16,6 @@ $ctl.application.Ixctl = $tc.extend(
       this.$c.header.widget("ix_dropdown", ($e) => {
         let w = new twentyc.rest.List($('.org-select'));
         $(w).on("insert:after", (e, row, data) => {
-          row.attr('href', '/?org='+ data.slug);
           row.attr('data-id', data.id);
           row.click(() => {
             this.select_ix(data.id)
