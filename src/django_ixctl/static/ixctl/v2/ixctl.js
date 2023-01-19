@@ -426,7 +426,7 @@ $ctl.application.Ixctl.ModalRouteserver = $tc.extend(
   {
     ModalRouteserver : function(ix_slug, routeserver) {
       var modal = this;
-      var title = "Add Routeserver"
+      var title = "Add Route Server"
       var form = this.form = new twentyc.rest.Form(
         $ctl.template("form_routeserver")
       );
