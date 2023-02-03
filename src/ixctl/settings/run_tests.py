@@ -7,7 +7,7 @@ USE_LOCAL_PERMISSIONS = True
 DEBUG = True
 BILLING_INTEGRATION = False
 SECURE_SSL_REDIRECT = False
-
+AAACTL_URL = "test://aaactl"
 PDBCTL_URL = "test://pdbctl"
 
 LOGGING = {
