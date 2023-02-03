@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("django_ixctl", "0012_unique_routserver_name"),
     ]

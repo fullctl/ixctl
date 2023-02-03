@@ -28,7 +28,6 @@ from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
 from netfields import InetAddressField, MACAddressField
 
-
 import django_ixctl.enum
 import django_ixctl.models.tasks
 
