@@ -1,5 +1,5 @@
-import fullctl.service_bridge.pdbctl as pdbctl
 import fullctl.service_bridge.aaactl as aaactl
+import fullctl.service_bridge.pdbctl as pdbctl
 from fullctl.django.auditlog import auditlog
 from fullctl.django.rest.api_schema import PeeringDBImportSchema
 from fullctl.django.rest.core import BadRequest
@@ -200,18 +200,23 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         # retrieve max. memmbers count according
         # to active ixctl plan for org
 
-        max_members = aaactl.OrganizationProduct().get_product_property("ixctl", org.slug, "members")
+        max_members = aaactl.OrganizationProduct().get_product_property(
+            "ixctl", org.slug, "members"
+        )
 
         num_members = models.InternetExchangeMember.objects.filter(
-            ix__instance = instance,
-            status = "ok"
+            ix__instance=instance, status="ok"
         ).count()
 
         if num_members + 1 > max_members:
-            return BadRequest({"non_field_errors": [
-                f"You have reached the limit of allowed networks ({max_members}). "
-                "Please upgrade your ixCtl subscription to add additional networks."
-            ]})
+            return BadRequest(
+                {
+                    "non_field_errors": [
+                        f"You have reached the limit of allowed networks ({max_members}). "
+                        "Please upgrade your ixCtl subscription to add additional networks."
+                    ]
+                }
+            )
 
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
