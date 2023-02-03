@@ -4,7 +4,6 @@ from django.urls import reverse
 
 
 def test_view_instance(db, pdb_data, account_objects):
-
     response = account_objects.client.get(
         reverse("ixctl-home", args=(account_objects.org.slug,))
     )
@@ -16,7 +15,6 @@ def test_view_instance(db, pdb_data, account_objects):
 
 
 def test_view_instance_other(db, pdb_data, account_objects):
-
     response = account_objects.client.get(
         reverse("ixctl-home", args=(account_objects.other_org.slug,))
     )

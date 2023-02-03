@@ -46,7 +46,6 @@ def test_ix_import_peeringdb_reimport(db, pdb_data, account_objects):
 
 
 def test_ix_list(db, pdb_data, account_objects):
-
     ix = account_objects.ix
     client = account_objects.api_client
     org = account_objects.org
@@ -64,7 +63,6 @@ def test_ix_list(db, pdb_data, account_objects):
 
 
 def test_ix_retrieve(db, pdb_data, account_objects):
-
     ix = account_objects.ix
     client = account_objects.api_client
     org = account_objects.org

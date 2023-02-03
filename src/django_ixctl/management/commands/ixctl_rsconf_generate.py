@@ -13,7 +13,6 @@ class Command(BaseCommand):
     #    parser.add_argument("--pdburl", default="https://www.peeringdb.com/api")
 
     def handle(self, *args, **kwargs):
-
         qset = Routeserver.objects.all()
 
         for rs in qset:

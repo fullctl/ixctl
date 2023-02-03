@@ -1,8 +1,9 @@
+import fullctl.service_bridge.aaactl as aaactl
 import fullctl.service_bridge.pdbctl as pdbctl
 from fullctl.django.auditlog import auditlog
 from fullctl.django.rest.api_schema import PeeringDBImportSchema
 from fullctl.django.rest.core import BadRequest
-from fullctl.django.rest.decorators import billable, load_object
+from fullctl.django.rest.decorators import load_object
 from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
 from fullctl.django.rest.mixins import CachedObjectMixin, OrgQuerysetMixin
 from fullctl.django.rest.renderers import PlainTextRenderer
@@ -77,7 +78,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def create(self, request, org, instance, auditlog=None, *args, **kwargs):
-
         data = request.data
         data["pdb_id"] = None
         data["instance"] = instance.id
@@ -126,7 +126,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def import_peeringdb(self, request, org, instance, auditlog=None, *args, **kwargs):
-
         serializer = Serializers.impix(
             data=request.data,
             context={"instance": instance},
@@ -188,7 +187,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
-    @billable("fullctl.ixctl.members")
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @auditlog()
     @grainy_endpoint(
@@ -196,6 +194,27 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
     def create(self, request, org, instance, ix, *args, **kwargs):
+        # retrieve max. memmbers count according
+        # to active ixctl plan for org
+
+        max_members = aaactl.OrganizationProduct().get_product_property(
+            "ixctl", org.slug, "members"
+        )
+
+        num_members = models.InternetExchangeMember.objects.filter(
+            ix__instance=instance, status="ok"
+        ).count()
+
+        if num_members + 1 > max_members:
+            return BadRequest(
+                {
+                    "non_field_errors": [
+                        f"You have reached the limit of allowed networks ({max_members}). "
+                        "Please upgrade your ixCtl subscription to add additional networks."
+                    ]
+                }
+            )
+
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
         serializer = Serializers.member(data=data, context={"instance": instance})
@@ -238,7 +257,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
 @route
 class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
-
     serializer_class = Serializers.routeserver
     queryset = models.Routeserver.objects.all()
     ref_tag = "routeserver"
@@ -263,7 +281,6 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         return Response(serializer.data)
 
-    @billable("fullctl.ixctl.routeservers")
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @auditlog()
     @grainy_endpoint(
@@ -413,7 +430,6 @@ class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
 
 @route
 class PermissionRequest(CachedObjectMixin, viewsets.GenericViewSet):
-
     serializer_class = Serializers.permreq
     queryset = models.PermissionRequest.objects.all()
 
