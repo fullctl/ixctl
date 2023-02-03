@@ -1,9 +1,25 @@
-import fullctl.django.rest.urls.service_bridge_proxy as service_bridge
+import fullctl.django.rest.urls.service_bridge_proxy as proxy
+from django.conf import settings
 from django.urls import include, path
 
 import django_ixctl.views as views
 
-urlpatterns = service_bridge.urlpatterns(["aaactl", "devicectl"])
+proxy.setup(
+    "aaactl",
+    proxy.proxy_api(
+        "aaactl",
+        settings.AAACTL_URL,
+        [
+            (
+                "billing/org/{org_tag}/start_trial/",
+                "billing/<str:org_tag>/start_trial/",
+                "start-trial",
+            )
+        ],
+    ),
+)
+
+urlpatterns = proxy.urlpatterns(["aaactl", "devicectl"])
 
 urlpatterns += [
     path(

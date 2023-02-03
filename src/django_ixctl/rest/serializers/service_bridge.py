@@ -9,7 +9,6 @@ Serializers, register = serializer_registry()
 
 @register
 class InternetExchange(ModelSerializer):
-
     org_id = serializers.SerializerMethodField()
 
     class Meta:

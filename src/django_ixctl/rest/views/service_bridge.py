@@ -25,7 +25,6 @@ class Heartbeat(HeartbeatViewSet):
 
 @route
 class InternetExchange(DataViewSet):
-
     path_prefix = "/data"
     allowed_http_methods = ["GET"]
     valid_filters = [
@@ -42,7 +41,6 @@ class InternetExchange(DataViewSet):
 
 @route
 class InternetExchangeMember(DataViewSet):
-
     path_prefix = "/data"
     allowed_http_methods = ["GET"]
     valid_filters = [

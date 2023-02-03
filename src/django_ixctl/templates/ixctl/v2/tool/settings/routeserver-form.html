@@ -1,0 +1,119 @@
+{% load static i18n %}
+<form data-template="form_routeserver_page"
+  data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
+  data-api-action=""
+  data-api-method="POST"
+  >
+  <div class="row controls" style="display:flex">
+    <div class="col-6">
+
+      <div class="row mb-3">
+        <div class="col-12" data-api-submit="yes">
+          <label class="form-label" for="routeserver-name">{% trans "Name" %}</label>
+          <input type="text" class="form-control" id="routeserver-name" name="name" />
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12" data-api-submit="yes">
+          <label class="form-label" for="routeserver-asn">{% trans "ASN" %}</label>
+          <input type="text" class="form-control" id="routeserver-asn" name="asn" />
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12" data-api-submit="yes">
+          <label class="form-label" for="routeserver-router_id">{% trans "Router ID" %}</label>
+          <input type="text" class="form-control" id="routeserver-router_id" name="router_id" />
+        </div>
+      </div>
+      <h5>{% trans "ARouteServer configuration" %}</h5>
+      <div class="row mb-3">
+        <div class="col-12" data-api-submit="yes">
+          <label class="form-label" for="routeserver-ars-type">{% trans "Type" %}</label>
+          <span class="modal-control">
+          <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+          <select class="form-control" id="routeserver-ars-type" name="ars_type">
+            <option value="bird">{% trans "Bird" %}</option>
+            <option value="bird2">{% trans "Bird 2" %}</option>
+            <option value="openbgpd">{% trans "OpenBGPD" %}</option>
+          <select>
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12" data-api-submit="yes">
+          <label class="form-label" for="routeserver-max_as_path_length">{% trans "Max. AS_PATH length" %}</label>
+          <input type="text" value="32" class="form-control" id="routeserver-max-as-path-length" name="max_as_path_length" />
+        </div>
+      </div>
+
+      <div class="row form-check">
+        <div class="col-12" data-api-submit="yes">
+          <input type="checkbox" class="form-check-input" checked id="routeserver-rpki-bgp-origin-validation" name="rpki_bgp_origin_validation" />
+          <label for="routeserver-rpki-bgp-origin-validation" class="form-check-label">{% trans "RPKI BGP Origin Validation" %}</label>
+        </div>
+      </div>
+
+      <div class="row form-check">
+        <div class="col-12" data-api-submit="yes">
+          <input type="checkbox" class="form-check-input" checked id="routeserver-graceful-shutdown" name="graceful_shutdown" />
+          <label for="routeserver-graceful-shutdown" class="form-check-label">{% trans "Graceful shutdown" %}</label>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12" data-api-submit="yes">
+          <label class="form-label" for="routeserver-no-export-action">{% trans "No export action" %}</label>
+          <span class="modal-control">
+          <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+          <select class="form-control" id="routeserver-no-export-action" name="no_export_action">
+            <option value="pass">{% trans "Pass (Treat as transitive)" %}</option>
+            <option value="strip">{% trans "Strip (Treat as non-transitive)" %}</option>
+          <select>
+          </span>
+        </div>
+      </div>
+
+    </div>
+    <div class="col-6">
+
+      <div class="row mb-3" style="height:100%">
+        <div class="col-12" data-api-submit="yes">
+          <label class="form-label" for="routeserver-extra-config">{% trans "ARouteServer extra config (yaml)" %}</label>
+          <textarea type="text" value="32" style="height:93%" class="form-control" id="routeserver-extra-config" name="extra_config" /></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <span class="modal-action-note-text">{% trans "It will take a moment for the route server config to be (re)generated" %}</span>
+    </div>
+  </div>
+  <div class="row controls marg-top-lg">
+    <div class="col-6 left">
+      <button
+        class="btn"
+        data-btn-type="delete"
+        data-element="rs_delete"
+        data-confirm="{% trans "Are you sure you want to delete this routeserver?" %}"
+        data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
+        data-api-action=""
+        data-api-method="delete">
+        <span class="icon fullctl icon-delete"></span>
+        <span class="label">{% trans "Delete" %}</span>
+    </button>
+    </div>
+    <div class="col-6 right">
+      <button class="submit primary btn">
+        <div class="row align-items-center">
+          <div class="col label pe-0">{% trans "Save" %}</div>
+          <div class="col-auto">
+            <span class="icon icon-edit"></span>
+          </div>
+        </div>
+      </button>
+    </div>
+  </div>
+</form>
+
+

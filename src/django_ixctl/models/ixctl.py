@@ -28,7 +28,6 @@ from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
 from netfields import InetAddressField, MACAddressField
 
-
 import django_ixctl.enum
 import django_ixctl.models.tasks
 
@@ -123,7 +122,6 @@ class InternetExchange(PdbRefModel):
 
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
-
         """
         create instance from peeringdb ixlan
 
@@ -255,7 +253,6 @@ class InternetExchangeMember(PdbRefModel):
 
     @classmethod
     def create_from_pdb(cls, pdb_object, ix, save=True, **fields):
-
         """
         Create `InternetExchangeMember` from peeringdb netixlan
 
@@ -481,7 +478,6 @@ class Routeserver(HandleRefModel):
 
     @property
     def ars_general(self):
-
         """
         Generate and return `dict` for ARouteserver general config
         """
@@ -520,7 +516,6 @@ class Routeserver(HandleRefModel):
 
     @property
     def ars_clients(self):
-
         """
         Generate and return `dict` for ARouteserver clients config
         """
@@ -632,7 +627,6 @@ class RouteserverConfig(HandleRefModel):
 
     @property
     def outdated(self):
-
         """
         Returns whether or not the config needs to be regenerated
         """
@@ -658,7 +652,6 @@ class RouteserverConfig(HandleRefModel):
         self.save()
 
     def generate(self):
-
         """
         Generate the route server config using arouteserver
         """
@@ -768,7 +761,6 @@ class Network(PdbRefModel):
 
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
-
         """
         create instance from peeringdb network
 

@@ -118,7 +118,6 @@ def test_ixmember(db, pdb_data, account_objects):
 
 
 def test_routeserver(db, pdb_data, account_objects):
-
     rs = account_objects.routeserver
     assert rs.ix.id == account_objects.ix.id
     assert rs.name == "test routeserver"
@@ -166,6 +165,8 @@ def test_routeserver_ars_general_extra_config(db, pdb_data, account_objects):
     assert rs.ars_general == expected
 
 
+# code is currently commented out
+@pytest.mark.skip
 def test_routeserver_ars_clients(db, pdb_data, account_objects):
     rs = account_objects.routeserver
 

@@ -31,7 +31,6 @@ def import_exchanges(pdb_org, instance):
 
 
 def import_exchange(pdb_ix, instance):
-
     """
     Import the specified peeringdb exchange into the
     specified ixctl org instance
@@ -56,7 +55,6 @@ def import_exchange(pdb_ix, instance):
 
 
 def get_as_set(pdb_net):
-
     """
     Check the irr_as_net on a peeringdb network and return the
     as set value with the source specification stripped out

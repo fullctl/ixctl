@@ -1,0 +1,31 @@
+{% load i18n %}
+<div data-template="form_delete_ix">
+
+  <div class="row marg-top-lg">
+    <div class="col-12">
+      <p class="center">
+      {% blocktrans %}
+      Are you sure you want to delete <span class="ix-name highlight"></span> from ixctl?
+      Doing so is not reversible - please only proceed if you are certain.
+      {% endblocktrans %}
+      </p>
+      <p class="center marg-top-lg">
+        <button
+          class="btn"
+          data-btn-type="delete"
+          data-element="button_delete_ix_proceed"
+          data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
+          data-api-method="delete"
+          data-api-action="ix_id">
+          <div class="row">
+            <div class="col label pe-0">{% trans "Delete this exchange" %}</div>
+            <div class="col-auto">
+              <span class="icon icon-delete"></span>
+            </div>
+          </div>
+        </button>
+      </p>
+    </div>
+  </div>
+
+</div>
