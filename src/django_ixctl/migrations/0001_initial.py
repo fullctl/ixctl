@@ -12,7 +12,6 @@ import django_ixctl.models.ixctl
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [

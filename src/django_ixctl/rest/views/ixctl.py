@@ -78,7 +78,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def create(self, request, org, instance, auditlog=None, *args, **kwargs):
-
         data = request.data
         data["pdb_id"] = None
         data["instance"] = instance.id
@@ -127,7 +126,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def import_peeringdb(self, request, org, instance, auditlog=None, *args, **kwargs):
-
         serializer = Serializers.impix(
             data=request.data,
             context={"instance": instance},
@@ -196,7 +194,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
     def create(self, request, org, instance, ix, *args, **kwargs):
-
         # retrieve max. memmbers count according
         # to active ixctl plan for org
 
@@ -260,7 +257,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
 @route
 class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
-
     serializer_class = Serializers.routeserver
     queryset = models.Routeserver.objects.all()
     ref_tag = "routeserver"
@@ -434,7 +430,6 @@ class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
 
 @route
 class PermissionRequest(CachedObjectMixin, viewsets.GenericViewSet):
-
     serializer_class = Serializers.permreq
     queryset = models.PermissionRequest.objects.all()
 

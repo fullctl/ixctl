@@ -27,7 +27,6 @@ Serializers, register = serializer_registry()
 
 @register
 class ImportOrganization(RequireContext, serializers.Serializer):
-
     pdb_org_id = serializers.IntegerField(required=False)
 
     required_context = ["instance"]
@@ -55,7 +54,6 @@ class ImportOrganization(RequireContext, serializers.Serializer):
 
 @register
 class ImportExchange(RequireContext, serializers.Serializer):
-
     pdb_ix_id = serializers.IntegerField()
 
     required_context = ["instance"]
@@ -111,7 +109,6 @@ class PermissionRequest(ModelSerializer):
 
 @register
 class InternetExchange(ModelSerializer):
-
     slug = serializers.SlugField(required=False)
 
     class Meta:
@@ -143,7 +140,6 @@ class InternetExchange(ModelSerializer):
 
 @register
 class InternetExchangeMember(ModelSerializer):
-
     ipaddr4 = IPAddressField(
         version=4, allow_blank=True, allow_null=True, required=False, default=None
     )
@@ -214,7 +210,6 @@ class InternetExchangeMember(ModelSerializer):
 
 @register
 class Routeserver(ModelSerializer):
-
     router_id = IPAddressField(
         version=4,
     )

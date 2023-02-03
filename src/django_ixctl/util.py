@@ -5,7 +5,6 @@ from django_ixctl.models import Network
 
 
 def create_networks_from_verified_asns(user):
-
     try:
         instance = user.org_set.filter(org__personal=True).first().org.instance
     except AttributeError:
@@ -23,7 +22,6 @@ def create_networks_from_verified_asns(user):
     ]
 
     for asn in asns:
-
         try:
             asn = int(asn)
         except ValueError:

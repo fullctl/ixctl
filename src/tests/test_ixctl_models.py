@@ -118,7 +118,6 @@ def test_ixmember(db, pdb_data, account_objects):
 
 
 def test_routeserver(db, pdb_data, account_objects):
-
     rs = account_objects.routeserver
     assert rs.ix.id == account_objects.ix.id
     assert rs.name == "test routeserver"

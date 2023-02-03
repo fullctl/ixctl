@@ -88,7 +88,6 @@ class AccountObjects:
 
     @property
     def ixctl_instance(self):
-
         from django_ixctl.models import Instance
 
         if not hasattr(self, "_ixctl_instance"):
