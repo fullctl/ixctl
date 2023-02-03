@@ -1,5 +1,7 @@
+
 ARG bgpq4_version=1.4
-ARG poetry_version=1.1.11
+ARG poetry_pin="==1.2.2"
+
 ARG uid=6300
 ARG user=fullctl
 
@@ -19,7 +21,7 @@ ARG debug_deps=" \
     vim \
     "
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4 as base
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.7 as base
 
 ARG install_to
 ARG virtual_env
@@ -30,8 +32,7 @@ ENV VIRTUAL_ENV=$virtual_env
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # build container
-# FROM ghcr.io/fullctl/fullctl-builder-alpine:prep-release as builder
-FROM registry.access.redhat.com/ubi8/ubi:8.4 as builder
+FROM ghcr.io/fullctl/fullctl-builder-ubi8:prep-release as builder
 
 # TODO pin bgpq4
 ARG build_deps
@@ -45,21 +46,10 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 WORKDIR /build
 #RUN dnf --disableplugin=subscription-manager install -by --nodocs gcc gcc-c++ make cmake patch bzip2 zlib-devel openssl-devel curl-devel pcre2-devel libicu-devel libffi-devel \
 
-RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
-    && dnf --disableplugin=subscription-manager install -by --nodocs $build_deps
-
-# Use Pip to install Poetry
-RUN pip3 install "poetry==$poetry_version"
-
-# Create a VENV
-RUN python3 -m venv "$VIRTUAL_ENV"
-# TODO should be able to replace these by adding to pyproject?
-RUN pip3 install --upgrade pip wheel
-
 # poetry install
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-root
 RUN poetry run pip install --upgrade pip wheel
+RUN poetry install --no-root
 
 
 #### final image
