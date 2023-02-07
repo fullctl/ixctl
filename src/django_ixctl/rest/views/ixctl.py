@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import fullctl.service_bridge.aaactl as aaactl
 import fullctl.service_bridge.pdbctl as pdbctl
 from fullctl.django.auditlog import auditlog
@@ -201,9 +203,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
             "ixctl", org.slug, "members"
         )
 
-        num_members = models.InternetExchangeMember.objects.filter(
-            ix__instance=instance, status="ok"
-        ).count()
+        num_members = ix.member_set.all().count()
 
         if num_members + 1 > max_members:
             return BadRequest(
@@ -211,6 +211,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
                     "non_field_errors": [
                         f"You have reached the limit of allowed networks ({max_members}). "
                         "Please upgrade your ixCtl subscription to add additional networks."
+                        f"You can contact us at {settings.SUPPORT_EMAIL} for further information"
                     ]
                 }
             )
