@@ -31,6 +31,8 @@ class InternetExchange(DataViewSet):
         ("org", "org_id"),
         ("q", "name__icontains"),
         ("sot", "source_of_truth"),
+        ("verified", "verified"),
+        ("asns", "member_set__asn_in"),
     ]
     autocomplete = "name"
     allow_unfiltered = True
@@ -45,6 +47,7 @@ class InternetExchangeMember(DataViewSet):
     allowed_http_methods = ["GET"]
     valid_filters = [
         ("ix", "ix_id"),
+        ("ix_verified", "ix__verified"),
         ("asn", "asn"),
         ("asns", "asn__in"),
         ("peers", MethodFilter("peers")),
@@ -65,14 +68,17 @@ class InternetExchangeMember(DataViewSet):
             ix__pdb_id__isnull=True, ix__pdb_id=0
         )
 
-    @action(detail=True, methods=["PUT"], url_path="sync/mac-address")
+    @action(detail=False, methods=["PUT"], url_path="sync/(?P<asn>[^/.]+)/(?P<ip4>[^/]+)/(?P<prefixlen>[^/.]+)/mac-address")
     @grainy_endpoint(namespace="service_bridge")
-    def mac_address(self, request, pk, *args, **kwargs):
-        member = self.get_object()
+    def mac_address(self, request, asn, ip4, prefixlen, *args, **kwargs):
         mac_address = request.data.get("mac_address")
-        member.macaddr = mac_address
-        member.save()
-        return Response(Serializers.member(instance=member).data)
+
+        members = models.InternetExchangeMember.objects.filter(
+            ix__verified=True, asn=asn, ipaddr4=ip4
+        )
+
+        members.update(macaddr=mac_address)
+        return Response(Serializers.member(instance=members, many=True).data)
 
     @action(detail=False, methods=["PUT"], url_path="sync/as-macro")
     @grainy_endpoint(namespace="service_bridge")
@@ -80,10 +86,24 @@ class InternetExchangeMember(DataViewSet):
         as_macro = request.data.get("as_macro")
         asn = request.data.get("asn")
 
+        members = models.InternetExchangeMember.objects.filter(asn=asn)
+
+        members.update(as_macro_override=as_macro)
+
+        return Response(Serializers.member(instance=members, many=True).data)
+
+    @action(detail=False, methods=["PUT"], url_path="sync/md5")
+    @grainy_endpoint(namespace="service_bridge")
+    def md5(self, request, *args, **kwargs):
+        md5 = request.data.get("md5")
+        asn = request.data.get("asn")
+
         members = models.InternetExchangeMember.objects.filter(
-            ix__source_of_truth=True, asn=asn
+            ix__verified=True, asn=asn
         )
 
-        members.update(as_macro=as_macro)
+        print("ASN", asn, "MD5", md5, "members", members)
+
+        members.update(md5=md5)
 
         return Response(Serializers.member(instance=members, many=True).data)

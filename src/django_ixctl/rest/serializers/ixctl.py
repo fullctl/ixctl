@@ -175,6 +175,8 @@ class InternetExchangeMember(ModelSerializer):
             "is_rs_peer",
             "speed",
             "md5",
+            "prefix4",
+            "prefix6",
         ]
         validators = [
             SoftRequiredValidator(

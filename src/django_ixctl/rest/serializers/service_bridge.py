@@ -18,6 +18,7 @@ class InternetExchange(ModelSerializer):
             "id",
             "pdb_id",
             "name",
+            "verified",
         ]
 
     def get_org_id(self, ix):
