@@ -43,6 +43,7 @@ class InternetExchangeMember(ModelSerializer):
             "ipaddr4",
             "ipaddr6",
             "is_rs_peer",
+            "macaddr",
         ]
 
     def get_ix(self, member):

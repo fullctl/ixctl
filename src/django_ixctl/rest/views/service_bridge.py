@@ -9,6 +9,8 @@ from fullctl.django.rest.views.service_bridge import (
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from django.db.models import Q
+
 import django_ixctl.models.ixctl as models
 from django_ixctl.rest.serializers.service_bridge import Serializers
 
@@ -52,6 +54,7 @@ class InternetExchangeMember(DataViewSet):
         ("asns", "asn__in"),
         ("peers", MethodFilter("peers")),
         ("sot", MethodFilter("sot")),
+        ("ip", MethodFilter("ip")),
     ]
 
     join_xl = {"ix": ("ix",)}
@@ -68,13 +71,16 @@ class InternetExchangeMember(DataViewSet):
             ix__pdb_id__isnull=True, ix__pdb_id=0
         )
 
-    @action(detail=False, methods=["PUT"], url_path="sync/(?P<asn>[^/.]+)/(?P<ip4>[^/]+)/(?P<prefixlen>[^/.]+)/mac-address")
+    def filter_ip(self, qset, value):
+        return qset.filter(Q(ipaddr4=value) | Q(ipaddr6=value))
+
+    @action(detail=False, methods=["PUT"], url_path="sync/(?P<asn>[^/.]+)/(?P<ip>[^/]+)/mac-address")
     @grainy_endpoint(namespace="service_bridge")
-    def mac_address(self, request, asn, ip4, prefixlen, *args, **kwargs):
+    def mac_address(self, request, asn, ip, *args, **kwargs):
         mac_address = request.data.get("mac_address")
 
         members = models.InternetExchangeMember.objects.filter(
-            ix__verified=True, asn=asn, ipaddr4=ip4
+            ix__verified=True, asn=asn, ipaddr4=ip
         )
 
         members.update(macaddr=mac_address)
@@ -92,18 +98,31 @@ class InternetExchangeMember(DataViewSet):
 
         return Response(Serializers.member(instance=members, many=True).data)
 
-    @action(detail=False, methods=["PUT"], url_path="sync/md5")
+    @action(detail=False, methods=["PUT"], url_path="sync/(?P<asn>[^/.]+)/(?P<member_ip>[^/]+)/(?P<router_ip>[^/]+)/md5")
     @grainy_endpoint(namespace="service_bridge")
-    def md5(self, request, *args, **kwargs):
+    def md5(self, request, asn, member_ip, router_ip, *args, **kwargs):
         md5 = request.data.get("md5")
-        asn = request.data.get("asn")
 
-        members = models.InternetExchangeMember.objects.filter(
-            ix__verified=True, asn=asn
-        )
+        # find route servers at verified internet exchanges that
+        # match the provided router ip
 
-        print("ASN", asn, "MD5", md5, "members", members)
+        route_servers = models.Routeserver.objects.filter(
+            ix__verified=True, router_id=router_ip
+        ).select_related("ix")
 
-        members.update(md5=md5)
+        members = []
+
+        # update memember md5s using the member ip to identify them
+
+        for rs in route_servers:
+
+            try:
+                member = rs.ix.member_set.get(asn=asn, ipaddr4=member_ip, is_rs_peer=True)
+                member.md5 = md5
+                member.save()
+                members.append(member)
+            except models.InternetExchangeMember.DoesNotExist:
+                continue
+
 
         return Response(Serializers.member(instance=members, many=True).data)
