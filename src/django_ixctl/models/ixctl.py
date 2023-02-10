@@ -98,10 +98,7 @@ class InternetExchange(PdbRefModel):
     )
 
     verified = models.BooleanField(
-        default=False,
-        help_text=_(
-            "Exchange ownership has been verified"
-        )
+        default=False, help_text=_("Exchange ownership has been verified")
     )
 
     source_of_truth = models.BooleanField(
@@ -357,7 +354,6 @@ class InternetExchangeMember(PdbRefModel):
 
         self._net = sot.Network().first(asn=self.asn)
         return self._net
-
 
     def __str__(self):
         return f"AS{self.asn} - {self.ipaddr4} - {self.ipaddr6} ({self.id})"

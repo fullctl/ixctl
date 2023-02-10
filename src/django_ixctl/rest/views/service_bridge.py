@@ -1,3 +1,4 @@
+from django.db.models import Q
 from fullctl.django.rest.decorators import grainy_endpoint
 from fullctl.django.rest.route.service_bridge import route
 from fullctl.django.rest.views.service_bridge import (
@@ -8,8 +9,6 @@ from fullctl.django.rest.views.service_bridge import (
 )
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-from django.db.models import Q
 
 import django_ixctl.models.ixctl as models
 from django_ixctl.rest.serializers.service_bridge import Serializers
@@ -74,7 +73,11 @@ class InternetExchangeMember(DataViewSet):
     def filter_ip(self, qset, value):
         return qset.filter(Q(ipaddr4=value) | Q(ipaddr6=value))
 
-    @action(detail=False, methods=["PUT"], url_path="sync/(?P<asn>[^/.]+)/(?P<ip>[^/]+)/mac-address")
+    @action(
+        detail=False,
+        methods=["PUT"],
+        url_path="sync/(?P<asn>[^/.]+)/(?P<ip>[^/]+)/mac-address",
+    )
     @grainy_endpoint(namespace="service_bridge")
     def mac_address(self, request, asn, ip, *args, **kwargs):
         mac_address = request.data.get("mac_address")
@@ -98,7 +101,11 @@ class InternetExchangeMember(DataViewSet):
 
         return Response(Serializers.member(instance=members, many=True).data)
 
-    @action(detail=False, methods=["PUT"], url_path="sync/(?P<asn>[^/.]+)/(?P<member_ip>[^/]+)/(?P<router_ip>[^/]+)/md5")
+    @action(
+        detail=False,
+        methods=["PUT"],
+        url_path="sync/(?P<asn>[^/.]+)/(?P<member_ip>[^/]+)/(?P<router_ip>[^/]+)/md5",
+    )
     @grainy_endpoint(namespace="service_bridge")
     def md5(self, request, asn, member_ip, router_ip, *args, **kwargs):
         md5 = request.data.get("md5")
@@ -115,14 +122,14 @@ class InternetExchangeMember(DataViewSet):
         # update memember md5s using the member ip to identify them
 
         for rs in route_servers:
-
             try:
-                member = rs.ix.member_set.get(asn=asn, ipaddr4=member_ip, is_rs_peer=True)
+                member = rs.ix.member_set.get(
+                    asn=asn, ipaddr4=member_ip, is_rs_peer=True
+                )
                 member.md5 = md5
                 member.save()
                 members.append(member)
             except models.InternetExchangeMember.DoesNotExist:
                 continue
-
 
         return Response(Serializers.member(instance=members, many=True).data)

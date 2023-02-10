@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('django_ixctl', '0013_auto_20221129_0818'),
+        ("django_ixctl", "0013_auto_20221129_0818"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='internetexchange',
-            name='verified',
-            field=models.BooleanField(default=False, help_text='Exchange ownership has been verified'),
+            model_name="internetexchange",
+            name="verified",
+            field=models.BooleanField(
+                default=False, help_text="Exchange ownership has been verified"
+            ),
         ),
     ]
