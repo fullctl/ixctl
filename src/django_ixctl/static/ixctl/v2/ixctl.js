@@ -114,13 +114,18 @@ $ctl.application.Ixctl = $tc.extend(
     sync_url: function(id) {
       var ix = this.exchanges[id];
       var url = new URL(window.location)
-      console.log("SUP", ix)
       if(!ix) {
         $('#no-ix-notify').show();
         url.pathname = `/${fullctl.org.slug}/`
       } else {
         url.pathname = `/${fullctl.org.slug}/${ix.slug}/`
         $('#no-ix-notify').hide();
+        if(!ix.verified) {
+          $('#ix-unverified-notify').show();
+        } else {
+          $('#ix-unverified-notify').hide();
+        }
+
       }
       window.history.pushState({}, '', url);
     },

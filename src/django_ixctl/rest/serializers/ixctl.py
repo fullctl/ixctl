@@ -121,6 +121,12 @@ class InternetExchange(ModelSerializer):
             "name",
             "slug",
             "source_of_truth",
+            "verified",
+        ]
+
+        read_only_fields = [
+            "verified",
+            "source_of_truth",
         ]
 
     def validate(self, cleaned_data):
