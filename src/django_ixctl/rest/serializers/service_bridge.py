@@ -18,6 +18,7 @@ class InternetExchange(ModelSerializer):
             "id",
             "pdb_id",
             "name",
+            "verified",
         ]
 
     def get_org_id(self, ix):
@@ -42,6 +43,7 @@ class InternetExchangeMember(ModelSerializer):
             "ipaddr4",
             "ipaddr6",
             "is_rs_peer",
+            "macaddr",
         ]
 
     def get_ix(self, member):

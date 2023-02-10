@@ -97,6 +97,10 @@ class InternetExchange(PdbRefModel):
         Instance, related_name="ix_set", on_delete=models.CASCADE, null=True
     )
 
+    verified = models.BooleanField(
+        default=False, help_text=_("Exchange ownership has been verified")
+    )
+
     source_of_truth = models.BooleanField(
         default=False,
         help_text=_(
@@ -282,12 +286,12 @@ class InternetExchangeMember(PdbRefModel):
         return member
 
     @classmethod
-    def preload_as_macro(cls, queryset):
+    def preload_networks(cls, queryset):
         asns = {member.asn for member in queryset}
         if not asns:
             return queryset
         asn_map = {}
-        for net in sot.ASSet().objects(asns=list(asns)):
+        for net in sot.Network().objects(asns=list(asns)):
             asn_map[net.asn] = net
         for member in queryset:
             member._net = asn_map.get(member.asn)
@@ -326,11 +330,29 @@ class InternetExchangeMember(PdbRefModel):
         return ""
 
     @property
+    def prefix4(self):
+        if self.net:
+            if self.net.source == "peerctl":
+                return self.net.prefix4
+            elif self.net.source == "pdbctl":
+                return self.net.info_prefixes4
+        return 0
+
+    @property
+    def prefix6(self):
+        if self.net:
+            if self.net.source == "peerctl":
+                return self.net.prefix6
+            elif self.net.source == "pdbctl":
+                return self.net.info_prefixes6
+        return 0
+
+    @property
     def net(self):
         if hasattr(self, "_net"):
             return self._net
 
-        self._net = sot.ASSet().first(asn=self.asn)
+        self._net = sot.Network().first(asn=self.asn)
         return self._net
 
     def __str__(self):
@@ -527,7 +549,7 @@ class Routeserver(HandleRefModel):
         # TODO
         # where to get ASN sets from ??
         # peeringdb network ??
-        rs_peers = InternetExchangeMember.preload_as_macro(
+        rs_peers = InternetExchangeMember.preload_networks(
             self.ix.member_set.filter(is_rs_peer=True)
         )
 

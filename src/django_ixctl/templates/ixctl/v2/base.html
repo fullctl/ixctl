@@ -111,6 +111,21 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 {% block "app_content_main" %}
 
+<div style="display:none;" class="notification row marg-top-lg" id="ix-unverified-notify">
+  <div class="col-3"></div>
+  <div class="col-6">
+    <div class="alert alert-info">
+    {% blocktrans %}
+    Your exchange is currently unverified. To unlock its full potential in FullCtl, please reach
+    out to us at <a href="mailto: {{support_email}}">{{ support_email }}</a> to get verified!
+    {% endblocktrans %}
+    </div>
+  </div>
+  <div class="col-3"></div>
+</div>
+
+
+
 <div style="display:none" class="notification row marg-top-lg" id="no-ix-notify">
   <div class="col-12 center">
     <p>

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from fullctl.django.rest.decorators import grainy_endpoint
 from fullctl.django.rest.route.service_bridge import route
 from fullctl.django.rest.views.service_bridge import (
@@ -31,6 +32,8 @@ class InternetExchange(DataViewSet):
         ("org", "org_id"),
         ("q", "name__icontains"),
         ("sot", "source_of_truth"),
+        ("verified", "verified"),
+        ("asns", "member_set__asn_in"),
     ]
     autocomplete = "name"
     allow_unfiltered = True
@@ -45,10 +48,12 @@ class InternetExchangeMember(DataViewSet):
     allowed_http_methods = ["GET"]
     valid_filters = [
         ("ix", "ix_id"),
+        ("ix_verified", "ix__verified"),
         ("asn", "asn"),
         ("asns", "asn__in"),
         ("peers", MethodFilter("peers")),
         ("sot", MethodFilter("sot")),
+        ("ip", MethodFilter("ip")),
     ]
 
     join_xl = {"ix": ("ix",)}
@@ -65,14 +70,24 @@ class InternetExchangeMember(DataViewSet):
             ix__pdb_id__isnull=True, ix__pdb_id=0
         )
 
-    @action(detail=True, methods=["PUT"], url_path="sync/mac-address")
+    def filter_ip(self, qset, value):
+        return qset.filter(Q(ipaddr4=value) | Q(ipaddr6=value))
+
+    @action(
+        detail=False,
+        methods=["PUT"],
+        url_path="sync/(?P<asn>[^/.]+)/(?P<ip>[^/]+)/mac-address",
+    )
     @grainy_endpoint(namespace="service_bridge")
-    def mac_address(self, request, pk, *args, **kwargs):
-        member = self.get_object()
+    def mac_address(self, request, asn, ip, *args, **kwargs):
         mac_address = request.data.get("mac_address")
-        member.macaddr = mac_address
-        member.save()
-        return Response(Serializers.member(instance=member).data)
+
+        members = models.InternetExchangeMember.objects.filter(
+            ix__verified=True, asn=asn, ipaddr4=ip
+        )
+
+        members.update(macaddr=mac_address)
+        return Response(Serializers.member(instance=members, many=True).data)
 
     @action(detail=False, methods=["PUT"], url_path="sync/as-macro")
     @grainy_endpoint(namespace="service_bridge")
@@ -80,10 +95,41 @@ class InternetExchangeMember(DataViewSet):
         as_macro = request.data.get("as_macro")
         asn = request.data.get("asn")
 
-        members = models.InternetExchangeMember.objects.filter(
-            ix__source_of_truth=True, asn=asn
-        )
+        members = models.InternetExchangeMember.objects.filter(asn=asn)
 
-        members.update(as_macro=as_macro)
+        members.update(as_macro_override=as_macro)
+
+        return Response(Serializers.member(instance=members, many=True).data)
+
+    @action(
+        detail=False,
+        methods=["PUT"],
+        url_path="sync/(?P<asn>[^/.]+)/(?P<member_ip>[^/]+)/(?P<router_ip>[^/]+)/md5",
+    )
+    @grainy_endpoint(namespace="service_bridge")
+    def md5(self, request, asn, member_ip, router_ip, *args, **kwargs):
+        md5 = request.data.get("md5")
+
+        # find route servers at verified internet exchanges that
+        # match the provided router ip
+
+        route_servers = models.Routeserver.objects.filter(
+            ix__verified=True, router_id=router_ip
+        ).select_related("ix")
+
+        members = []
+
+        # update memember md5s using the member ip to identify them
+
+        for rs in route_servers:
+            try:
+                member = rs.ix.member_set.get(
+                    asn=asn, ipaddr4=member_ip, is_rs_peer=True
+                )
+                member.md5 = md5
+                member.save()
+                members.append(member)
+            except models.InternetExchangeMember.DoesNotExist:
+                continue
 
         return Response(Serializers.member(instance=members, many=True).data)
