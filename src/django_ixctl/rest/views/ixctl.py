@@ -343,20 +343,33 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
         namespace="config.routeserver.{request.org.permission_id}",
     )
     def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
-        rs_config = self.get_object()
+        rs_config = models.RouteserverConfig.objects.get(
+            routeserver__name=name, routeserver__ix=ix
+        )
+        if request.method == "OPTIONS":
+            return self._options(request, rs_config)
+
         serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
         )
         return Response(serializer.data)
 
-    @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
+    @action(
+        detail=True, methods=["GET", "OPTIONS"], renderer_classes=[PlainTextRenderer]
+    )
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
         namespace="config.routeserver.{request.org.permission_id}",
     )
     def plain(self, request, org, instance, ix, name, *args, **kwargs):
-        rs_config = self.get_object()
+        rs_config = models.RouteserverConfig.objects.get(
+            routeserver__name=name, routeserver__ix=ix
+        )
+
+        if request.method == "OPTIONS":
+            return self._options(request, rs_config)
+
         serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
@@ -378,6 +391,13 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
             many=False,
         )
         return Response(serializer.data)
+
+    def _options(self, request, rs_config):
+        response = Response(self.metadata_class().determine_metadata(request, self))
+        response.headers["Last-Modified"] = rs_config.generated.strftime(
+            "%a, %d %b %Y %H:%M:%S GMT"
+        )
+        return response
 
 
 @route
