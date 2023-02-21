@@ -347,11 +347,7 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
             routeserver__name=name, routeserver__ix=ix
         )
         if request.method == "OPTIONS":
-            response = Response(self.metadata_class().determine_metadata(request, self))
-            response.headers["Last-Modified"] = rs_config.generated.strftime(
-                "%a, %d %b %Y %H:%M:%S GMT"
-            )
-            return response
+            return self._options(request, rs_config)
 
         serializer = Serializers.config__routeserver(
             instance=rs_config,
@@ -370,12 +366,9 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
         rs_config = models.RouteserverConfig.objects.get(
             routeserver__name=name, routeserver__ix=ix
         )
+
         if request.method == "OPTIONS":
-            response = Response(self.metadata_class().determine_metadata(request, self))
-            response.headers["Last-Modified"] = rs_config.generated.strftime(
-                "%a, %d %b %Y %H:%M:%S GMT"
-            )
-            return response
+            return self._options(request, rs_config)
 
         serializer = Serializers.config__routeserver(
             instance=rs_config,
@@ -398,6 +391,13 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
             many=False,
         )
         return Response(serializer.data)
+
+    def _options(self, request, rs_config):
+        response = Response(self.metadata_class().determine_metadata(request, self))
+        response.headers["Last-Modified"] = rs_config.generated.strftime(
+            "%a, %d %b %Y %H:%M:%S GMT"
+        )
+        return response
 
 
 @route
