@@ -347,7 +347,7 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
             routeserver__name=name, routeserver__ix=ix
         )
         if request.method == "OPTIONS":
-            response = self.options(request)
+            response = Response(self.metadata_class().determine_metadata(request, self))
             response.headers["Last-Modified"] = rs_config.generated.strftime(
                 "%a, %d %b %Y %H:%M:%S GMT"
             )
@@ -371,7 +371,7 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
             routeserver__name=name, routeserver__ix=ix
         )
         if request.method == "OPTIONS":
-            response = self.options(request)
+            response = Response(self.metadata_class().determine_metadata(request, self))
             response.headers["Last-Modified"] = rs_config.generated.strftime(
                 "%a, %d %b %Y %H:%M:%S GMT"
             )
