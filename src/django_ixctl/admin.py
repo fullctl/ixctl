@@ -1,29 +1,17 @@
 from django.contrib import admin
 from django.forms import ModelForm
 from fullctl.django.admin import BaseAdmin, BaseTabularAdmin
-from fullctl.django.models.concrete import OrganizationUser
 
 from django_ixctl.models import (
     InternetExchange,
     InternetExchangeMember,
     Network,
-    Organization,
     PermissionRequest,
     Routeserver,
     RouteserverConfig,
 )
 
-
-class OrganizationUserInline(admin.TabularInline):
-    model = OrganizationUser
-    extra = 0
-    fields = ("status", "user")
-
-
-@admin.register(Organization)
-class OrganizationAdmin(BaseAdmin):
-    list_display = ("id", "name", "slug")
-    inlines = (OrganizationUserInline,)
+# from fullctl.django.models.concrete import OrganizationUser
 
 
 class MemberForm(ModelForm):
@@ -99,7 +87,7 @@ class RouteserverAdmin(BaseAdmin):
 
 @admin.register(RouteserverConfig)
 class RouteserverConfigAdmin(BaseAdmin):
-    list_display = ("rs", "created", "updated", "generated")
+    list_display = ("routeserver", "created", "updated", "generated")
 
 
 @admin.register(Network)

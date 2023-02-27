@@ -1,8 +1,10 @@
+import fullctl.service_bridge.aaactl as aaactl
 import fullctl.service_bridge.pdbctl as pdbctl
+from django.conf import settings
 from fullctl.django.auditlog import auditlog
 from fullctl.django.rest.api_schema import PeeringDBImportSchema
 from fullctl.django.rest.core import BadRequest
-from fullctl.django.rest.decorators import billable, load_object
+from fullctl.django.rest.decorators import load_object
 from fullctl.django.rest.filters import CaseInsensitiveOrderingFilter
 from fullctl.django.rest.mixins import CachedObjectMixin, OrgQuerysetMixin
 from fullctl.django.rest.renderers import PlainTextRenderer
@@ -77,7 +79,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def create(self, request, org, instance, auditlog=None, *args, **kwargs):
-
         data = request.data
         data["pdb_id"] = None
         data["instance"] = instance.id
@@ -126,7 +127,6 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def import_peeringdb(self, request, org, instance, auditlog=None, *args, **kwargs):
-
         serializer = Serializers.impix(
             data=request.data,
             context={"instance": instance},
@@ -179,7 +179,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         queryset = ordering_filter.filter_queryset(request, queryset, self)
 
-        members = models.InternetExchangeMember.preload_as_macro(queryset)
+        members = models.InternetExchangeMember.preload_networks(queryset)
 
         serializer = Serializers.member(
             instance=members,
@@ -188,7 +188,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         return Response(serializer.data)
 
-    @billable("fullctl.ixctl.members")
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @auditlog()
     @grainy_endpoint(
@@ -196,6 +195,26 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
     def create(self, request, org, instance, ix, *args, **kwargs):
+        # retrieve max. memmbers count according
+        # to active ixctl plan for org
+
+        max_members = aaactl.OrganizationProduct().get_product_property(
+            "ixctl", org.slug, "members"
+        )
+
+        num_members = ix.member_set.all().count()
+
+        if num_members + 1 > max_members:
+            return BadRequest(
+                {
+                    "non_field_errors": [
+                        f"You have reached the limit of allowed networks ({max_members}). "
+                        "Please upgrade your ixCtl subscription to add additional networks."
+                        f"You can contact us at {settings.SUPPORT_EMAIL} for further information"
+                    ]
+                }
+            )
+
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
         serializer = Serializers.member(data=data, context={"instance": instance})
@@ -238,17 +257,16 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
 @route
 class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
-
-    serializer_class = Serializers.rs
+    serializer_class = Serializers.routeserver
     queryset = models.Routeserver.objects.all()
-    ref_tag = "rs"
+    ref_tag = "routeserver"
     ix_tag_needed = True
-    lookup_url_kwarg = "rs_id"
+    lookup_url_kwarg = "routeserver_id"
     lookup_field = "id"
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="rs.{request.org.permission_id}.{ix.pk}.?",
+        namespace="routeserver.{request.org.permission_id}.{ix.pk}.?",
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
     def list(self, request, org, instance, ix, *args, **kwargs):
@@ -256,39 +274,38 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
         ordering_filter = CaseInsensitiveOrderingFilter(["name", "asn", "router_id"])
         queryset = ordering_filter.filter_queryset(request, queryset, self)
 
-        serializer = Serializers.rs(
+        serializer = Serializers.routeserver(
             instance=queryset,
             many=True,
         )
 
         return Response(serializer.data)
 
-    @billable("fullctl.ixctl.routeservers")
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @auditlog()
     @grainy_endpoint(
-        namespace="rs.{request.org.permission_id}.{ix.pk}.?",
+        namespace="routeserver.{request.org.permission_id}.{ix.pk}.?",
         handlers={"*": {"key": lambda row, idx: row["asn"]}},
     )
     def create(self, request, org, instance, ix, *args, **kwargs):
         data = request.data
         data["ix"] = models.InternetExchange.objects.get(instance=instance, id=ix.pk).id
-        serializer = Serializers.rs(data=data, context={"instance": instance})
+        serializer = Serializers.routeserver(data=data, context={"instance": instance})
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
 
         routeserver = serializer.save()
 
-        return Response(Serializers.rs(instance=routeserver).data)
+        return Response(Serializers.routeserver(instance=routeserver).data)
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
-    @load_object("routeserver", models.Routeserver, ix="ix", id="rs_id")
+    @load_object("routeserver", models.Routeserver, ix="ix", id="routeserver_id")
     @auditlog()
     @grainy_endpoint(
-        namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
+        namespace="routeserver.{request.org.permission_id}.{ix.pk}.{routeserver_id}",
     )
     def update(self, request, org, instance, ix, routeserver, *args, **kwargs):
-        serializer = Serializers.rs(
+        serializer = Serializers.routeserver(
             data=request.data, instance=routeserver, context={"instance": instance}
         )
         if not serializer.is_valid():
@@ -296,51 +313,89 @@ class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 
         routeserver = serializer.save()
 
-        return Response(Serializers.rs(instance=routeserver).data)
+        return Response(Serializers.routeserver(instance=routeserver).data)
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
-    @load_object("routeserver", models.Routeserver, ix="ix", id="rs_id")
+    @load_object("routeserver", models.Routeserver, ix="ix", id="routeserver_id")
     @auditlog()
     @grainy_endpoint(
-        namespace="rs.{request.org.permission_id}.{ix.pk}.{rs_id}",
+        namespace="routeserver.{request.org.permission_id}.{ix.pk}.{routeserver_id}",
     )
     def destroy(self, request, org, instance, ix, routeserver, *args, **kwargs):
-        r = Response(Serializers.rs(instance=routeserver).data)
+        r = Response(Serializers.routeserver(instance=routeserver).data)
         routeserver.delete()
         return r
 
 
 @route
 class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
-    serializer_class = Serializers.rsconf
+    serializer_class = Serializers.config__routeserver
     queryset = models.RouteserverConfig.objects.all()
-    lookup_value_regex = "[^\/]+"  # noqa: W605
+    lookup_value_regex = r"[^\/]+"  # noqa: W605
     lookup_url_kwarg = "name"
-    lookup_field = "rs__name"
-    ref_tag = "rsconf"
+    lookup_field = "routeserver__name"
+    ref_tag = "config/routeserver"
     ix_tag_needed = True
-    ix_lookup_field = "rs__ix"
+    ix_lookup_field = "routeserver__ix"
+
+    def options(self, request, *args, **kwargs):
+        """
+        Overrides the default OPTIONS request handling
+        so we can include a Last-Modified header for the specified
+        routeserver config object in the response.
+        """
+
+        # only proceed if ix_tag and name are specified
+
+        if "ix_tag" in kwargs and "name" in kwargs:
+            # check if the routeserver config object exists
+
+            try:
+                rs_config = models.RouteserverConfig.objects.get(
+                    routeserver__name=kwargs["name"],
+                    routeserver__ix__slug=kwargs["ix_tag"],
+                    routeserver__ix__instance__org__slug=request.org.slug,
+                )
+            except models.RouteserverConfig.DoesNotExist:
+                return Response(status=404)
+
+            # if it does, include a Last-Modified header
+
+            return self._options(request, rs_config)
+
+        return super().options(request, *args, **kwargs)
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="rsconf.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
-        rs_config = self.get_object()
-        serializer = Serializers.rsconf(
+        rs_config = models.RouteserverConfig.objects.get(
+            routeserver__name=name, routeserver__ix=ix
+        )
+
+        serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
         )
         return Response(serializer.data)
 
-    @action(detail=True, methods=["GET"], renderer_classes=[PlainTextRenderer])
+    @action(
+        detail=True, methods=["GET", "OPTIONS"], renderer_classes=[PlainTextRenderer]
+    )
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="rsconf.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def plain(self, request, org, instance, ix, name, *args, **kwargs):
-        rs_config = self.get_object()
-        serializer = Serializers.rsconf(
+        rs_config = models.RouteserverConfig.objects.get(
+            routeserver__name=name, routeserver__ix=ix
+        )
+
+        if request.method == "OPTIONS":
+            return self._options(request, rs_config)
+
+        serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
         )
@@ -350,30 +405,37 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
     @action(detail=True, methods=["POST"])
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="rsconf.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def status(self, request, org, instance, ix, name, *args, **kwargs):
         rs_config = self.get_object()
         rs_config.rs_response = request.data
         rs_config.save()
-        serializer = Serializers.rsconf(
+        serializer = Serializers.config__routeserver(
             instance=rs_config,
             many=False,
         )
         return Response(serializer.data)
+
+    def _options(self, request, rs_config):
+        response = Response(self.metadata_class().determine_metadata(request, self))
+        response.headers["Last-Modified"] = rs_config.generated.strftime(
+            "%a, %d %b %Y %H:%M:%S GMT"
+        )
+        return response
 
 
 @route
 class PeeringDBRouteservers(
     CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet
 ):
-    serializer_class = Serializers.pdbrs
+    serializer_class = Serializers.pdbrouteserver
     queryset = models.Routeserver.objects.all()
     ix_tag_needed = True
-    ref_tag = "pdbrs"
+    ref_tag = "pdbrouteserver"
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
-    @grainy_endpoint(namespace="rs.{request.org.permission_id}")
+    @grainy_endpoint(namespace="routeserver.{request.org.permission_id}")
     def list(self, request, org, instance, ix, *args, **kwargs):
         if not ix.pdb_id:
             return Response(self.serializer_class([], many=True).data)
@@ -398,7 +460,7 @@ class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
         return Response(serializer.data)
 
     @action(
-        detail=False, methods=["GET"], url_path="presence/(?P<asn>[\d]+)"  # noqa: W605
+        detail=False, methods=["GET"], url_path=r"presence/(?P<asn>[\d]+)"  # noqa: W605
     )
     @grainy_endpoint(namespace="net.{request.org.permission_id}.{asn}")
     @load_object("net", models.Network, asn="asn", instance="instance")
@@ -413,7 +475,6 @@ class Network(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericViewSet):
 
 @route
 class PermissionRequest(CachedObjectMixin, viewsets.GenericViewSet):
-
     serializer_class = Serializers.permreq
     queryset = models.PermissionRequest.objects.all()
 

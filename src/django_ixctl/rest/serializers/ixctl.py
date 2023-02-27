@@ -27,7 +27,6 @@ Serializers, register = serializer_registry()
 
 @register
 class ImportOrganization(RequireContext, serializers.Serializer):
-
     pdb_org_id = serializers.IntegerField(required=False)
 
     required_context = ["instance"]
@@ -55,7 +54,6 @@ class ImportOrganization(RequireContext, serializers.Serializer):
 
 @register
 class ImportExchange(RequireContext, serializers.Serializer):
-
     pdb_ix_id = serializers.IntegerField()
 
     required_context = ["instance"]
@@ -111,7 +109,6 @@ class PermissionRequest(ModelSerializer):
 
 @register
 class InternetExchange(ModelSerializer):
-
     slug = serializers.SlugField(required=False)
 
     class Meta:
@@ -123,6 +120,12 @@ class InternetExchange(ModelSerializer):
             "ixf_export_privacy",
             "name",
             "slug",
+            "source_of_truth",
+            "verified",
+        ]
+
+        read_only_fields = [
+            "verified",
             "source_of_truth",
         ]
 
@@ -143,7 +146,6 @@ class InternetExchange(ModelSerializer):
 
 @register
 class InternetExchangeMember(ModelSerializer):
-
     ipaddr4 = IPAddressField(
         version=4, allow_blank=True, allow_null=True, required=False, default=None
     )
@@ -178,6 +180,9 @@ class InternetExchangeMember(ModelSerializer):
             "as_macro_override",
             "is_rs_peer",
             "speed",
+            "md5",
+            "prefix4",
+            "prefix6",
         ]
         validators = [
             SoftRequiredValidator(
@@ -211,10 +216,14 @@ class InternetExchangeMember(ModelSerializer):
             return None
         return macaddr
 
+    def validate_md5(self, md5):
+        if not md5:
+            return None
+        return md5
+
 
 @register
 class Routeserver(ModelSerializer):
-
     router_id = IPAddressField(
         version=4,
     )
@@ -234,9 +243,9 @@ class Routeserver(ModelSerializer):
             "rpki_bgp_origin_validation",
             "graceful_shutdown",
             "extra_config",
-            "rsconf_status",
-            "rsconf_response",
-            "rsconf_error",
+            "routeserver_config_status",
+            "routeserver_config_response",
+            "routeserver_config_error",
         ]
 
     def validate_extra_config(self, value):
@@ -252,7 +261,7 @@ class Routeserver(ModelSerializer):
     def save(self):
         r = super().save()
         try:
-            r.rsconf.queue_generate()
+            r.routeserver_config.queue_generate()
         except TaskLimitError:
             pass
         return r
@@ -263,7 +272,7 @@ class RouteserverConfig(ModelSerializer):
     class Meta:
         model = models.RouteserverConfig
         fields = [
-            "rs",
+            "routeserver",
             "generated",
             "body",
         ]
@@ -271,7 +280,7 @@ class RouteserverConfig(ModelSerializer):
 
 @register
 class PeeringDBRouteserver(serializers.Serializer):
-    ref_tag = "pdbrs"
+    ref_tag = "pdbrouteserver"
 
     id = serializers.IntegerField()
     router_id = serializers.SerializerMethodField()

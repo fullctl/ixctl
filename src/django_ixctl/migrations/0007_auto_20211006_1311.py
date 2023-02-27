@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("django_fullctl", "0017_alter_organizationuser_options"),
         ("django_ixctl", "0006_member_state"),

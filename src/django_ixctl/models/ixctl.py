@@ -1,6 +1,8 @@
 import os.path
+import re
 import subprocess
 import tempfile
+from datetime import datetime
 from secrets import token_urlsafe
 
 try:
@@ -12,7 +14,9 @@ except ImportError:
 import fullctl.service_bridge.pdbctl as pdbctl
 import fullctl.service_bridge.sot as sot
 import reversion
+import structlog
 import yaml
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
@@ -26,11 +30,16 @@ from netfields import InetAddressField, MACAddressField
 
 import django_ixctl.enum
 import django_ixctl.models.tasks
-from django_ixctl.peeringdb import get_as_set
+
+logger = structlog.get_logger(__name__)
 
 
 def generate_secret():
     return token_urlsafe()
+
+
+def get_as_set(as_set_string):
+    return [as_set.strip() for as_set in re.split(r"[, ]+", as_set_string)]
 
 
 @reversion.register
@@ -88,6 +97,10 @@ class InternetExchange(PdbRefModel):
         Instance, related_name="ix_set", on_delete=models.CASCADE, null=True
     )
 
+    verified = models.BooleanField(
+        default=False, help_text=_("Exchange ownership has been verified")
+    )
+
     source_of_truth = models.BooleanField(
         default=False,
         help_text=_(
@@ -113,7 +126,6 @@ class InternetExchange(PdbRefModel):
 
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
-
         """
         create instance from peeringdb ixlan
 
@@ -218,6 +230,7 @@ class InternetExchangeMember(PdbRefModel):
     as_macro_override = models.CharField(
         max_length=255, blank=True, null=True, validators=[validate_as_set]
     )
+    md5 = models.CharField(max_length=255, null=True, blank=True)
     is_rs_peer = models.BooleanField(default=False)
     speed = models.PositiveIntegerField()
     asn = models.PositiveIntegerField()
@@ -244,7 +257,6 @@ class InternetExchangeMember(PdbRefModel):
 
     @classmethod
     def create_from_pdb(cls, pdb_object, ix, save=True, **fields):
-
         """
         Create `InternetExchangeMember` from peeringdb netixlan
 
@@ -274,12 +286,12 @@ class InternetExchangeMember(PdbRefModel):
         return member
 
     @classmethod
-    def preload_as_macro(cls, queryset):
-        asns = set([member.asn for member in queryset])
+    def preload_networks(cls, queryset):
+        asns = {member.asn for member in queryset}
         if not asns:
             return queryset
         asn_map = {}
-        for net in sot.ASSet().objects(asns=list(asns)):
+        for net in sot.Network().objects(asns=list(asns)):
             asn_map[net.asn] = net
         for member in queryset:
             member._net = asn_map.get(member.asn)
@@ -302,7 +314,8 @@ class InternetExchangeMember(PdbRefModel):
         if not self.as_macro:
             return []
 
-        return [as_set.strip() for as_set in self.as_macro.split(",")]
+        return get_as_set(self.as_macro)
+        # return [as_set.strip() for as_set in re.split(r"[, ]+", self.as_macro)]
 
     @property
     def as_macro(self):
@@ -317,11 +330,29 @@ class InternetExchangeMember(PdbRefModel):
         return ""
 
     @property
+    def prefix4(self):
+        if self.net:
+            if self.net.source == "peerctl":
+                return self.net.prefix4
+            elif self.net.source == "pdbctl":
+                return self.net.info_prefixes4
+        return 0
+
+    @property
+    def prefix6(self):
+        if self.net:
+            if self.net.source == "peerctl":
+                return self.net.prefix6
+            elif self.net.source == "pdbctl":
+                return self.net.info_prefixes6
+        return 0
+
+    @property
     def net(self):
         if hasattr(self, "_net"):
             return self._net
 
-        self._net = sot.ASSet().first(asn=self.asn)
+        self._net = sot.Network().first(asn=self.asn)
         return self._net
 
     def __str__(self):
@@ -332,7 +363,7 @@ class InternetExchangeMember(PdbRefModel):
 @grainy_model(
     namespace="rs",
     namespace_instance=(
-        "rs.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
+        "routeserver.{instance.org.permission_id}.{instance.ix_id}.{instance.asn}"
     ),
 )
 class Routeserver(HandleRefModel):
@@ -394,10 +425,10 @@ class Routeserver(HandleRefModel):
 
     class Meta:
         db_table = "ixctl_rs"
-        unique_together = (("ix", "router_id"),)
+        unique_together = (("ix", "router_id"), ("ix", "name"))
 
     class HandleRef:
-        tag = "rs"
+        tag = "routeserver"
 
     @property
     def org(self):
@@ -408,35 +439,37 @@ class Routeserver(HandleRefModel):
         return self.name
 
     @property
-    def rsconf(self):
+    def routeserver_config(self):
         """
-        Return the rsconf instance for this routeserver
+        Return the routeserver_config instance for this routeserver
 
-        Will create the rsconf instance if it does not exist yet
+        Will create the routeserver_config instance if it does not exist yet
         """
-        if not hasattr(self, "_rsconf"):
-            rsconf, created = RouteserverConfig.objects.get_or_create(rs=self)
-            self._rsconf = rsconf
-        return self._rsconf
+        if not hasattr(self, "_routeserver_config"):
+            routeserver_config, created = RouteserverConfig.objects.get_or_create(
+                routeserver=self
+            )
+            self._routeserver_config = routeserver_config
+        return self._routeserver_config
 
     @property
-    def rsconf_status_dict(self):
+    def routeserver_config_status_dict(self):
         """
         Returns a status dict for the current state of this routeserver's
         configuration
         """
 
-        rsconf = self.rsconf
+        routeserver_config = self.routeserver_config
 
-        task = rsconf.task
+        task = routeserver_config.task
 
         # no status
 
-        if not task and not rsconf.rs_response:
+        if not task and not routeserver_config.rs_response:
             return {"status": None}
 
         if not task:
-            return rsconf.rs_response
+            return routeserver_config.rs_response
 
         if task.status == "pending":
             return {"status": "queued"}
@@ -447,27 +480,26 @@ class Routeserver(HandleRefModel):
         if task.status == "failed":
             return {"status": "error", "error": task.error}
         if task.status == "completed":
-            if not rsconf.rs_response:
+            if not routeserver_config.rs_response:
                 return {"status": "generated"}
-            return rsconf.rs_response
+            return routeserver_config.rs_response
 
         return {"status": None}
 
     @property
-    def rsconf_status(self):
-        return self.rsconf_status_dict.get("status")
+    def routeserver_config_status(self):
+        return self.routeserver_config_status_dict.get("status")
 
     @property
-    def rsconf_response(self):
-        return self.rsconf.rs_response
+    def routeserver_config_response(self):
+        return self.routeserver_config.rs_response
 
     @property
-    def rsconf_error(self):
-        return self.rsconf_status_dict.get("error")
+    def routeserver_config_error(self):
+        return self.routeserver_config_status_dict.get("error")
 
     @property
     def ars_general(self):
-
         """
         Generate and return `dict` for ARouteserver general config
         """
@@ -506,9 +538,8 @@ class Routeserver(HandleRefModel):
 
     @property
     def ars_clients(self):
-
         """
-        Generate and return `dirct` for ARouteserver clients config
+        Generate and return `dict` for ARouteserver clients config
         """
 
         asns = []
@@ -518,7 +549,7 @@ class Routeserver(HandleRefModel):
         # TODO
         # where to get ASN sets from ??
         # peeringdb network ??
-        rs_peers = InternetExchangeMember.preload_as_macro(
+        rs_peers = InternetExchangeMember.preload_networks(
             self.ix.member_set.filter(is_rs_peer=True)
         )
 
@@ -543,13 +574,18 @@ class Routeserver(HandleRefModel):
                     }
                 )
 
-        if asns:
-            for net in pdbctl.Network().objects(asns=asns):
-                as_set = get_as_set(net)
-                if as_set:
-                    asn_as_sets[f"AS{net.asn}"] = {"as_sets": [as_set]}
+            if member.md5:
+                clients[member.asn]["password"] = f"{member.md5}"
 
-        print(asn_as_sets)
+        # these aren't needed since they're already defined from SoT in the
+        # more specific members list
+        #
+        # if asns:
+        #     for net in pdbctl.Network().objects(asns=asns):
+        #         if net.irr_as_set:
+        #             asn_as_sets[f"AS{net.asn}"] = {
+        #                 "as_sets": get_as_set(net.irr_as_set)
+        #             }
 
         return {"asns": asn_as_sets, "clients": list(clients.values())}
 
@@ -561,11 +597,11 @@ class Routeserver(HandleRefModel):
 class RouteserverConfig(HandleRefModel):
 
     """
-    Describes a configuration (aroutserver generated) for a
+    Describes a configuration (arouteserver generated) for a
     `Routeserver` instance
     """
 
-    rs = models.OneToOneField(
+    routeserver = models.OneToOneField(
         Routeserver,
         on_delete=models.CASCADE,
         null=True,
@@ -597,33 +633,34 @@ class RouteserverConfig(HandleRefModel):
     task = models.ForeignKey(
         "django_ixctl.RsConfGenerate",
         on_delete=models.CASCADE,
-        related_name="rsconf_set",
+        related_name="routeserver_config_set",
         blank=True,
         null=True,
-        help_text=_("Reference to most recent generate task for this rsconfig object"),
+        help_text=_(
+            "Reference to most recent generate task for this routeserver_config object"
+        ),
     )
 
     class HandleRef:
-        tag = "rsconf"
+        tag = "config.routeserver"
 
     class Meta:
         db_table = "ixctl_rsconf"
 
     @property
     def outdated(self):
-
         """
         Returns whether or not the config needs to be regenerated
         """
 
         # Route server has been updated since last generation,
 
-        if not self.generated or self.generated < self.rs.updated:
+        if not self.generated or self.generated < self.routeserver.updated:
             return True
 
         # RS Peer has been updated since last generation
 
-        for member in self.rs.ix.member_set.filter(is_rs_peer=True):
+        for member in self.routeserver.ix.member_set.filter(is_rs_peer=True):
             if self.generated < member.updated:
                 return True
         return False
@@ -637,16 +674,15 @@ class RouteserverConfig(HandleRefModel):
         self.save()
 
     def generate(self):
-
         """
         Generate the route server config using arouteserver
         """
 
-        rs = self.rs
-        ars_general = rs.ars_general
-        ars_clients = rs.ars_clients
+        routeserver = self.routeserver
+        ars_general = routeserver.ars_general
+        ars_clients = routeserver.ars_clients
 
-        config_dir = tempfile.mkdtemp(prefix="ixctl_rsconf")
+        config_dir = tempfile.mkdtemp(prefix="ixctl_routeserver_config")
 
         general_config_file = os.path.join(config_dir, "general.yaml")
         clients_config_file = os.path.join(config_dir, "clients.yaml")
@@ -662,13 +698,13 @@ class RouteserverConfig(HandleRefModel):
             self.ars_clients = as_yaml
             fh.write(as_yaml)
 
-        # no reasonable way found to call an arouteserve
+        # no reasonable way found to call an arouteserver
         # python api - so lets just run the command
 
-        if rs.ars_type in ["bird", "bird2"]:
+        if routeserver.ars_type in ["bird", "bird2"]:
             ars_type = "bird"
         else:
-            ars_type = rs.ars_type
+            ars_type = routeserver.ars_type
 
         cmd = [
             "arouteserver",
@@ -677,19 +713,24 @@ class RouteserverConfig(HandleRefModel):
             general_config_file,
             "--clients",
             clients_config_file,
+            "--use-local-files",
+            "logging",
+            "--local-files-dir",
+            "/srv/bird/etc",
             "-o",
             outfile,
         ]
+        logger.debug(f"running command {cmd}")
 
         # TODO: bird v1 needs to generate
         # separate for each ip version
         #
         # how to store?
 
-        if rs.ars_type == "bird":
+        if routeserver.ars_type == "bird":
             cmd += ["--ip-ver", "4"]
-        elif rs.ars_type == "bird2":
-            cmd += ["--target-version", "2.0.7"]
+        elif routeserver.ars_type == "bird2":
+            cmd += ["--target-version", "2.0.10"]
 
         process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
         _, err = process.communicate(timeout=600)
@@ -697,12 +738,13 @@ class RouteserverConfig(HandleRefModel):
         if process.returncode:
             if err:
                 err = err.decode("utf-8")
-                raise IOError(err)
+                raise OSError(err)
             else:
-                raise IOError(f"Process returned {process.returncode}")
+                raise OSError(f"Process returned {process.returncode}")
 
         with open(outfile) as fh:
-            self.body = fh.read()
+            self.body = f"# generated by ixctl-{settings.PACKAGE_VERSION} at {datetime.now().isoformat()}\n"
+            self.body += fh.read()
 
         self.save()
 
@@ -741,7 +783,6 @@ class Network(PdbRefModel):
 
     @classmethod
     def create_from_pdb(cls, instance, pdb_object, save=True, **fields):
-
         """
         create instance from peeringdb network
 

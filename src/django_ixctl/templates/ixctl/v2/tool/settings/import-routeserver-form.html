@@ -1,0 +1,70 @@
+{% load i18n %}
+<div data-template="routeserver_wizard" class="wizard wiz-step-1">
+  <p class="wiz-step wiz-step-1">
+    {% blocktrans %}
+    We have found some connections in PeeringDB that we think could be used to inform your new route server - click continue on any of the entries below to use them as a starting point.
+    {% endblocktrans %}
+  </p>
+
+
+  <div class="pdbrouteserver-list wiz-step wiz-step-1">
+
+  </div>
+
+  <p class="center marg-top-lg wiz-step wiz-step-1">
+    <button class="primary btn" data-element="button_start_fresh" data-wizard-step="2">
+      <div class="row align-items-center">
+        <div class="col label pe-0">{% trans "No thanks, I want to start fresh" %}</div>
+        <div class="col-auto">
+          <span class="icon icon-edit"></span>
+        </div>
+      </div>
+    </button>
+  </p>
+
+  <div class="rs-form marg-top-lg wiz-step wiz-step-2">
+
+  </div>
+
+</div>
+
+<table
+  class="table table-borderless"
+  data-api-base="{% url "ixctl_api:pdbrouteserver-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
+  data-api-action=""
+  data-template="routeserver_pdb_list">
+
+  <thead>
+    <tr>
+      <th>ASN</th>
+      <th>{% trans "Name" %}</th>
+      <th>{% trans "IP address" %}</th>
+      <th></th>
+    </tr>
+  </thead>
+
+
+  <tbody class="list-body"></tbody>
+
+
+  <tbody class="templates">
+
+    <tr data-template="row" class="rs-row">
+      <td data-field="asn"></td>
+      <td data-field="name"></td>
+      <td data-field="router_id"></td>
+      <td class="right">
+        <button class="button primary btn | small">
+          <div class="row align-items-center">
+            <div class="col label pe-0">{% trans "Continue" %}</div>
+            <div class="col-auto">
+              <span class="icon icon-edit"></span>
+            </div>
+          </div>
+        </button>
+      </td>
+    </tr>
+
+  </tbody>
+
+</table>

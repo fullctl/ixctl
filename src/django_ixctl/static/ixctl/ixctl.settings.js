@@ -108,7 +108,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 
       var rs_wiz = new $ctl.widget.Wizard(this.template("routeserver_wizard", dialog));
       var rs_pdb_list = new twentyc.rest.List(
-        this.template("routeserver_pdb_list", rs_wiz.element.find('.pdbrs-list'))
+        this.template("routeserver_pdb_list", rs_wiz.element.find('.pdbrouteserver-list'))
       );
       var form = new twentyc.rest.Form(
         this.template("form_routeserver_page", rs_wiz.element.find('.rs-form'))

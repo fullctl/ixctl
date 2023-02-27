@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("django_ixctl", "0009_auto_20211021_1225"),
     ]
@@ -21,7 +20,7 @@ class Migration(migrations.Migration):
                 help_text="Reference to most recent generate task for this rsconfig object",
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="rsconf_set",
+                related_name="routeserver_config_set",
                 to="django_ixctl.rsconfgenerate",
             ),
         ),

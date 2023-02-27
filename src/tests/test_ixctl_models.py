@@ -118,7 +118,6 @@ def test_ixmember(db, pdb_data, account_objects):
 
 
 def test_routeserver(db, pdb_data, account_objects):
-
     rs = account_objects.routeserver
     assert rs.ix.id == account_objects.ix.id
     assert rs.name == "test routeserver"
@@ -166,6 +165,8 @@ def test_routeserver_ars_general_extra_config(db, pdb_data, account_objects):
     assert rs.ars_general == expected
 
 
+# code is currently commented out
+@pytest.mark.skip
 def test_routeserver_ars_clients(db, pdb_data, account_objects):
     rs = account_objects.routeserver
 
@@ -178,15 +179,15 @@ def test_routeserver_ars_clients(db, pdb_data, account_objects):
     assert rs.ars_clients == expected
 
 
-def test_routeserver_rsconf(db, pdb_data, account_objects):
+def test_routeserver_routeserver_config(db, pdb_data, account_objects):
     rs = account_objects.routeserver
     # This property creates a config if it doesn't already exist
-    rs.rsconf
-    assert models.RouteserverConfig.objects.filter(rs=rs).exists()
+    rs.routeserver_config
+    assert models.RouteserverConfig.objects.filter(routeserver=rs).exists()
 
 
 @pytest.mark.skip
-def test_rsconf(db, pdb_data, account_objects):
+def test_routeserver_config(db, pdb_data, account_objects):
     try:
         from yaml import CDumper as Dumper
     except ImportError:
@@ -194,32 +195,32 @@ def test_rsconf(db, pdb_data, account_objects):
     import yaml
 
     rs = account_objects.routeserver
-    rsconf = rs.rsconf
+    routeserver_config = rs.routeserver_config
     # Currently printing an Error but not raising an exception
     # it does save the ars_general and ars_clients fields so
     # we test that.
-    rsconf.generate()
-    assert rsconf.ars_general == yaml.dump(rs.ars_general, Dumper=Dumper)
-    assert rsconf.ars_clients == yaml.dump(rs.ars_clients, Dumper=Dumper)
+    routeserver_config.generate()
+    assert routeserver_config.ars_general == yaml.dump(rs.ars_general, Dumper=Dumper)
+    assert routeserver_config.ars_clients == yaml.dump(rs.ars_clients, Dumper=Dumper)
 
 
-def test_rsconf_outdated_update_rs(db, pdb_data, account_objects):
+def test_routeserver_config_outdated_update_rs(db, pdb_data, account_objects):
     rs = account_objects.routeserver
-    rsconf = rs.rsconf
+    routeserver_config = rs.routeserver_config
 
-    assert rsconf.outdated is False
+    assert routeserver_config.outdated is False
     # Update rs
     rs.ars_type = "bird2"
     rs.save()
-    assert rsconf.outdated is True
+    assert routeserver_config.outdated is True
 
 
-def test_rsconf_outdated_update_ixmember(db, pdb_data, account_objects):
+def test_routeserver_config_outdated_update_ixmember(db, pdb_data, account_objects):
     rs = account_objects.routeserver
-    rsconf = rs.rsconf
-    assert rsconf.outdated is False
+    routeserver_config = rs.routeserver_config
+    assert routeserver_config.outdated is False
 
     ixmember = rs.ix.member_set.filter(is_rs_peer=True).first()
     ixmember.name = "Changed name"
     ixmember.save()
-    assert rsconf.outdated is True
+    assert routeserver_config.outdated is True

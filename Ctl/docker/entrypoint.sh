@@ -32,7 +32,9 @@ case "$@" in
     source venv/bin/activate
     export DJANGO_SETTINGS_MODULE=ixctl.settings
     export RELEASE_ENV=run_tests
-    export PDBCTL_HOST=test://pdbctl
+    export PDBCTL_URL=test://pdbctl
+    export AAACTL_URL=test://aaactl
+    unset OAUTH_TWENTYC_URL
     cd main
     pytest tests/ -vv --cov-report=term-missing --cov-report=xml --cov=django_ixctl --cov=ixctl
     ;;

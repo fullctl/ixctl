@@ -6,8 +6,9 @@ EMAIL_NOREPLY = "noreply@localhost"
 USE_LOCAL_PERMISSIONS = True
 DEBUG = True
 BILLING_INTEGRATION = False
-
-PDBCTL_HOST = "cache://pdbctl"
+SECURE_SSL_REDIRECT = False
+AAACTL_URL = "test://aaactl"
+PDBCTL_URL = "test://pdbctl"
 
 LOGGING = {
     "version": 1,

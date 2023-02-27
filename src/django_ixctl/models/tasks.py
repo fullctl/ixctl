@@ -13,7 +13,7 @@ class RsConfGenerate(Task):
 
     arguments to pass to `create_task`:
 
-        - rsconf_id (id of rsconf instance)
+        - routeserver_config_id (id of routeserver_config instance)
     """
 
     class TaskMeta:
@@ -25,19 +25,21 @@ class RsConfGenerate(Task):
         proxy = True
 
     class HandleRef:
-        tag = "task_rsconf_gen"
+        tag = "task_routeserver_config_gen"
 
     @property
     def generate_limit_id(self):
         """
-        We want the task limit to be per rsconf so we
-        include the rsconf id in the limit_id for the task
+        We want the task limit to be per routeserver_config so we
+        include the routeserver_config id in the limit_id for the task
         """
         return self.param["args"][0]
 
-    def run(self, rsconf_id, *args, **kwargs):
+    def run(self, routeserver_config_id, *args, **kwargs):
         """
-        Regenerate the rsconfig
+        Regenerate the routeserver_config
         """
-        rsconf = models.RouteserverConfig.objects.get(id=rsconf_id)
-        rsconf.generate()
+        routeserver_config = models.RouteserverConfig.objects.get(
+            id=routeserver_config_id
+        )
+        routeserver_config.generate()

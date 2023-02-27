@@ -1,7 +1,3 @@
-including /srv/ixctl/main/ixctl/settings/dev.py dev
-loaded additional settings file '/srv/ixctl/main/ixctl/settings/dev.py'
-Release env is 'dev'
-loaded settings for version 0.1.0 (DEBUG: True)
 openapi: 3.0.2
 info:
   title: ''
@@ -245,7 +241,7 @@ paths:
           description: ''
       tags:
       - api
-  /api/{org_tag}/rsconf/{name}/:
+  /api/{org_tag}/config/routeserver/{name}/:
     get:
       operationId: retrieveRouteserverConfig
       description: ''
@@ -271,7 +267,7 @@ paths:
           description: ''
       tags:
       - api
-  /api/{org_tag}/rsconf/{name}/plain/:
+  /api/{org_tag}/config/routeserver/{name}/plain/:
     get:
       operationId: plainRouteserverConfig
       description: ''

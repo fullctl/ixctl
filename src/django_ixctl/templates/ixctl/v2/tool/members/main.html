@@ -1,0 +1,15 @@
+{% load static i18n %}
+<div class="tool shift-down" data-component="members" data-ixf-export-url="{% url "ixf export" org_tag=request.org.slug ix_tag="default" %}">
+
+  {% include "common/v2/tool_base.html" %}
+
+  <div class="templates">
+
+    {% include "ixctl/v2/tool/members/member-form.html" %}
+    {% include "ixctl/v2/tool/members/menu.html" %}
+    {% include "ixctl/v2/tool/members/list.html" %}
+
+
+  </div>
+</div>
+
