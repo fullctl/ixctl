@@ -338,6 +338,35 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
     ix_tag_needed = True
     ix_lookup_field = "routeserver__ix"
 
+    def options(self, request, *args, **kwargs):
+
+        """
+        Overrides the default OPTIONS request handling
+        so we can include a Last-Modified header for the specified
+        routeserver config object in the response.
+        """
+
+        # only proceed if ix_tag and name are specified
+
+        if "ix_tag" in kwargs and "name" in kwargs:
+
+            # check if the routeserver config object exists
+
+            try:
+                rs_config = models.RouteserverConfig.objects.get(
+                    routeserver__name=kwargs["name"],
+                    routeserver__ix__slug=kwargs["ix_tag"],
+                    routeserver__ix__instance__org__slug=request.org.slug,
+                )
+            except models.RouteserverConfig.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+            # if it does, include a Last-Modified header
+
+            return self._options(request, rs_config)
+        
+        return super().options(request, *args, **kwargs)
+
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
         namespace="config.routeserver.{request.org.permission_id}",
@@ -346,8 +375,6 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
         rs_config = models.RouteserverConfig.objects.get(
             routeserver__name=name, routeserver__ix=ix
         )
-        if request.method == "OPTIONS":
-            return self._options(request, rs_config)
 
         serializer = Serializers.config__routeserver(
             instance=rs_config,
