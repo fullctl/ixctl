@@ -33,4 +33,5 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           file: ./src/coverage.xml
-          fail_ci_if_error: true
+          # until random codcov errors are fixed
+          # fail_ci_if_error: true
