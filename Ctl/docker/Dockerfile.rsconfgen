@@ -18,6 +18,7 @@ ARG run_deps=" \
     python39 \
     "
 ARG debug_deps=" \
+    tar \
     vim \
     "
 
