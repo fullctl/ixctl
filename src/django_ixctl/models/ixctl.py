@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 from datetime import datetime
 from secrets import token_urlsafe
+from pydantic.utils import deep_update
 
 try:
     from yaml import CDumper as Dumper
@@ -529,10 +530,11 @@ class Routeserver(HandleRefModel):
             #
             # support both approaches for now
 
+            # use deep_update instead of update to prevent overriding of nested dicts
             if "cfg" in extra_config:
-                ars_general["cfg"].update(extra_config["cfg"])
+                ars_general["cfg"] = deep_update(ars_general["cfg"], extra_config["cfg"])
             else:
-                ars_general.update(extra_config)
+                ars_general = deep_update(ars_general, extra_config)
 
         return ars_general
 
