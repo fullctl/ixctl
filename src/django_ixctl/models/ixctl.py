@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 from datetime import datetime
 from secrets import token_urlsafe
+
 from pydantic.utils import deep_update
 
 try:
@@ -532,7 +533,9 @@ class Routeserver(HandleRefModel):
 
             # use deep_update instead of update to prevent overriding of nested dicts
             if "cfg" in extra_config:
-                ars_general["cfg"] = deep_update(ars_general["cfg"], extra_config["cfg"])
+                ars_general["cfg"] = deep_update(
+                    ars_general["cfg"], extra_config["cfg"]
+                )
             else:
                 ars_general = deep_update(ars_general, extra_config)
 
