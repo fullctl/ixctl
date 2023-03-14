@@ -16,13 +16,13 @@ py-radix = "0.10.0"
 
 [[package]]
 name = "arouteserver"
-version = "1.19.0"
+version = "1.20.0"
 description = "A Python tool to automatically build (and test) configurations for BGP route servers."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "arouteserver-1.19.0.tar.gz", hash = "sha256:dea89aa588800629c68adb5f017437d17e986f17eedea0be9118891d1596895c"},
+    {file = "arouteserver-1.20.0.tar.gz", hash = "sha256:265e04a42a64ffb5bda2424fb5550f24fd704a5061a9419c325cd3aa6324ece6"},
 ]
 
 [package.dependencies]
