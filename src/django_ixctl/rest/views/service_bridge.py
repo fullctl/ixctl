@@ -29,6 +29,7 @@ class InternetExchange(DataViewSet):
     path_prefix = "/data"
     allowed_http_methods = ["GET"]
     valid_filters = [
+        ("ids", "id__in"),
         ("org", "org_id"),
         ("q", "name__icontains"),
         ("sot", "source_of_truth"),

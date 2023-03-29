@@ -110,6 +110,15 @@ class InternetExchange(PdbRefModel):
         ),
     )
 
+    # TODO: use service-bridge reference field?
+    # this field is already defined through PdbRefModel, however we need to
+    # override it here to give it a help-text
+    pdb_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("PeeringDB id of the equivalent exchange (`ix`) object on their end. Its important to set this when the exchange has the source of truth in fullctl so we know which peeringdb object to override. This is set automatically if the ix was imported from peeringdb.")
+    )
+
     class PdbRef(PdbRefModel.PdbRef):
         pdbctl = pdbctl.InternetExchange
 
