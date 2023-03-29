@@ -116,7 +116,9 @@ class InternetExchange(PdbRefModel):
     pdb_id = models.PositiveIntegerField(
         null=True,
         blank=True,
-        help_text=_("PeeringDB id of the equivalent exchange (`ix`) object on their end. Its important to set this when the exchange has the source of truth in fullctl so we know which peeringdb object to override. This is set automatically if the ix was imported from peeringdb.")
+        help_text=_(
+            "PeeringDB id of the equivalent exchange (`ix`) object on their end. Its important to set this when the exchange has the source of truth in fullctl so we know which peeringdb object to override. This is set automatically if the ix was imported from peeringdb."
+        ),
     )
 
     class PdbRef(PdbRefModel.PdbRef):
