@@ -55,9 +55,9 @@ class InternetExchangeMember(ModelSerializer):
     def get_pdb_ix_id(self, member):
         return member.ix.pdb_id
 
+
 @register
 class Routeserver(ModelSerializer):
-
     ix = serializers.SerializerMethodField()
     pdb_ix_id = serializers.SerializerMethodField()
 

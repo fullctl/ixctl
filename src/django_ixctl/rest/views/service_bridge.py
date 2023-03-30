@@ -135,6 +135,7 @@ class InternetExchangeMember(DataViewSet):
 
         return Response(Serializers.member(instance=members, many=True).data)
 
+
 @route
 class RouteServer(DataViewSet):
     path_prefix = "/data"
@@ -160,6 +161,4 @@ class RouteServer(DataViewSet):
         )
 
     def filter_peer_asn(self, qset, value):
-        return qset.filter(
-            ix__verified=True, ix__member_set__asn=value
-        ).distinct("id")
+        return qset.filter(ix__verified=True, ix__member_set__asn=value).distinct("id")
