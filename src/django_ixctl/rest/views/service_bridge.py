@@ -134,3 +134,32 @@ class InternetExchangeMember(DataViewSet):
                 continue
 
         return Response(Serializers.member(instance=members, many=True).data)
+
+@route
+class RouteServer(DataViewSet):
+    path_prefix = "/data"
+    allowed_http_methods = ["GET"]
+    valid_filters = [
+        ("ix", "ix_id"),
+        ("ix_verified", "ix__verified"),
+        ("asn", "asn"),
+        ("asns", "asn__in"),
+        ("peer_asn", MethodFilter("peer_asn")),
+        ("sot", MethodFilter("sot")),
+        ("ip", "router_id"),
+    ]
+
+    join_xl = {"ix": ("ix",)}
+
+    queryset = models.Routeserver.objects.filter(status="ok")
+    serializer_class = Serializers.routeserver
+
+    def filter_sot(self, qset, value):
+        return qset.filter(ix__source_of_truth=True).exclude(
+            ix__pdb_id__isnull=True, ix__pdb_id=0
+        )
+
+    def filter_peer_asn(self, qset, value):
+        return qset.filter(
+            ix__verified=True, ix__member_set__asn=value
+        ).distinct("id")

@@ -54,3 +54,29 @@ class InternetExchangeMember(ModelSerializer):
 
     def get_pdb_ix_id(self, member):
         return member.ix.pdb_id
+
+@register
+class Routeserver(ModelSerializer):
+
+    ix = serializers.SerializerMethodField()
+    pdb_ix_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Routeserver
+        fields = [
+            "id",
+            "ix_id",
+            "pdb_ix_id",
+            "ix",
+            "name",
+            "asn",
+            "router_id",
+        ]
+
+    def get_ix(self, member):
+        if "ix" in self.context.get("joins", []):
+            return InternetExchange(instance=member.ix).data
+        return None
+
+    def get_pdb_ix_id(self, member):
+        return member.ix.pdb_id
