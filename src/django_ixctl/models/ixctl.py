@@ -171,6 +171,49 @@ class InternetExchange(PdbRefModel):
 
         return ix
 
+
+    @classmethod
+    def default_slug(cls, name):
+        return name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
+
+    @classmethod
+    def get_default_exchange_for_org(cls, org):
+        """
+        Returns the default exchange for an organization
+
+        Will return the default exchange for the organization if
+        specified, otherwise will return the first exchange in the
+        organization's instance.
+
+        If the organization has no exchanges in its instance, will
+        return None
+        """
+
+        try:
+            return OrganizationDefaultExchange.objects.get(org=org).ix
+        except OrganizationDefaultExchange.DoesNotExist:
+            return cls.objects.filter(instance__org=org).first()
+
+    @classmethod
+    def set_default_exchange_for_org(cls, org, ix):
+        """
+        Will take an Organization object and make the specified
+        InternetExchange the default exchange for that organization
+        """
+
+        # check that ix belongs to org
+
+        if ix.org != org:
+            raise ValueError("InternetExchange does not belong to Organization")
+
+        try:
+            default = OrganizationDefaultExchange.objects.get(org=org)
+        except OrganizationDefaultExchange.DoesNotExist:
+            default = OrganizationDefaultExchange(org=org)
+
+        default.ix = ix
+        default.save()
+
     @property
     def display_name(self):
         """
@@ -208,13 +251,35 @@ class InternetExchange(PdbRefModel):
     def org(self):
         return self.instance.org
 
-    @classmethod
-    def default_slug(cls, name):
-        return name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
 
     def __str__(self):
         return f"{self.name} ({self.id})"
+        
 
+class OrganizationDefaultExchange(models.Model):
+    """
+    Describes the default exchange for an organization
+
+    This is used to determine which exchange to use when
+    no exchange is specified in the url.
+    """
+
+    org = models.OneToOneField(
+        Organization, related_name="default_ix", on_delete=models.CASCADE, primary_key=True
+    )
+    ix = models.OneToOneField(
+        InternetExchange,
+        related_name="default_for_org",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        db_table = "ixctl_default_ix"
+        verbose_name = _("Organization Default Exchange")
+        verbose_name_plural = _("Organization Default Exchanges")
+
+    def __str__(self):
+        return f"{self.org.name} -> {self.ix.name}"
 
 @reversion.register()
 @grainy_model(

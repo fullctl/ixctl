@@ -30,9 +30,42 @@ $ctl.application.Ixctl = $tc.extend(
         return w;
       });
 
-      $(this.$c.header.$w.ix_dropdown).one("load:after", ()=> {
+      // wire event handler for when list of exchanges has been loaded
+
+      $(this.$c.header.$w.ix_dropdown).one("load:after", (ev, response)=> {
         this.select_ix(this.preselect_ix);
+        var num_exchanges = response.content.data.length;
+
+        // if theree are multiple exchanges, toggle elements with
+        // data-toggled="multiple-exchanges" visible, otherwise hide them
+
+        if(num_exchanges > 1) {
+          $('[data-toggled="multiple-exchanges"]').show();
+        } else {
+          $('[data-toggled="multiple-exchanges"]').hide();
+        }
       });
+
+      // wire `Set as default` button
+
+      var button_make_default = new twentyc.rest.Button(
+        this.$c.header.$e.button_set_default_ix
+      );
+
+      // set the url for the button, replacing __ix_slug__ with the slug of the
+      // currently selected exchange
+      
+      button_make_default.format_request_url = (url) => {
+        return url.replace("__ix_slug__", this.ix_slug());
+      };
+
+      // on make default success, notify the user
+
+      $(button_make_default).on("api-write:success", (ev, response) => {
+        alert("Default IX set successfully");
+      });
+
+      // load exchanges
 
       this.$c.header.$w.ix_dropdown.load();
 

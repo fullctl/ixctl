@@ -279,6 +279,21 @@ class RouteserverConfig(ModelSerializer):
 
 
 @register
+class DefaultExchange(ModelSerializer):
+
+    ref_tag = "default_ix"
+    
+    class Meta:
+        model = models.OrganizationDefaultExchange
+        fields = ["org", "ix"]
+
+    def save(self):
+        org = self.validated_data["org"]
+        ix = self.validated_data["ix"]
+
+        models.InternetExchange.set_default_exchange_for_org(org, ix)
+
+@register
 class PeeringDBRouteserver(serializers.Serializer):
     ref_tag = "pdbrouteserver"
 
