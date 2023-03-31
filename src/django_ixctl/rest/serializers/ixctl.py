@@ -280,9 +280,8 @@ class RouteserverConfig(ModelSerializer):
 
 @register
 class DefaultExchange(ModelSerializer):
-
     ref_tag = "default_ix"
-    
+
     class Meta:
         model = models.OrganizationDefaultExchange
         fields = ["org", "ix"]
@@ -292,6 +291,7 @@ class DefaultExchange(ModelSerializer):
         ix = self.validated_data["ix"]
 
         models.InternetExchange.set_default_exchange_for_org(org, ix)
+
 
 @register
 class PeeringDBRouteserver(serializers.Serializer):

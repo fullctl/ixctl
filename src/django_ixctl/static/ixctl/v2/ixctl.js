@@ -54,7 +54,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       // set the url for the button, replacing __ix_slug__ with the slug of the
       // currently selected exchange
-      
+
       button_make_default.format_request_url = (url) => {
         return url.replace("__ix_slug__", this.ix_slug());
       };

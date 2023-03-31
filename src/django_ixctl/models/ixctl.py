@@ -171,7 +171,6 @@ class InternetExchange(PdbRefModel):
 
         return ix
 
-
     @classmethod
     def default_slug(cls, name):
         return name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
@@ -251,10 +250,9 @@ class InternetExchange(PdbRefModel):
     def org(self):
         return self.instance.org
 
-
     def __str__(self):
         return f"{self.name} ({self.id})"
-        
+
 
 class OrganizationDefaultExchange(models.Model):
     """
@@ -265,7 +263,10 @@ class OrganizationDefaultExchange(models.Model):
     """
 
     org = models.OneToOneField(
-        Organization, related_name="default_ix", on_delete=models.CASCADE, primary_key=True
+        Organization,
+        related_name="default_ix",
+        on_delete=models.CASCADE,
+        primary_key=True,
     )
     ix = models.OneToOneField(
         InternetExchange,
@@ -280,6 +281,7 @@ class OrganizationDefaultExchange(models.Model):
 
     def __str__(self):
         return f"{self.org.name} -> {self.ix.name}"
+
 
 @reversion.register()
 @grainy_model(

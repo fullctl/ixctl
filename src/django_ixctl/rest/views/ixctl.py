@@ -141,26 +141,24 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
 
         return Response(Serializers.ix(instance=ix).data)
 
-
     @action(detail=True, methods=["POST"], serializer_class=Serializers.default_ix)
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
     def set_as_default(self, request, org, instance, ix, *args, **kwargs):
-
         """
         Set the exchange as the default exchange for the organization
         """
 
         serializer = Serializers.default_ix(
-            instance = models.OrganizationDefaultExchange.objects.filter(org=org).first(),
+            instance=models.OrganizationDefaultExchange.objects.filter(org=org).first(),
             data={"ix": ix.id, "org": org.id},
             context={"instance": instance},
         )
 
         if not serializer.is_valid():
             return BadRequest(serializer.errors)
-        
+
         serializer.save()
         return Response(serializer.data)
 
