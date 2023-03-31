@@ -510,7 +510,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           url = url.replace("__ix_slug__", $ctl.ixctl.ix_slug());
           return url.replace("__rs_name__", routeserver.name);
         };
-        
+
         // on successful request to generate the status badge needs to
         // start polling for the status of the config generation
 
@@ -542,7 +542,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
         // later if the user manually triggers a config generation
 
         badge.element.data("widget", badge);
-        
+
         // render badge
 
         badge.render(value,data);

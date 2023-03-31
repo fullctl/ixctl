@@ -21,19 +21,19 @@
       <td data-field="router_id"></td>
       <td data-field="controls" class="options | right">
         <span data-field="routeserver_config_status"></span>
-       
+
         <!-- View config button -->
-        
+
         <a class="button btn" data-btn-type="secondary" data-action="view_routeserver_config" data-hover="show">
           <span class="label ixctl">{% trans "Download Config" %}</span><span class="icon ixctl icon-download ms-1 "></span>
         </a>
 
         <!-- Generate config button -->
 
-        <a 
-          class="button btn" 
+        <a
+          class="button btn"
           data-element="button_generate"
-          data-btn-type="secondary" 
+          data-btn-type="secondary"
           data-api-base="{% url "ixctl_api:config/routeserver-generate" org_tag=request.org.slug ix_tag="__ix_slug__" name="__rs_name__" %}"
           data-hover="show">
           <span class="label ixctl">{% trans "Generate" %}</span><span class="icon ixctl icon-refresh ms-1 "></span>
