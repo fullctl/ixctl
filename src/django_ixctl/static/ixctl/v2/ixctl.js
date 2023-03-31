@@ -489,24 +489,61 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
           row.find('a[data-api-method="DELETE"]').hide();
         }
 
+        // wire "view config" button
+
         row.find('a[data-action="view_routeserver_config"]').mousedown(function() {
           var routeserver = row.data("apiobject");
           let routeserver_config_url = row.data("routeserver_config_url");
-          routeserver_config_url = routeserver_config_url.replace("default", $ctl.ixctl.ix_slug());
-          routeserver_config_url = routeserver_config_url.replace("__replace__me__", routeserver.name);
+          routeserver_config_url = routeserver_config_url.replace("__ix_slug__", $ctl.ixctl.ix_slug());
+          routeserver_config_url = routeserver_config_url.replace("__rs_name__", routeserver.name);
           $(this).attr("href", routeserver_config_url)
         });
 
+        // wire "generate" config button
+
+        var button_generate = new twentyc.rest.Button(row.find("[data-element=button_generate]"));
+
+        // format button request url with the correct routeserver name
+
+        button_generate.format_request_url = (url) => {
+          var routeserver = row.data("apiobject");
+          url = url.replace("__ix_slug__", $ctl.ixctl.ix_slug());
+          return url.replace("__rs_name__", routeserver.name);
+        };
+        
+        // on successful request to generate the status badge needs to
+        // start polling for the status of the config generation
+
+        $(button_generate).on("api-write:success", (ev, e, payload, response) => {
+          var badge = row.find('.status-badge').data("widget");
+          badge.load();
+        });
+
+
       };
 
+      // set up the route server config generator status badge
+
       this.$w.list.formatters.routeserver_config_status = (value, data, col) => {
+
+        // config is not queued up and has never been generated - badge is empty
+
         if(!value)
           return $('<span>')
+
+        // config is queued up for generation or has been generated - init badge widget
 
         var badge = new $ctl.widget.StatusBadge(
           this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','routeserver_config_status'),
           ["ok","error","cancelled"]
         );
+
+        // need to self reference badge widget so that it can be accessed
+        // later if the user manually triggers a config generation
+
+        badge.element.data("widget", badge);
+        
+        // render badge
 
         badge.render(value,data);
 

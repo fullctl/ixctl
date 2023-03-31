@@ -15,17 +15,38 @@
   <tbody class="list-body">
   </tbody>
   <tbody class="templates">
-    <tr data-template="row" data-routeserver_config_url="{% url "ixctl_api:config/routeserver-plain" org_tag=request.org.slug ix_tag="default" name="__replace__me__" %}">
+    <tr data-template="row" data-routeserver_config_url="{% url "ixctl_api:config/routeserver-plain" org_tag=request.org.slug ix_tag="__ix_slug__" name="__rs_name__" %}">
       <td data-field="asn"></td>
       <td data-field="display_name" class="highlight"></td>
       <td data-field="router_id"></td>
       <td data-field="controls" class="options | right">
         <span data-field="routeserver_config_status"></span>
+       
+        <!-- View config button -->
+        
         <a class="button btn" data-btn-type="secondary" data-action="view_routeserver_config" data-hover="show">
           <span class="label ixctl">{% trans "Download Config" %}</span><span class="icon ixctl icon-download ms-1 "></span>
         </a>
+
+        <!-- Generate config button -->
+
+        <a 
+          class="button btn" 
+          data-element="button_generate"
+          data-btn-type="secondary" 
+          data-api-base="{% url "ixctl_api:config/routeserver-generate" org_tag=request.org.slug ix_tag="__ix_slug__" name="__rs_name__" %}"
+          data-hover="show">
+          <span class="label ixctl">{% trans "Generate" %}</span><span class="icon ixctl icon-refresh ms-1 "></span>
+        </a>
+
+        <!-- Edit button -->
+
         <a class="button btn" data-action="edit_routeserver" data-hover="show">
           <span class="icon ixctl icon-edit"></span>
+        </a>
+
+        <!-- Delete button -->
+
         <a
           class="button btn"
           data-hover="show"
@@ -36,9 +57,13 @@
         >
           <span class="icon ixctl icon-delete"></span>
         </a>
+
+        <!-- Options toggle -->
+
         <button class="btn">
           <span class="icon icon-options"></span>
         </button>
+
       </td>
     </tr>
     <tr data-template="row" class="secondary">

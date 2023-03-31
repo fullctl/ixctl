@@ -424,6 +424,20 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
         )
         return response
 
+    @action(detail=True, methods=["POST"])
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="config.routeserver.{request.org.permission_id}",
+    )
+    def generate(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = self.get_object()
+        rs_config.queue_generate()
+        serializer = Serializers.config__routeserver(
+            instance=rs_config,
+            many=False,
+        )
+        return Response(serializer.data)
+
 
 @route
 class PeeringDBRouteservers(
