@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("django_fullctl", "0031_auto_20230310_2152"),
         ("django_ixctl", "0015_alter_internetexchange_pdb_id"),
     ]
 
