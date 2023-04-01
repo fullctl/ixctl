@@ -88,6 +88,19 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
               >
                 <span class="icon icon-add"></span> {% trans "Import" %}
               </div>
+
+              <!-- make default exchange - should only be visible if org has multiple exchanges -->
+              <div
+                class="dropdown-item text-body"
+                type="button"
+                style="display:none"
+                data-toggled="multiple-exchanges"
+                data-element="button_set_default_ix"
+                data-api-base="{% url "ixctl_api:ix-set-as-default" org_tag=request.org.slug ix_tag="__ix_slug__" %}"
+              >
+                <span class="icon icon-settings"></span> {% trans "Set as default" %}
+              </div>
+
             </div>
           </div>
           <div class="templates" style="display:none">

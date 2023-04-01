@@ -20,6 +20,8 @@ def make_env(request, **kwargs):
 def view_instance(request, instance, **kwargs):
     env = make_env(request, instance=instance, org=instance.org)
 
+    env["select_ix"] = InternetExchange.get_default_exchange_for_org(instance.org)
+
     return render(request, "theme-select.html", env)
 
 
