@@ -9,5 +9,4 @@
 !tests/
 !Ctl/VERSION
 !Ctl/docker
-
-!ars_config/
+!plugins/
