@@ -29,9 +29,3 @@ jobs:
         run: Ctl/dev/compose.sh build django
       - name: Run tests
         run: Ctl/dev/run.sh run_tests
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./src/coverage.xml
-          # until random codcov errors are fixed
-          # fail_ci_if_error: true
