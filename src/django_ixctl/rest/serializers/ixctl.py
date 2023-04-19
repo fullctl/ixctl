@@ -279,6 +279,15 @@ class RouteserverConfig(ModelSerializer):
 
 
 @register
+class MRTGConfig(ModelSerializer):
+    class Meta:
+        model = models.MRTGConfig
+        fields = [
+            "generated",
+            "body",
+        ]
+
+@register
 class DefaultExchange(ModelSerializer):
     ref_tag = "default_ix"
 

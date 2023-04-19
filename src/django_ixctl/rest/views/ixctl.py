@@ -539,3 +539,84 @@ class PermissionRequest(CachedObjectMixin, viewsets.GenericViewSet):
         permreq = serializer.save()
         return Response(serializer.data)
     """
+
+@route
+class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
+    serializer_class = Serializers.config__mrtg
+    queryset = models.MRTGConfig.objects.all()
+    lookup_value_regex = r"[^\/]+"  # noqa: W605
+    lookup_url_kwarg = "name"
+    lookup_field = "ix__name"
+    ref_tag = "config/mrtg"
+    ix_tag_needed = True
+    ix_lookup_field = "ix"
+
+    # def options(self, request, *args, **kwargs):
+    #     """
+    #     Overrides the default OPTIONS request handling
+    #     so we can include a Last-Modified header for the specified
+    #     routeserver config object in the response.
+    #     """
+
+    #     # only proceed if ix_tag and name are specified
+
+    #     if "ix_tag" in kwargs and "name" in kwargs:
+    #         # check if the routeserver config object exists
+
+    #         try:
+    #             rs_config = models.RouteserverConfig.objects.get(
+    #                 routeserver__name=kwargs["name"],
+    #                 routeserver__ix__slug=kwargs["ix_tag"],
+    #                 routeserver__ix__instance__org__slug=request.org.slug,
+    #             )
+    #         except models.RouteserverConfig.DoesNotExist:
+    #             return Response(status=404)
+
+    #         # if it does, include a Last-Modified header
+
+    #         return self._options(request, rs_config)
+
+    #     return super().options(request, *args, **kwargs)
+
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="config.mrtg.{request.org.permission_id}",
+    )
+    def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
+        mrtg_config = models.MRTGConfig.objects.get(ix=ix)
+
+        serializer = Serializers.config__mrtg(
+            instance=mrtg_config,
+            many=False,
+        )
+        return Response(serializer.data)
+
+
+    @action(detail=True, methods=["POST"])
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="config.mrtg.{request.org.permission_id}",
+    )
+    def status(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = self.get_object()
+        rs_config.rs_response = request.data
+        rs_config.save()
+        serializer = Serializers.config__mrtg(
+            instance=rs_config,
+            many=False,
+        )
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["POST"])
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="config.mrtg.{request.org.permission_id}",
+    )
+    def generate(self, request, org, instance, ix, name, *args, **kwargs):
+        mrtg_config = self.get_object()
+        mrtg_config.queue_generate()
+        serializer = Serializers.config__mrtg(
+            instance=mrtg_config,
+            many=False,
+        )
+        return Response(serializer.data)
