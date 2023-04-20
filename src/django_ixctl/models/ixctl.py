@@ -896,7 +896,7 @@ class MRTGConfig(HandleRefModel):
         if port_name.startswith("MgmtEth") or port_name.startswith("em"):
             return 100_000_000 // 8
 
-    def generate(self, instance):
+    def generate(self):
         """
         Generate the MRTG config data
         """
@@ -904,29 +904,18 @@ class MRTGConfig(HandleRefModel):
         """
         Regenerate the MRTG config
         """
-        port_template = ""
-        devices = devicectl.Device().objects(ref=f"{instance.pk}")
+        instance = self.ix.instance
+
+        devices = devicectl.Device().objects(org=instance.org.id)
         ports_by_device = {}
 
         for device in devices:
             # port_template.template()
             ports_by_device[device.name] = list(devicectl.Port().objects(device=device))
-        
-
-        # MRTG config file format reference
-        # https://people.cs.rutgers.edu/~terminals/mrtg/mrtg-2.5.4c/mrtg-conf.html
-        port = ""     # the UDP port under which to contact the SNMP agent (default: 161)
-        timeout = ""  # initial timeout for SNMP queries, in seconds (default: 2.0)
-        retries = ""  # number of times a timed-out request will be retried (default: 5)
-        backoff = "2"  # factor by which the timeout is multiplied on every retry (default: 1.0).
-
-        snmp_community="test-community"   # TODO load from DB (but add to model first)
-        snmp_version="2"                  # TODO load from DB (but add to model first)
 
         # gather all data
 
         # for Peering VLAN sub-template
-        ix_name = "MASS IX"                    # TODO load from DB (but add to model first)
         ix_vlan_name = "mass_ixp64_mtu1500"    # TODO load from DB (but add to model first)
         ix_vlan_id = "64"                      # TODO load from DB (but add to model first)
         ix_vlan_bandwidth = 0   # the actual sum is calculated below
@@ -935,15 +924,7 @@ class MRTGConfig(HandleRefModel):
             for port in ports_by_device[device.name]:
                 ix_all_ports.append({
                     "name": "",
-                    "host_name_str": self.host_name_str.format(
-                        snmp_community=snmp_community,
-                        switch_name=device.name,
-                        port=port,
-                        timeout=timeout,
-                        retries=retries,
-                        backoff=backoff,
-                        snmp_version=snmp_version,
-                    )
+                    "host_name_str": self.host_name_str
                 })
                 ix_vlan_bandwidth += self.port_speed_in_bytes(port.name)
 
@@ -962,7 +943,7 @@ class MRTGConfig(HandleRefModel):
 
         # for main template:
         mrtg_vars = {
-            "ix_name": ix_name,
+            "ix_name": self.ix.name,
             "ix_vlan_name": ix_vlan_name,
             "ix_vlan_id": ix_vlan_id,
             "ix_vlan_bandwidth": ix_vlan_bandwidth,
