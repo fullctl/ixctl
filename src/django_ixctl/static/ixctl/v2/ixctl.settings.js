@@ -167,7 +167,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
       button_delete.format_request_url = this.format_request_url
       button_delete.action = rs.id;
 
-      form.form_action = rs.id;
+      form.form_action = String(rs.id);
       form.method = "put";
       form.format_request_url = this.format_request_url;
 
