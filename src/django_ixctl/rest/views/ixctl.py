@@ -580,7 +580,7 @@ class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet)
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="config.mrtg.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
         mrtg_config = models.MRTGConfig.objects.get(ix=ix)
@@ -595,7 +595,7 @@ class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet)
     @action(detail=True, methods=["POST"])
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="config.mrtg.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def status(self, request, org, instance, ix, name, *args, **kwargs):
         rs_config = self.get_object()
@@ -610,7 +610,7 @@ class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet)
     @action(detail=True, methods=["POST"])
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
-        namespace="config.mrtg.{request.org.permission_id}",
+        namespace="config.routeserver.{request.org.permission_id}",
     )
     def generate(self, request, org, instance, ix, name, *args, **kwargs):
         mrtg_config = self.get_object()
