@@ -544,9 +544,6 @@ class PermissionRequest(CachedObjectMixin, viewsets.GenericViewSet):
 class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     serializer_class = Serializers.config__mrtg
     queryset = models.MRTGConfig.objects.all()
-    lookup_value_regex = r"[^\/]+"  # noqa: W605
-    lookup_url_kwarg = "name"
-    lookup_field = "ix__name"
     ref_tag = "config/mrtg"
     ix_tag_needed = True
     ix_lookup_field = "ix"
