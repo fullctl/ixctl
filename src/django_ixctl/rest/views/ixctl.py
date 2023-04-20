@@ -590,12 +590,12 @@ class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet)
         return Response(serializer.data)
 
 
-    @action(detail=True, methods=["POST"])
+    @action(detail=False, methods=["POST"])
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
         namespace="config.routeserver.{request.org.permission_id}",
     )
-    def status(self, request, org, instance, ix, name, *args, **kwargs):
+    def status(self, request, org, instance, ix, *args, **kwargs):
         rs_config = self.get_object()
         rs_config.rs_response = request.data
         rs_config.save()
@@ -605,12 +605,12 @@ class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet)
         )
         return Response(serializer.data)
 
-    @action(detail=True, methods=["POST"])
+    @action(detail=False, methods=["POST"])
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
         namespace="config.routeserver.{request.org.permission_id}",
     )
-    def generate(self, request, org, instance, ix, name, *args, **kwargs):
+    def generate(self, request, org, instance, ix, *args, **kwargs):
         mrtg_config = self.get_object()
         mrtg_config.queue_generate()
         serializer = Serializers.config__mrtg(
