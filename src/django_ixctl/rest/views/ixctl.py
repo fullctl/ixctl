@@ -548,6 +548,7 @@ class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet)
     ix_tag_needed = True
     ix_lookup_field = "ix"
 
+
     # def options(self, request, *args, **kwargs):
     #     """
     #     Overrides the default OPTIONS request handling
@@ -579,7 +580,7 @@ class MRTGConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet)
     @grainy_endpoint(
         namespace="config.routeserver.{request.org.permission_id}",
     )
-    def retrieve(self, request, org, instance, ix, name, *args, **kwargs):
+    def retrieve(self, request, org, instance, ix, *args, **kwargs):
         mrtg_config = models.MRTGConfig.objects.get(ix=ix)
 
         serializer = Serializers.config__mrtg(

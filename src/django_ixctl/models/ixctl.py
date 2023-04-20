@@ -869,14 +869,13 @@ class MRTGConfig(HandleRefModel):
         # TODO return if ports/members have been updated since self.generated
         return True
 
-    # def queue_generate(self):
-    #     """
-    #     Queue task to regenerate config
-    #     """
-    #     self.task = django_ixctl.models.tasks.RsConfGenerate.create_task(self.id)
-    #     self.mrtg_task = django_ixctl.models.tasks.MRTGConfGenerate.create_task(self.id)
-    #     self.rs_response = {}
-    #     self.save()
+    def queue_generate(self):
+        """
+        Queue task to regenerate config
+        """
+        self.mrtg_task = django_ixctl.models.tasks.MRTGConfGenerate.create_task(self.id)
+        self.mrtg_response = {}
+        self.save()
 
     # as per https://linux.die.net/man/1/mrtg-reference Extended Host Name Syntax
     # community@router[:[port][:[timeout][:[retries][:[backoff][:[version]][|name]]]]]
