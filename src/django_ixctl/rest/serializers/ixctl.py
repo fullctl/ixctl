@@ -4,6 +4,7 @@ except ImportError:
     from yaml import Loader
 
 import fullctl.service_bridge.pdbctl as pdbctl
+import fullctl.service_bridge.devicectl as devicectl
 import yaml
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
@@ -183,6 +184,7 @@ class InternetExchangeMember(ModelSerializer):
             "md5",
             "prefix4",
             "prefix6",
+            "port",
         ]
         validators = [
             SoftRequiredValidator(
@@ -221,6 +223,23 @@ class InternetExchangeMember(ModelSerializer):
             return None
         return md5
 
+@register
+class InternetExchangeMemberDetail(ModelSerializer):
+    ref_tag = "member_detail"
+    port = serializers.SerializerMethodField()
+
+    class Meta(InternetExchangeMember.Meta):
+        fields = InternetExchangeMember.Meta.fields + ["port"]
+
+    def get_port(self, member):
+        if not member.port:
+            return None
+        try:
+            port = member.port.object.__dict__
+            port["device"] = port["device"].__dict__
+            return port
+        except AttributeError:
+            return None
 
 @register
 class Routeserver(ModelSerializer):

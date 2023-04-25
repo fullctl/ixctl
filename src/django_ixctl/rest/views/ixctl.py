@@ -275,6 +275,38 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         member.delete()
         return r
 
+    @action(detail=False, methods=["GET"])
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="member.{request.org.permission_id}.{ix.pk}",
+    )
+    def details(self, request, org, instance, ix, *args, **kwargs):
+        queryset = self.get_queryset().select_related("ix", "ix__instance")
+        members = list(models.InternetExchangeMember.preload_networks(queryset))
+
+        models.InternetExchangeMember.preload_ports(org, members)
+
+        serializer = Serializers.member_detail(
+            instance=members,
+            many=True,
+        )
+
+        return Response(serializer.data)
+
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @load_object("member", models.InternetExchangeMember, ix="ix", id="member_id")
+    @grainy_endpoint(
+        namespace="member.{request.org.permission_id}.{ix.pk}",
+    )
+    def retrieve(self, request, org, instance, ix, member_id, member, *args, **kwargs):
+        serializer = Serializers.member_detail(
+            instance=member,
+        )
+
+        models.InternetExchangeMember.preload_ports(org, [member])
+
+        return Response(serializer.data)
+
 
 @route
 class Routeserver(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
