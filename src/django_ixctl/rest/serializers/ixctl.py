@@ -4,7 +4,6 @@ except ImportError:
     from yaml import Loader
 
 import fullctl.service_bridge.pdbctl as pdbctl
-import fullctl.service_bridge.devicectl as devicectl
 import yaml
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
@@ -223,6 +222,7 @@ class InternetExchangeMember(ModelSerializer):
             return None
         return md5
 
+
 @register
 class InternetExchangeMemberDetail(ModelSerializer):
     ref_tag = "member_detail"
@@ -240,6 +240,7 @@ class InternetExchangeMemberDetail(ModelSerializer):
             return port
         except AttributeError:
             return None
+
 
 @register
 class Routeserver(ModelSerializer):

@@ -4,7 +4,6 @@ from django.urls import include, path
 
 import django_ixctl.views as views
 
-
 proxy.setup(
     "devicectl",
     proxy.proxy_api(
@@ -13,7 +12,6 @@ proxy.setup(
         [
             # facilities
             ("facility/{org_tag}", "facility/<str:org_tag>/", "facility-list"),
-            
             # devices for each facility
             (
                 "facility/{org_tag}/{fac_tag}/devices/",
@@ -21,7 +19,11 @@ proxy.setup(
                 "facility-devices",
             ),
             # virtual ports for each device
-            ("device/{org_tag}/{pk}/virtual_ports", "device/<str:org_tag>/<int:pk>/virtual_ports/", "device-virtual-ports"),
+            (
+                "device/{org_tag}/{pk}/virtual_ports",
+                "device/<str:org_tag>/<int:pk>/virtual_ports/",
+                "device-virtual-ports",
+            ),
         ],
     ),
 )

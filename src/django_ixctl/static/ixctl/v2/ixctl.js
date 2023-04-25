@@ -324,7 +324,7 @@ $ctl.application.Ixctl.ModalDeleteIX = $tc.extend(
 /**
  * Displays modal for editing and creating new InternetExchangeMember
  * objects
- * 
+ *
  * @class ModalMember
  * @constructor
  * @extends $ctl.application.Modal
@@ -368,7 +368,7 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
       var location_select = new twentyc.rest.Select(
         form.element.find('#facility')
       );
-      
+
       // device select
 
       var device_select = new twentyc.rest.Select(
@@ -388,7 +388,7 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
       port_select.format_request_url = (url) => {
         return url.replace("0", device_select.element.val())
       };
-      
+
       // when facility select is loaded / changed
       // reload the device select
 
@@ -447,7 +447,7 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
       } else{
         location_select.load();
       }
-      
+
 
 
 
