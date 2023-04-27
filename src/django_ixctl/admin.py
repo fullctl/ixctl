@@ -56,7 +56,7 @@ class InternetInternetExchangeAdmin(BaseAdmin):
 
 @admin.register(InternetExchangeMember)
 class MemberAdmin(BaseAdmin):
-    list_display = ("ix", "org", "asn", "ipaddr4", "ipaddr6")
+    list_display = ("ix", "org", "asn", "ipaddr4", "ipaddr6", "port")
     readonly_fields = ("org",)
     search_fields = (
         "ix__name",

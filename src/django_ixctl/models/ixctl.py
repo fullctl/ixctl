@@ -13,6 +13,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+import fullctl.service_bridge.devicectl as devicectl
 import fullctl.service_bridge.pdbctl as pdbctl
 import fullctl.service_bridge.sot as sot
 import reversion
@@ -25,6 +26,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_grainy.decorators import grainy_model
 from django_inet.models import ASNField
+from fullctl.django.fields.service_bridge import ReferencedObjectField
 from fullctl.django.inet.validators import validate_as_set
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
@@ -323,6 +325,13 @@ class InternetExchangeMember(PdbRefModel):
         max_length=255, choices=django_ixctl.enum.IXF_MEMBER_TYPE, default="peering"
     )
 
+    port = ReferencedObjectField(
+        bridge=devicectl.Port,
+        null=True,
+        blank=True,
+        help_text=_("deviceCtl port reference"),
+    )
+
     class PdbRef(PdbRefModel.PdbRef):
         pdbctl = pdbctl.NetworkIXLan
 
@@ -367,15 +376,69 @@ class InternetExchangeMember(PdbRefModel):
 
     @classmethod
     def preload_networks(cls, queryset):
+        """
+        Preloads network information from peerctl and pdbctl
+        """
+
         asns = {member.asn for member in queryset}
         if not asns:
             return queryset
         asn_map = {}
         for net in sot.Network().objects(asns=list(asns)):
             asn_map[net.asn] = net
+
         for member in queryset:
             member._net = asn_map.get(member.asn)
             yield member
+
+    @classmethod
+    def preload_ports(cls, org, members):
+        """
+        Preloads devicectl port information
+
+        Argument(s):
+
+        - org (`Organization`): organization to load ports for
+        - members (`list` of `InternetExchangeMember`): members to load ports for
+        """
+
+        if len(members) > 1:
+            # we got multiple members, so we batch load all ports for the org
+            ports = list(
+                devicectl.Port().objects(
+                    org_slug=org.slug, join=["device", "physical_ports"]
+                )
+            )
+        else:
+            # we got a single member, so we load only the port for that member
+            member = members[0]
+            if not member.port:
+                return
+            ports = list(
+                devicectl.Port().objects(
+                    org_slug=org.slug,
+                    id=int(member.port),
+                    join=["device", "physical_ports"],
+                )
+            )
+
+        if not ports:
+            return
+
+        # restructure ports into dict keyed by port id
+
+        ports = {port.id: port for port in ports}
+
+        for member in members:
+            if not member.port:
+                continue
+
+            port = ports.get(int(member.port))
+
+            if not port:
+                continue
+
+            member.port._object = port
 
     @property
     def display_name(self):

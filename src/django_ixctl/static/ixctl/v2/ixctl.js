@@ -321,7 +321,15 @@ $ctl.application.Ixctl.ModalDeleteIX = $tc.extend(
   $ctl.application.Modal
 );
 
-
+/**
+ * Displays modal for editing and creating new InternetExchangeMember
+ * objects
+ *
+ * @class ModalMember
+ * @constructor
+ * @extends $ctl.application.Modal
+ * @namespace $ctl.application.Ixctl
+ */
 
 $ctl.application.Ixctl.ModalMember = $tc.extend(
   "ModalMember",
@@ -334,7 +342,14 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
       );
 
       this.member = member;
+      var devicectl = {
+        facility_slug : null,
+        device_id : null,
+        port_id : null
+      }
       form.base_url = form.base_url.replace("/default", "/"+ix_slug);
+
+      // load select options
 
       var state_select = new twentyc.rest.Select(
         form.element.find('#member-state')
@@ -345,6 +360,55 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
         form.element.find('#member-type')
       )
       type_select.load((member?member.ixf_member_type:null));
+
+      // load select options for devicectl location
+
+      // facility select
+
+      var location_select = new twentyc.rest.Select(
+        form.element.find('#facility')
+      );
+
+      // device select
+
+      var device_select = new twentyc.rest.Select(
+        form.element.find("#device")
+      );
+
+      device_select.format_request_url = (url) => {
+        return url.replace("fac_tag", location_select.element.val())
+      };
+
+      // port select
+
+      var port_select = new twentyc.rest.Select(
+        form.element.find("#port")
+      );
+
+      port_select.format_request_url = (url) => {
+        return url.replace("0", device_select.element.val())
+      };
+
+      // when facility select is loaded / changed
+      // reload the device select
+
+      $(location_select.element).on("change", () => {
+        device_select.element.empty();
+        port_select.element.empty();
+        device_select.load(devicectl.device_id).then(() => { device_select.element.trigger("change"); });
+      });
+
+      // when device select is loaded / changed
+      // reload the port select
+
+      $(device_select.element).on("change", () => {
+        port_select.element.empty();
+        port_select.load(devicectl.port_id);
+      });
+
+      $(port_select).one("load:after", () => {
+        devicectl = {};
+      });
 
 
       if(member) {
@@ -367,6 +431,25 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
           payload["id"] = member.id;
         });
       }
+
+
+
+      if(member && member.port) {
+        console.log();
+        member_details = new twentyc.rest.Widget(form.base_url, form.element.find("[data-element='devicectl_elements']"))
+        member_details.get(member.id).then((response) => {
+          console.log("got memeber detaiuls", response)
+          devicectl.facility_slug = response.content.data[0].port.device.facility_slug
+          devicectl.device_id = response.content.data[0].port.device_id
+          devicectl.port_id = response.content.data[0].port.id
+          location_select.load(devicectl.facility_slug)
+        })
+      } else{
+        location_select.load();
+      }
+
+
+
 
       $(this.form).on("api-write:success", (ev, e, payload, response) => {
         $ctl.ixctl.$t.members.$w.list.load();
