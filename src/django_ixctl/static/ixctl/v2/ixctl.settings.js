@@ -5,6 +5,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
     Settings : function() {
       this.urlparam = "edit-rs"
       this.Tool("nets");
+      this.activate();
     },
 
     format_request_url : function(url) {
@@ -47,7 +48,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
     },
 
     sync : function() {
-      var exchange = $ctl.ixctl.ix_object();
+      const exchange = $ctl.ixctl.ix_object();
       this.$w.routeservers.load();
       if(exchange) {
         this.$e.menu.find('[data-element="button_add_routeserver"]').grainy_toggle(exchange.grainy, "c");
@@ -58,6 +59,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
         this.$e.menu.find('[data-element="button_general_settings"]').hide();
         this.$e.menu.find('[data-element="button_add_routeserver"]').hide();
       }
+      this.general_settings();
     },
 
     unload_dialog : function() {
@@ -67,9 +69,11 @@ $ctl.application.Ixctl.Settings = $tc.extend(
     general_settings : function() {
       var ix = $ctl.ixctl.ix_object();
       var dialog = this.custom_dialog("General settings for "+ix.name);
-      var form = new twentyc.rest.Form(
-        this.template("form_general_settings", dialog)
-      );
+      const form = this.widget("form_general_settings", ($e) => {
+        return new twentyc.rest.Form(
+          this.template("form_general_settings", dialog)
+        );
+      })
       form.format_request_url = this.format_request_url;
       form.fill(ix);
 
@@ -206,7 +210,6 @@ $($ctl).on("init_tools", (e, app) => {
 
   $('#settings-tab').on('show.bs.tab', () => {
     app.$t.settings.sync();
-    app.$t.settings.general_settings();
   });
 });
 
