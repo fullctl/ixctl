@@ -102,58 +102,15 @@
       ix_tag="default" %}" data-api-action="" data-api-method="GET" style="position:relative">
       <div class="row mb-3">
         <div class="col-12" data-api-submit="yes">
-          <label class="form-label" for="description">{% trans "Location" %}</label>
           <span class="modal-control">
-            <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
+            <label class="form-label" for="port">{% trans "Port" %}</label>
             <select
               class="form-control"
-              id="facility"
-              name="facility"
-              data-name-field="slug"
-              data-id-field="slug"
-              data-api-base="{% url "proxies-api-devicectl-facility-list" org_tag=request.org.slug %}"
-              >
-            <select>
+              id="port"
+              name="port">
+            </select>
           </span>
         </div>
-      </div>
-
-
-      <div class="row mb-3">
-        <div class="col-12" data-api-submit="yes">
-          <label class="form-label" for="description">{% trans "Device" %}</label>
-          <span class="modal-control">
-          <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
-          <select
-            class="form-control"
-            id="device"
-            name="device"
-            data-name-field="display_name"
-            data-api-base="{% url "proxies-api-devicectl-facility-devices" org_tag=request.org.slug fac_tag="fac_tag" %}"
-            >
-          <select>
-          </span>
-        </div>
-      </div>
-
-      <div class="row mb-3">
-        <div class="col-12" data-api-submit="yes">
-          <label class="form-label" for="description">{% trans "Port" %}</label>
-          <span class="modal-control">
-          <img class="caret" src="{% static "common/icons/ui-caret-caret/down.svg" %}">
-          <select
-            class="form-control"
-            id="port"
-            name="port"
-            data-name-field="display_name"
-            data-id-field="port"
-            data-null-option="0;-- Not connected --"
-            data-api-base="{% url "proxies-api-devicectl-device-virtual-ports" org_tag=request.org.slug pk="0" %}"
-            >
-          <select>
-          </span>
-        </div>
-
       </div>
     </div>
 
