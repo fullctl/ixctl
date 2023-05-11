@@ -373,7 +373,7 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
         {
 
           // autocomplete url
-          url: "/autocomplete/device/port",
+          url: "/autocomplete/device/port?org="+fullctl.org.slug,
 
           // place holder text for the search field
           placeholder: "Search IP, device, port or location names.",
@@ -385,6 +385,12 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
             }
             form.get(member.id).then((response,b,c) => {
               let member = response.content.data[0];
+
+              if(!member.port) {
+                callback({});
+                return;
+              }
+
               callback({
                 id: member.port.id,
                 primary: member.port.display_name,
