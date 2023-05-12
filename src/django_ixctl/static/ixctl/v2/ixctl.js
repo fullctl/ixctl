@@ -15,10 +15,15 @@ $ctl.application.Ixctl = $tc.extend(
 
       // v2 - move ix select to header
       this.$c.header.widget("ix_dropdown", ($e) => {
-        let w = new twentyc.rest.List($('.org-select'));
+        const w = new twentyc.rest.List($('.ix-select'));
+
         $(w).on("insert:after", (e, row, data) => {
           row.attr('data-id', data.id);
-          row.click(() => {
+          row.find(".manage-ix").click(() => {
+            this.select_ix(data.id);
+            fullctl.ixctl.page('settings');
+          })
+          row.find('[data-field="name"]').click(() => {
             this.select_ix(data.id)
           })
           this.urlkeys[data.id] = data.urlkey;
@@ -27,6 +32,7 @@ $ctl.application.Ixctl = $tc.extend(
 
           this.permission_ui();
         });
+
         return w;
       });
 

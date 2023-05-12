@@ -58,7 +58,7 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {% with app_id="ixctl" %}
 
         <div
-          class="dropdown org-select header-control d-flex align-items-center h-100"
+          class="dropdown ix-select header-control d-flex align-items-center h-100"
           data-api-base="{% url "ixctl_api:ix-list" org_tag=request.org.slug %}"
           >
           <div class="custom-divider h-100">
@@ -75,7 +75,7 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
               <span class="icon icon-caret-down"></span>
             </div>
             <div
-              class="dropdown-menu org-select-menu dd-box-shadow"
+              class="dropdown-menu ix-select-menu dd-box-shadow"
               aria-labelledby="dropdownMenuLink"
             >
               <div class="list-body">
@@ -112,7 +112,10 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
           </div>
           <div class="templates" style="display:none">
               <div data-template="row" class="dropdown-item ix-item" type="button">
-                <span data-field="name"></span>
+                <span data-field="name" class="col"></span>
+                <span class="action manage manage-ix col-auto">
+                  <span class="icon icon-settings"></span>
+                </span>
               </div>
           </div>
        </div>
