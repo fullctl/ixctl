@@ -31,6 +31,13 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
       href="#overview">{% trans "Members" %}</a>
 
     <a class="nav-link"
+      id="tab-route-servers"
+      data-bs-toggle="tab"
+      role="tab"
+      aria-controls="route-servers"
+      href="#route-servers">{% trans "Route Servers" %}</a>
+
+    <a class="nav-link"
       data-bs-toggle="tab"
       role="tab"
       aria-controls="settings"
@@ -157,12 +164,15 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 <div class="tab-content" id="app-pages">
   <div class="tab-pane show active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
-		{% include "ixctl/v2/tool/routeservers/main.html" %}
-		{% include "ixctl/v2/tool/members/main.html" %}
+    {% include "ixctl/v2/tool/members/main.html" %}
+  </div>
+
+  <div class="tab-pane" id="route-servers" role="tabpanel" aria-labelledby="tab-route-servers">
+    {% include "ixctl/v2/tool/routeservers/main.html" %}
   </div>
 
   <div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="tab-settings">
-		{% include "ixctl/v2/tool/settings/main.html" %}
+    {% include "ixctl/v2/tool/settings/main.html" %}
   </div>
 </div>
 
