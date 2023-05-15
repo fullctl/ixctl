@@ -108,18 +108,18 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 
     create_routeserver : function() {
 
-      var dialog = this.custom_dialog('Create route server');
+      const dialog = this.custom_dialog('Create route server');
 
-      var rs_wiz = new $ctl.widget.Wizard(this.template("routeserver_wizard", dialog));
-      var rs_pdb_list = new twentyc.rest.List(
+      const rs_wiz = new $ctl.widget.Wizard(this.template("routeserver_wizard", dialog));
+      const rs_pdb_list = new twentyc.rest.List(
         this.template("routeserver_pdb_list", rs_wiz.element.find('.pdbrouteserver-list'))
       );
-      var form = new twentyc.rest.Form(
+      const form = new twentyc.rest.Form(
         this.template("form_routeserver_page", rs_wiz.element.find('.rs-form'))
       );
-      var button_delete = form.element.find('[data-element="rs_delete"]');
+      const button_delete = form.element.find('[data-element="rs_delete"]');
 
-      var form_defaults = {
+      const form_defaults = {
         rpki_bgp_origin_validation: true,
         graceful_shutdown: true
       };
@@ -152,7 +152,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 
       $(form).on("api-write:success", (ev, e, payload) => {
         fullctl.ixctl.$t.routeservers.sync();
-        fullctl.ixctl.page('overview');
+        fullctl.ixctl.page('route-servers');
         this.unload_dialog();
       });
 
@@ -162,10 +162,10 @@ $ctl.application.Ixctl.Settings = $tc.extend(
     edit_routeserver : function(rs) {
       console.log("editing", rs);
 
-      var form = new twentyc.rest.Form(
+      const form = new twentyc.rest.Form(
         this.template("form_routeserver_page", this.custom_dialog('Edit '+rs.name))
       );
-      var button_delete = new twentyc.rest.Button(
+      const button_delete = new twentyc.rest.Button(
         form.element.find('[data-element="rs_delete"]')
       );
       button_delete.format_request_url = this.format_request_url
@@ -184,12 +184,12 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 
       $(form).on("api-write:success", (ev, e, payload) => {
         fullctl.ixctl.$t.routeservers.sync();
-        fullctl.ixctl.page('overview');
+        fullctl.ixctl.page('route-servers');
       });
 
       $(button_delete).on("api-write:success", (ev, e, payload) => {
         fullctl.ixctl.$t.routeservers.sync();
-        fullctl.ixctl.page('overview');
+        fullctl.ixctl.page('route-servers');
         this.unload_dialog();
       });
 
