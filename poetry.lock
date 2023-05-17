@@ -739,7 +739,7 @@ pyflakes = ">=2.3.0,<2.4.0"
 
 [[package]]
 name = "fullctl"
-version = "1.4.0-rc.7"
+version = "1.4.0-rc.8"
 description = "Core classes and functions for service applications"
 category = "main"
 optional = false
@@ -773,7 +773,7 @@ whitenoise = "^6"
 type = "git"
 url = "https://github.com/fullctl/fullctl.git"
 reference = "prep-release"
-resolved_reference = "960d1e504e728676599832034fc350435ef6dad7"
+resolved_reference = "57592c971bccdbf4913210c3a0d099ff2b4e2593"
 
 [[package]]
 name = "ghp-import"
