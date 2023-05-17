@@ -629,9 +629,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
         // config is queued up for generation or has been generated - init badge widget
 
-        var badge = new $ctl.widget.StatusBadge(
+        const badge = new $ctl.widget.StatusBadge(
           this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','routeserver_config_status'),
-          ["ok","error","cancelled"]
+          ["ok","error","cancelled", "generated"]
         );
 
         // need to self reference badge widget so that it can be accessed
