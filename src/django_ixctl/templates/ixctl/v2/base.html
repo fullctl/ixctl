@@ -23,11 +23,18 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 {% block "header_middle" %}
 <div class="app-pages-nav | nav h-100" data-component="pages">
     <a class="nav-link active"
+      id="tab-home"
+      data-bs-toggle="tab"
+      role="tab"
+      aria-controls="home"
+      aria-selected="true"
+      href="#home">{% trans "Dashboard" %}</a>
+
+    <a class="nav-link"
       id="tab-overview"
       data-bs-toggle="tab"
       role="tab"
       aria-controls="overview"
-      aria-selected="true"
       href="#overview">{% trans "Members" %}</a>
 
     <a class="nav-link"
@@ -150,23 +157,23 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 
 <div style="display:none" class="notification row marg-top-lg" id="no-ix-notify">
-  <div class="col-12 center">
-    <p>
-    {% blocktrans %}
-    There are currently no internet exchanges in this organization.
-    {% endblocktrans %}
-    </p>
-    <p>
-      <button type="button" class="btn fullctl primary" data-element="button_import_exchange">{% trans "Import an Exchange" %}</button>
-    </p>
-    <p>
-      <a class="fullctl" href="https://docs.fullctl.com/ixctl/Import-an-IX/" target="_blanl">{% trans "Learn more" %}</a>
-    </p>
+  <div class="col-lg-6 mx-auto">
+    <div class="alert alert-info">
+      {% blocktrans %}
+      You have no IXes defined -- please see the docs on how to get started.
+      <br>
+      <a href="https://docs.fullctl.com/ixctl/Import-an-IX/">Import an IX</a> or <a href="https://docs.fullctl.com/ixctl/Create-an-IX/">Create an IX</a>
+      {% endblocktrans %}
+    </div>
   </div>
 </div>
 
 <div class="tab-content" id="app-pages">
-  <div class="tab-pane show active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
+  <div class="tab-pane show active" id="home" role="tabpanel" aria-labelledby="tab-home">
+    {% include "ixctl/v2/tool/home/main.html" %}
+  </div>
+
+  <div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="tab-overview">
     {% include "ixctl/v2/tool/members/main.html" %}
   </div>
 

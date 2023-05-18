@@ -1,0 +1,43 @@
+{% load static i18n %}
+<div class="section container-fluid mb-5" data-template="menu">
+  <div class="row">
+    <div class="col">
+      <span class="heading">{% trans "Members with non-active ports" %}</span>
+    </div>
+    <a type="button" class="primary col-md-auto btn ms-auto d-flex" data-element="button_add_member">
+      <div class="row align-items-center">
+        <div class="col label pe-0">{% trans "Add Member" %}</div>
+        <div class="col-auto">
+          <span class="icon icon-add"></span>
+        </div>
+      </div>
+    </a>
+    <a href="" class="secondary col-md-auto btn ms-2 d-flex" data-element="button_ixf_export" target="_blank">
+      <div class="row align-items-center">
+        <div class="col label pe-0">{% trans "IX-F Export" %}</div>
+        <div class="col-auto">
+          <span class="icon ixctl icon-download"></span>
+        </div>
+      </div>
+    </a>
+    <a href="" class="secondary col-md-auto btn ms-2 d-flex" data-element="button_api_view" target="_blank">
+      <div class="row align-items-center">
+        <div class="col label pe-0">{% trans "API View" %}</div>
+        <div class="col-auto">
+          <span class="icon ixctl icon-api"></span>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="toolbar-control input-group searchbar member-searchbar">
+        <input type="text" value="" data-element="filter" placeholder="Search for Member">
+        <button class="btn curved" data-element="filter_submit" type="button"><span class="icon icon-search"></span></button>
+        <button class="btn secondary small" data-element="filter_clear" type="button" style="display: none;"><span class="icon icon-cancel"></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
