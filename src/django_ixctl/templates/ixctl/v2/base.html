@@ -5,6 +5,7 @@
 {% block "js" %}
 {{ block.super }}
 <script src="{% static "ixctl/v2/ixctl.js" %}" type="text/javascript"></script>
+<script src="{% static "ixctl/v2/ixctl.routeservers.js" %}" type="text/javascript"></script>
 <script src="{% static "ixctl/v2/ixctl.settings.js" %}" type="text/javascript"></script>
 <script>
 {% if select_ix %}
@@ -38,11 +39,11 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
       href="#overview">{% trans "Members" %}</a>
 
     <a class="nav-link"
-      id="tab-route-servers"
+      id="tab-routeservers"
       data-bs-toggle="tab"
       role="tab"
-      aria-controls="route-servers"
-      href="#route-servers">{% trans "Route Servers" %}</a>
+      aria-controls="routeservers"
+      href="#routeservers">{% trans "Route Servers" %}</a>
 
     <a class="nav-link"
       data-bs-toggle="tab"
@@ -177,7 +178,7 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
     {% include "ixctl/v2/tool/members/main.html" %}
   </div>
 
-  <div class="tab-pane" id="route-servers" role="tabpanel" aria-labelledby="tab-route-servers">
+  <div class="tab-pane" id="routeservers" role="tabpanel" aria-labelledby="tab-routeservers">
     {% include "ixctl/v2/tool/routeservers/main.html" %}
   </div>
 

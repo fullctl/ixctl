@@ -152,7 +152,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 
       $(form).on("api-write:success", (ev, e, payload) => {
         fullctl.ixctl.$t.routeservers.sync();
-        fullctl.ixctl.page('route-servers');
+        fullctl.ixctl.page('routeservers');
         this.unload_dialog();
       });
 
@@ -184,12 +184,12 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 
       $(form).on("api-write:success", (ev, e, payload) => {
         fullctl.ixctl.$t.routeservers.sync();
-        fullctl.ixctl.page('route-servers');
+        fullctl.ixctl.page('routeservers');
       });
 
       $(button_delete).on("api-write:success", (ev, e, payload) => {
         fullctl.ixctl.$t.routeservers.sync();
-        fullctl.ixctl.page('route-servers');
+        fullctl.ixctl.page('routeservers');
         this.unload_dialog();
       });
 
