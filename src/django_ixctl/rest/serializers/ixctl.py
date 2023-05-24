@@ -3,6 +3,7 @@ try:
 except ImportError:
     from yaml import Loader
 
+import fullctl.service_bridge.devicectl as devicectl
 import fullctl.service_bridge.pdbctl as pdbctl
 import yaml
 from django.core.validators import RegexValidator
@@ -221,6 +222,27 @@ class InternetExchangeMember(ModelSerializer):
         if not md5:
             return None
         return md5
+
+    def validate_port(self, port):
+        """
+        Validates the port to make sure it exists and belongs to the requesting
+        organization
+        """
+        org_instance = self.context.get("instance")
+
+        if not port:
+            return port
+
+        # check that port exists and belongs to the requesting organization
+
+        port_object = devicectl.Port().first(
+            id=int(port), org_slug=org_instance.org.slug
+        )
+
+        if not port_object:
+            raise ValidationError(_("Port not found"))
+
+        return port_object.id
 
 
 @register
