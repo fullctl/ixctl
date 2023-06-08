@@ -91,6 +91,8 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
       };
 
+      this.$w.list.formatters.routeserver_config_generated_time = $ctl.formatters.datetime;
+
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
 
       $(this.$w.list).on("api-read:before",function()  {
@@ -217,6 +219,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       const form = new twentyc.rest.Form(
         this.template("form_routeserver_page", this.custom_dialog('Edit '+rs.name))
       );
+
+      form.formatters.routeserver_config_generated_time = $ctl.formatters.datetime;
+
       const button_delete = new twentyc.rest.Button(
         form.element.find('[data-element="rs_delete"]')
       );
@@ -245,9 +250,10 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
         this.view_list()
       });
 
-
       form.fill(rs);
-
+      form.element.find('[data-field="routeserver_config_generated_time"]').text(
+        form.formatters.routeserver_config_generated_time(rs.routeserver_config_generated_time)
+      )
     }
 
   },
