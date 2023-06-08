@@ -91,17 +91,12 @@ $ctl.application.Ixctl = $tc.extend(
         this.prompt_import();
       });
 
-      this.tool("members_non_active_ports", () => {
-        return new $ctl.application.Ixctl.MembersNonActivePorts();
-      });
-
       this.tool("members", () => {
         return new $ctl.application.Ixctl.Members();
       });
 
       $($ctl).trigger("init_tools", [this]);
 
-      this.$t.members_non_active_ports.activate();
       this.$t.members.activate();
     },
 
@@ -440,153 +435,6 @@ $ctl.application.Ixctl.ModalMember = $tc.extend(
 );
 
 
-$ctl.application.Ixctl.MembersNonActivePorts = $tc.extend(
-  "MembersNonActivePorts",
-  {
-    MembersNonActivePorts : function() {
-      this.Tool("members-non-active-ports");
-    },
-    init : function() {
-      this.widget("list", ($e) => {
-        return new twentyc.rest.List(
-          this.template("list", this.$e.body)
-        );
-      })
-
-      this.$w.list.formatters.row = (row, data) => {
-
-        if (data.port != null) {
-          row.hide();
-        }
-
-        row.find('a[data-action="edit_member"]').click(() => {
-          const member = row.data("apiobject");
-          new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug(), member);
-        }).each(function() {
-          if(!grainy.check(data.grainy+".?", "u")) {
-            $(this).hide()
-          }
-        });
-
-        if(!grainy.check(data.grainy, "d")) {
-          row.find('a[data-api-method="DELETE"]').hide();
-        }
-      };
-
-
-      this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
-
-      $(this.$w.list).on("api-read:before",function(endpoint)  {
-        let url = this.base_url.split("/").slice(0,-1);
-        url.push($ctl.ixctl.ix_slug());
-        this.base_url = url.join("/");
-      })
-
-      this.initialize_sortable_headers();
-    },
-
-    menu : function() {
-      var menu = this.Tool_menu();
-      menu.find('[data-element="button_add_member"]').click(() => {
-        return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug());
-      });
-
-      /**
-       * hides members in the UI based on whether the asn matches the
-       * `search_term` parameter and scrolls to the first match of the
-       * `search_term`
-       *
-       * @function member_filter
-       * @param {String} search_term
-       */
-      const member_filter = (search_term) => {
-        let first_match;
-        this.$w.list.load();
-
-        $(this.$w.list).on("load:after", () => {
-          const members = this.$w.list.list_body.find("tr:not(.secondary)");
-
-          members.each(function() {
-            const primary_row = $(this);
-            const secondary_row = $(this).next();
-
-            const asn = $(this).find('[data-field="asn"]').text().toLowerCase();
-            if (asn.startsWith(search_term)) {
-              primary_row.removeClass("filter-hidden");
-              secondary_row.removeClass("filter-hidden");
-
-              if (!first_match) {
-                this.scrollIntoView();
-                first_match = this;
-              }
-            } else {
-              primary_row.addClass("filter-hidden");
-              secondary_row.addClass("filter-hidden");
-            }
-          });
-        });
-      }
-
-      /**
-       * unhides all hidden members in the UI if they were expanded because of
-       * the `member_filter` function.
-       *
-       * @function clear_member_filter
-       */
-      const clear_member_filter = () => {
-        this.$w.list.list_body.find(".filter-hidden").removeClass("filter-hidden");
-      }
-
-      new fullctl.application.Searchbar(
-        menu.find(".member-searchbar"),
-        member_filter,
-        clear_member_filter
-      );
-
-      return menu;
-    },
-
-    sync : function() {
-      var ix_id = $ctl.ixctl.ix()
-      if(ix_id) {
-        var exchange = $ctl.ixctl.exchanges[ix_id]
-        if(grainy.check(exchange.grainy, "r")) {
-          this.show();
-          this.apply_ordering();
-          this.$w.list.load();
-          let ixf_export_url = this.jquery.data("ixf-export-url").replace("default", $ctl.ixctl.ix_slug());
-          if ($ctl.ixctl.ix_object().ixf_export_privacy == "private"){
-            ixf_export_url = ixf_export_url + "?secret=" + $ctl.ixctl.urlkey()
-          }
-          this.$e.menu.find('[data-element="button_ixf_export"]').attr(
-            "href", ixf_export_url
-          )
-
-          this.$e.menu.find('[data-element="button_api_view"]').attr(
-            "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
-          )
-
-          if(grainy.check(exchange.grainy, "c")) {
-            this.$e.menu.find('[data-element="button_add_member"]').show();
-            this.$e.menu.find('[data-element="button_ixf_export"]').show();
-          } else {
-            this.$e.menu.find('[data-element="button_add_member"]').hide();
-            this.$e.menu.find('[data-element="button_ixf_export"]').hide();
-          }
-
-        } else {
-          this.hide();
-        }
-      } else {
-        // no exchange exists - hide members tool
-        this.hide();
-      }
-    },
-  },
-  $ctl.application.Tool
-);
-
-
 $ctl.application.Ixctl.Members = $tc.extend(
   "Members",
   {
@@ -622,6 +470,10 @@ $ctl.application.Ixctl.Members = $tc.extend(
         this.base_url = url.join("/");
       })
 
+      $(this.$w.list).on("load:after", () => {
+        this.update_counts();
+      })
+
       this.initialize_sortable_headers();
     },
 
@@ -683,7 +535,45 @@ $ctl.application.Ixctl.Members = $tc.extend(
         clear_member_filter
       );
 
+      let filter_active = false;
+      const hide_non_active = (e, row, data) => {
+        if (data.port == null) {
+          row.addClass('filter-non-active-hidden')
+        } else {
+          row.removeClass('filter-non-active-hidden');
+        }
+      }
+      const toggle_non_active_filter = (active = null) => {
+        filter_active = active != null ? !filter_active : active;
+
+        if (filter_active) {
+          $(this.$w.list).on("insert:after", hide_non_active)
+        } else {
+          $(this.$w.list).off("insert:after", hide_non_active)
+        }
+
+        this.$w.list.load();
+      };
+
+
+      menu.find('[data-element="filter_non_active_members"]').click(function() {
+        $(this).toggleClass("active");
+        toggle_non_active_filter();
+      });
+
       return menu;
+    },
+
+    update_counts : function() {
+      let non_active_members = 0
+      this.$w.list.list_body.find("tr:not(.secondary)").each(function() {
+        const data = $(this).data("apiobject");
+        if (data.port == null) {
+          non_active_members += 1;
+        }
+      });
+
+      this.$e.menu.find('[data-element="filter_non_active_members"] .value').text(non_active_members);
     },
 
     sync : function() {

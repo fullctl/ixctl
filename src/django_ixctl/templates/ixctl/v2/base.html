@@ -18,24 +18,18 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
 {% block "css" %}
 {{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "ixctl/v2/ixctl.css" %}" />
 {% endblock %}
 
 
 {% block "header_middle" %}
 <div class="app-pages-nav | nav h-100" data-component="pages">
     <a class="nav-link active"
-      id="tab-home"
-      data-bs-toggle="tab"
-      role="tab"
-      aria-controls="home"
-      aria-selected="true"
-      href="#home">{% trans "Dashboard" %}</a>
-
-    <a class="nav-link"
       id="tab-overview"
       data-bs-toggle="tab"
       role="tab"
       aria-controls="overview"
+      aria-selected="true"
       href="#overview">{% trans "Members" %}</a>
 
     <a class="nav-link"
@@ -170,11 +164,7 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 </div>
 
 <div class="tab-content" id="app-pages">
-  <div class="tab-pane show active" id="home" role="tabpanel" aria-labelledby="tab-home">
-    {% include "ixctl/v2/tool/home/main.html" %}
-  </div>
-
-  <div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="tab-overview">
+  <div class="tab-pane show active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
     {% include "ixctl/v2/tool/members/main.html" %}
   </div>
 
