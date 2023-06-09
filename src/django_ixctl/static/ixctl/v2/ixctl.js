@@ -15,10 +15,15 @@ $ctl.application.Ixctl = $tc.extend(
 
       // v2 - move ix select to header
       this.$c.header.widget("ix_dropdown", ($e) => {
-        let w = new twentyc.rest.List($('.org-select'));
+        const w = new twentyc.rest.List($('.ix-select'));
+
         $(w).on("insert:after", (e, row, data) => {
           row.attr('data-id', data.id);
-          row.click(() => {
+          row.find(".manage-ix").click(() => {
+            this.select_ix(data.id);
+            fullctl.ixctl.page('settings');
+          })
+          row.find('[data-field="name"]').click(() => {
             this.select_ix(data.id)
           })
           this.urlkeys[data.id] = data.urlkey;
@@ -27,6 +32,7 @@ $ctl.application.Ixctl = $tc.extend(
 
           this.permission_ui();
         });
+
         return w;
       });
 
@@ -89,15 +95,9 @@ $ctl.application.Ixctl = $tc.extend(
         return new $ctl.application.Ixctl.Members();
       });
 
-      this.tool("routeservers", () => {
-        return new $ctl.application.Ixctl.Routeservers();
-      });
-
       $($ctl).trigger("init_tools", [this]);
 
       this.$t.members.activate();
-      this.$t.routeservers.activate();
-
     },
 
 
@@ -148,26 +148,31 @@ $ctl.application.Ixctl = $tc.extend(
         dropdown.find("[data-selected]").text()
       );
 
-      this.sync();
-      this.sync_url(id);
-    },
-
-    sync_url: function(id) {
-      var ix = this.exchanges[id];
-      var url = new URL(window.location)
+      const ix = this.exchanges[id];
       if(!ix) {
         $('#no-ix-notify').show();
-        url.pathname = `/${fullctl.org.slug}/`
+        $('#app-pages').hide();
+        return;
       } else {
-        url.pathname = `/${fullctl.org.slug}/${ix.slug}/`
         $('#no-ix-notify').hide();
+        $('#app-pages').show();
         if(!ix.verified) {
           $('#ix-unverified-notify').show();
         } else {
           $('#ix-unverified-notify').hide();
         }
-
       }
+
+
+      this.sync();
+      this.sync_url(id);
+    },
+
+    sync_url: function(id) {
+      const url = new URL(window.location)
+      const ix = this.exchanges[id];
+      url.pathname = ix ? `/${fullctl.org.slug}/${ix.slug}/` : `/${fullctl.org.slug}/`;
+
       window.history.pushState({}, '', url);
     },
 
@@ -471,6 +476,10 @@ $ctl.application.Ixctl.Members = $tc.extend(
         this.base_url = url.join("/");
       })
 
+      $(this.$w.list).on("load:after", () => {
+        this.update_counts();
+      })
+
       this.initialize_sortable_headers();
     },
 
@@ -479,7 +488,98 @@ $ctl.application.Ixctl.Members = $tc.extend(
       menu.find('[data-element="button_add_member"]').click(() => {
         return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug());
       });
+
+      /**
+       * hides members in the UI based on whether the asn matches the
+       * `search_term` parameter and scrolls to the first match of the
+       * `search_term`
+       *
+       * @function member_filter
+       * @param {String} search_term
+       */
+      const member_filter = (search_term) => {
+        let first_match;
+        this.$w.list.load();
+
+        $(this.$w.list).on("load:after", () => {
+          const members = this.$w.list.list_body.find("tr:not(.secondary)");
+
+          members.each(function() {
+            const primary_row = $(this);
+            const secondary_row = $(this).next();
+
+            const asn = $(this).find('[data-field="asn"]').text().toLowerCase();
+            if (asn.startsWith(search_term)) {
+              primary_row.removeClass("filter-hidden");
+              secondary_row.removeClass("filter-hidden");
+
+              if (!first_match) {
+                this.scrollIntoView();
+                first_match = this;
+              }
+            } else {
+              primary_row.addClass("filter-hidden");
+              secondary_row.addClass("filter-hidden");
+            }
+          });
+        });
+      }
+
+      /**
+       * unhides all hidden members in the UI if they were expanded because of
+       * the `member_filter` function.
+       *
+       * @function clear_member_filter
+       */
+      const clear_member_filter = () => {
+        this.$w.list.list_body.find(".filter-hidden").removeClass("filter-hidden");
+      }
+
+      new fullctl.application.Searchbar(
+        menu.find(".member-searchbar"),
+        member_filter,
+        clear_member_filter
+      );
+
+      let filter_active = false;
+      const hide_non_active = (e, row, data) => {
+        if (data.port == null) {
+          row.addClass('filter-non-active-hidden')
+        } else {
+          row.removeClass('filter-non-active-hidden');
+        }
+      }
+      const toggle_non_active_filter = (active = null) => {
+        filter_active = active != null ? !filter_active : active;
+
+        if (filter_active) {
+          $(this.$w.list).on("insert:after", hide_non_active)
+        } else {
+          $(this.$w.list).off("insert:after", hide_non_active)
+        }
+
+        this.$w.list.load();
+      };
+
+
+      menu.find('[data-element="filter_non_active_members"]').click(function() {
+        $(this).toggleClass("active");
+        toggle_non_active_filter();
+      });
+
       return menu;
+    },
+
+    update_counts : function() {
+      let non_active_members = 0
+      this.$w.list.list_body.find("tr:not(.secondary)").each(function() {
+        const data = $(this).data("apiobject");
+        if (data.port == null) {
+          non_active_members += 1;
+        }
+      });
+
+      this.$e.menu.find('[data-element="filter_non_active_members"] .value').text(non_active_members);
     },
 
     sync : function() {
@@ -518,181 +618,6 @@ $ctl.application.Ixctl.Members = $tc.extend(
         this.hide();
       }
     },
-  },
-  $ctl.application.Tool
-);
-
-$ctl.application.Ixctl.ModalRouteserver = $tc.extend(
-  "ModalRouteserver",
-  {
-    ModalRouteserver : function(ix_slug, routeserver) {
-      var modal = this;
-      var title = "Add Route Server"
-      var form = this.form = new twentyc.rest.Form(
-        $ctl.template("form_routeserver")
-      );
-
-      this.routeserver = routeserver;
-
-      form.base_url = form.base_url.replace("/default", "/"+ix_slug);
-
-      if(routeserver) {
-        title = "Edit "+routeserver.display_name;
-        form.method = "PUT"
-        form.form_action = routeserver.id;
-        form.fill(routeserver);
-        $(this.form).on("api-write:before", (ev, e, payload) => {
-          payload["ix"] = routeserver.ix;
-          payload["id"] = routeserver.id;
-        });
-      }
-
-      $(this.form).on("api-write:success", (ev, e, payload, response) => {
-        $ctl.ixctl.$t.routeservers.$w.list.load();
-        modal.hide();
-      });
-
-      this.Modal("save_lg", title, form.element);
-      form.wire_submit(this.$e.button_submit);
-    }
-  },
-  $ctl.application.Modal
-);
-
-
-$ctl.application.Ixctl.Routeservers = $tc.extend(
-  "Routeservers",
-  {
-    Routeservers : function() {
-      this.Tool("routeservers");
-    },
-    init : function() {
-      this.widget("list", ($e) => {
-        return new twentyc.rest.List(
-          this.template("list", this.$e.body)
-        );
-      })
-
-      this.$w.list.formatters.row = (row, data) => {
-        row.find('a[data-action="edit_routeserver"]').click(() => {
-          var routeserver = row.data("apiobject");
-          fullctl.ixctl.page("settings");
-          fullctl.ixctl.$t.settings.edit_routeserver(routeserver);
-          //new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug(), routeserver);
-        }).grainy_toggle(data.grainy+".?", "u");
-
-        if(!grainy.check(data.grainy, "d")) {
-          row.find('a[data-api-method="DELETE"]').hide();
-        }
-
-        // wire "view config" button
-
-        row.find('a[data-action="view_routeserver_config"]').mousedown(function() {
-          var routeserver = row.data("apiobject");
-          let routeserver_config_url = row.data("routeserver_config_url");
-          routeserver_config_url = routeserver_config_url.replace("__ix_slug__", $ctl.ixctl.ix_slug());
-          routeserver_config_url = routeserver_config_url.replace("__rs_name__", routeserver.name);
-          $(this).attr("href", routeserver_config_url)
-        });
-
-        // wire "generate" config button
-
-        var button_generate = new twentyc.rest.Button(row.find("[data-element=button_generate]"));
-
-        // format button request url with the correct routeserver name
-
-        button_generate.format_request_url = (url) => {
-          var routeserver = row.data("apiobject");
-          url = url.replace("__ix_slug__", $ctl.ixctl.ix_slug());
-          return url.replace("__rs_name__", routeserver.name);
-        };
-
-        // on successful request to generate the status badge needs to
-        // start polling for the status of the config generation
-
-        $(button_generate).on("api-write:success", (ev, e, payload, response) => {
-          var badge = row.find('.status-badge').data("widget");
-          badge.load();
-        });
-
-
-      };
-
-      // set up the route server config generator status badge
-
-      this.$w.list.formatters.routeserver_config_status = (value, data, col) => {
-
-        // config is not queued up and has never been generated - badge is empty
-
-        if(!value)
-          return $('<span>')
-
-        // config is queued up for generation or has been generated - init badge widget
-
-        const badge = new $ctl.widget.StatusBadge(
-          this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','routeserver_config_status'),
-          ["ok","error","cancelled", "generated"]
-        );
-
-        // need to self reference badge widget so that it can be accessed
-        // later if the user manually triggers a config generation
-
-        badge.element.data("widget", badge);
-
-        // render badge
-
-        badge.render(value,data);
-
-        return badge.element;
-
-      };
-
-      this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
-
-
-      $(this.$w.list).on("api-read:before",function()  {
-        let url = this.base_url.split("/").slice(0,-1);
-        url.push($ctl.ixctl.ix_slug());
-        this.base_url = url.join("/");
-      })
-
-      this.initialize_sortable_headers();
-    },
-
-    menu : function() {
-      var menu = this.Tool_menu();
-      menu.find('[data-element="button_add_routeserver"]').click(() => {
-        fullctl.ixctl.page("settings");
-        fullctl.ixctl.$t.settings.create_routeserver();
-        // return new $ctl.application.Ixctl.ModalRouteserver($ctl.ixctl.ix_slug());
-      });
-      return menu;
-    },
-
-    sync : function() {
-      var ix_id = $ctl.ixctl.ix()
-      if(ix_id) {
-        var exchange = $ctl.ixctl.exchanges[ix_id]
-        var rs_namespace =exchange.grainy.replace(/^ix\./, "routeserver.")+".?"
-        if(grainy.check(rs_namespace, "r")) {
-          this.show();
-          this.apply_ordering();
-          this.$w.list.load();
-          this.$e.menu.find('[data-element="button_api_view"]').attr(
-            "href", this.$w.list.base_url + "/" + this.$w.list.action +"?pretty"
-          )
-
-          this.$e.menu.find('[data-element="button_add_routeserver"]').grainy_toggle(exchange.grainy, "c");
-
-        } else {
-          this.hide();
-        }
-
-      } else {
-        // no exchanges exist - hide route-servers tool
-        this.hide();
-      }
-    }
   },
   $ctl.application.Tool
 );

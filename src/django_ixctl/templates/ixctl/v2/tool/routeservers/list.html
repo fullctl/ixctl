@@ -16,7 +16,7 @@
   </tbody>
   <tbody class="templates">
     <tr data-template="row" data-routeserver_config_url="{% url "ixctl_api:config/routeserver-plain" org_tag=request.org.slug ix_tag="__ix_slug__" name="__rs_name__" %}">
-      <td data-field="asn"></td>
+      <td rowspan="2" data-field="asn"></td>
       <td data-field="display_name" class="highlight"></td>
       <td data-field="router_id"></td>
       <td data-field="controls" class="options | right">
@@ -67,7 +67,6 @@
       </td>
     </tr>
     <tr data-template="row" class="secondary">
-      <td class="indent"></td>
       <td class="property" colspan="4">
         <div class="row">
           <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
@@ -98,6 +97,12 @@
               <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
             </span>
             </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-auto field">
+            {% trans "Config generated at" %}:
+            <span class="highlight" data-field="routeserver_config_generated_time"></span>
           </div>
         </div>
       </td>

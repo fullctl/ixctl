@@ -634,6 +634,10 @@ class Routeserver(HandleRefModel):
         return self.routeserver_config_status_dict.get("status")
 
     @property
+    def routeserver_config_generated_time(self):
+        return self.routeserver_config.generated
+
+    @property
     def routeserver_config_response(self):
         return self.routeserver_config.rs_response
 

@@ -286,6 +286,7 @@ class Routeserver(ModelSerializer):
             "graceful_shutdown",
             "extra_config",
             "routeserver_config_status",
+            "routeserver_config_generated_time",
             "routeserver_config_response",
             "routeserver_config_error",
         ]
