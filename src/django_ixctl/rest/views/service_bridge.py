@@ -57,7 +57,7 @@ class InternetExchangeMember(DataViewSet):
         ("ip", MethodFilter("ip")),
     ]
 
-    join_xl = {"ix": ("ix",)}
+    join_xl = {"ix": ("ix",), "ix_name": ("ix",)}
 
     queryset = models.InternetExchangeMember.objects.filter(status="ok")
     serializer_class = Serializers.member
