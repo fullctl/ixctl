@@ -39,7 +39,9 @@ class InternetExchange(DataViewSet):
     autocomplete = "name"
     allow_unfiltered = True
 
-    queryset = models.InternetExchange.objects.filter(status="ok").select_related("instance", "instance__org")
+    queryset = models.InternetExchange.objects.filter(status="ok").select_related(
+        "instance", "instance__org"
+    )
     serializer_class = Serializers.ix
 
 
@@ -61,7 +63,9 @@ class InternetExchangeMember(DataViewSet):
 
     join_xl = {"ix": ("ix",), "ix_name": ("ix",)}
 
-    queryset = models.InternetExchangeMember.objects.filter(status="ok").select_related("ix", "ix__instance", "ix__instance__org")
+    queryset = models.InternetExchangeMember.objects.filter(status="ok").select_related(
+        "ix", "ix__instance", "ix__instance__org"
+    )
     serializer_class = Serializers.member
 
     def filter_peers(self, qset, value):
@@ -71,13 +75,15 @@ class InternetExchangeMember(DataViewSet):
     def filter_mutual(self, qset, value):
         asn = value
         ix_ids = set()
-        ix_qset = self.get_queryset().filter(asn=asn, status="ok", ix__source_of_truth=True)
+        ix_qset = self.get_queryset().filter(
+            asn=asn, status="ok", ix__source_of_truth=True
+        )
 
         for member in ix_qset:
             ix_ids.add(member.ix_id)
 
         return qset.filter(ix_id__in=ix_ids).exclude(asn=asn)
-    
+
     def filter_sot(self, qset, value):
         return qset.filter(ix__source_of_truth=True).exclude(
             ix__pdb_id__isnull=True, ix__pdb_id=0
@@ -164,7 +170,9 @@ class RouteServer(DataViewSet):
 
     join_xl = {"ix": ("ix",)}
 
-    queryset = models.Routeserver.objects.filter(status="ok").select_related("ix", "ix__instance", "ix__instance__org")
+    queryset = models.Routeserver.objects.filter(status="ok").select_related(
+        "ix", "ix__instance", "ix__instance__org"
+    )
     serializer_class = Serializers.routeserver
 
     def filter_sot(self, qset, value):
