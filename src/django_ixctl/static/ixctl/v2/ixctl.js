@@ -699,12 +699,12 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
 
     show_graphs : function(member) {
       let graph_container = $("[data-element=graphs_container]");
-      
+
 
       if(!member.port) {
         // member does not have a port assigned
         // display a message and return
-        
+
         let message = $('<div class="alert alert-info">').append(
           $('<p>').text("This member does not have a port assigned.")
         )

@@ -29,7 +29,7 @@ proxy.setup(
                 "virtual_port/{org_tag}/{pk}/traffic",
                 "virtual_port/<str:org_tag>/<int:pk>/traffic/",
                 "virtual-port-traffic",
-            )
+            ),
         ],
     ),
 )
