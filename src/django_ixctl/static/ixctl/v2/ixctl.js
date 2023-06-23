@@ -708,7 +708,7 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
         let message = $('<div class="alert alert-info">').append(
           $('<p>').text("This member does not have a port assigned.")
         )
-        graph_container.emnpty().append(message);
+        graph_container.empty().append(message);
         return;
       }
 
