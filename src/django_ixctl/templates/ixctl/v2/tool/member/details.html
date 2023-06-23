@@ -1,0 +1,88 @@
+{% load static i18n %}
+<div data-template="member_details"
+    data-api-base="{% url "ixctl_api:member-list" org_tag=request.org.slug ix_tag="default" %}"
+    data-api-action=""
+    data-api-method="GET">
+
+  <div>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "Name" %}</label>
+          <p id="member-name" data-field="name"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "ASN" %}</label>
+          <p id="member-asn" data-field="asn"></p>
+        </div>
+      </div>
+      <!-- Add other member details here -->
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "State" %}</label>
+          <p id="member-state" data-field="ixf_state"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "Member Type" %}</label>
+          <p id="member-type" data-field="ixf_member_type"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "IPv4 Address" %}</label>
+          <p id="member-ipaddr4" data-field="ipaddr4"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "IPv6 Address" %}</label>
+          <p id="member-ipaddr6" data-field="ipaddr6"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "MAC Address" %}</label>
+          <p id="member-macaddr" data-field="macaddr"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "MD5" %}</label>
+          <p id="member-md5" data-field="md5"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "AS Macro" %}</label>
+          <p id="member-as-macro" data-field="as_macro_override"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "Route Server" %}</label>
+          <p id="member-is-rs-peer" data-field="is_rs_peer"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label class="form-label">{% trans "Speed" %}</label>
+          <p id="member-speed" data-field="speed"></p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <!-- Reserve space for vertical listing of graphs -->
+      <div id="graph-container" style="height: 500px;">
+        <!-- Graph implementation pending -->
+      </div>
+    </div>
+  </div>
+</div>

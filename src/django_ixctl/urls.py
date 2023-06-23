@@ -24,6 +24,12 @@ proxy.setup(
                 "device/<str:org_tag>/<int:pk>/virtual_ports/",
                 "device-virtual-ports",
             ),
+            # traffic graphs
+            (
+                "virtual_port/{org_tag}/{pk}/traffic",
+                "virtual_port/<str:org_tag>/<int:pk>/traffic/",
+                "virtual-port-traffic",
+            )
         ],
     ),
 )
