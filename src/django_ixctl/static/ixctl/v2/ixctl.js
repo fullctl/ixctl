@@ -95,6 +95,10 @@ $ctl.application.Ixctl = $tc.extend(
         return new $ctl.application.Ixctl.Members();
       });
 
+      this.tool("member_details", () => {
+        return new $ctl.application.Ixctl.MemberDetails();
+      })
+
       $($ctl).trigger("init_tools", [this]);
 
       this.$t.members.activate();
@@ -463,6 +467,11 @@ $ctl.application.Ixctl.Members = $tc.extend(
           }
         });
 
+        row.find('a[data-action="view_member_details"]').click(() => {
+          $ctl.ixctl.$t.member_details.show_member(row.data("apiobject").id);
+          $ctl.ixctl.page("member");
+        })
+
         if(!grainy.check(data.grainy, "d")) {
           row.find('a[data-api-method="DELETE"]').hide();
         }
@@ -622,6 +631,108 @@ $ctl.application.Ixctl.Members = $tc.extend(
   $ctl.application.Tool
 );
 
+
+/**
+ * Device details tool
+ */
+
+$ctl.application.Ixctl.MemberDetails = $tc.extend(
+  "MemberDetails",
+  {
+    MemberDetails: function () {
+      this.Tool("member_details");
+      this.member_id = 0;
+      this.member = null;
+    },
+
+    init : function() {
+
+      // create member details widget that holds member information
+      // such as ip addresses, speed and graphs
+
+      this.widget("member", ($e) => {
+        let form = new twentyc.rest.Form(
+          this.template("member_widget", this.$e.member_container)
+        );
+        form.format_request_url = (url) => {
+          return url.replace("default", $ctl.ixctl.ix_slug());
+        }
+        return form;
+      });
+
+      this.$e.refresh_traffic_graph.click(() => {
+        if(this.member) {
+          this.$e.graphs_container.empty().append(fullctl.template("graph_placeholder"));
+          this.show_graphs(this.member);
+        }
+      });
+    },
+
+    show_member : function(member_id) {
+
+      this.member_id = member_id;
+
+      this.$e.graphs_container.empty().append(
+        fullctl.template("graph_placeholder")
+      );
+      this.$e.refresh_traffic_graph.hide();
+
+      this.$w.member.get(""+member_id).then(
+        (response) => {
+          let member = response.first();
+          this.member = member;
+          this.$e.menu.find('.member-name').text(member.name);
+          this.$e.menu.find('.member-asn').text(member.asn);
+
+          member.virtual_port_name = member.port ? member.port.virtual_port_name :"No port assigned";
+          member.device_name = member.port ? member.port.device_name :"";
+          member.pretty_speed = fullctl.formatters.pretty_speed(member.speed);
+          member.as_macro_prepared = member.as_macro_override || member.as_macro || "";
+
+          this.$e.menu.find('.ip4').text(member.ipaddr4);
+          this.$w.member.fill(member);
+          this.show_graphs(member);
+        }
+      )
+
+    },
+
+    show_graphs : function(member) {
+      let graph_container = $("[data-element=graphs_container]");
+
+
+      if(!member.port) {
+        // member does not have a port assigned
+        // display a message and return
+
+        let message = $('<div class="alert alert-info">').append(
+          $('<p>').text("This member does not have a port assigned.")
+        )
+        graph_container.empty().append(message);
+        return;
+      }
+
+
+      fullctl.graphs.render_graph_from_file(
+        this.$w.member.element.data('api-traffic-base').replace(/0/g, member.port.virtual_port),
+        "#member_port_traffic_graph",
+        member.port.virtual_port_name,
+      ).then(() => {
+        // check if a svg has been added to the container, if not, graph data was empty
+        if(graph_container.find("svg").length == 0) {
+          graph_container.empty().append(
+            $('<div class="alert alert-info">').append(
+              $('<p>').text("No traffic data available for this member.")
+            )
+          )
+        } else {
+          this.$e.refresh_traffic_graph.show();
+        }
+      })
+    }
+  },
+  $ctl.application.Tool
+);
 
 $(document).ready(function() {
   $ctl.ixctl = new $ctl.application.Ixctl();

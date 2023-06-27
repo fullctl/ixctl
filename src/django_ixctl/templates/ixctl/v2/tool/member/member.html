@@ -1,0 +1,65 @@
+{% load i18n %}
+<div data-template="member_widget"
+    data-api-base="{% url "ixctl_api:member-list" org_tag=request.org.slug ix_tag="default" %}"
+    data-api-traffic-base="{% url "proxies-api-devicectl-virtual-port-traffic" org_tag=request.org.slug pk="0" %}"
+    data-api-action=""
+    data-api-method="GET">
+
+  <div class="row controls">
+    <div class="col-12">
+      <!-- Add other member details here -->
+      <!-- Change the layout to have two fields per row -->
+      <div class="row mb-3">
+        <div class="col-6">
+          <label class="form-label">{% trans "State" %}</label>
+          <p id="member-state" data-field="ixf_state"></p>
+        </div>
+        <div class="col-6">
+          <label class="form-label">{% trans "Member Type" %}</label>
+          <p id="member-type" data-field="ixf_member_type"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-6">
+          <label class="form-label">{% trans "IPv4 Address" %}</label>
+          <p id="member-ipaddr4" data-field="ipaddr4"></p>
+        </div>
+        <div class="col-6">
+          <label class="form-label">{% trans "IPv6 Address" %}</label>
+          <p id="member-ipaddr6" data-field="ipaddr6"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-6">
+          <label class="form-label">{% trans "MAC Address" %}</label>
+          <p id="member-macaddr" data-field="macaddr"></p>
+        </div>
+        <div class="col-6">
+          <label class="form-label">{% trans "MD5" %}</label>
+          <p id="member-md5" data-field="md5"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-6">
+          <label class="form-label">{% trans "AS Macro" %}</label>
+          <p id="member-as-macro" data-field="as_macro_prepared"></p>
+        </div>
+        <div class="col-6">
+          <label class="form-label">{% trans "Route Server" %}</label>
+          <p id="member-is-rs-peer" data-field="is_rs_peer"></p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-6">
+          <label class="form-label">{% trans "Port" %}</label>
+          <p id="member-virtual-port-name" data-field="virtual_port_name"></p>
+          <p id="member-device-name" data-field="device_name" class="small"></p>
+        </div>
+        <div class="col-6">
+          <label class="form-label">{% trans "Speed" %}</label>
+          <p id="member-speed" data-field="pretty_speed"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

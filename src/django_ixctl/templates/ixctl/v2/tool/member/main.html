@@ -1,0 +1,55 @@
+{% load static i18n %}
+<div class="tool shift-down" data-component="member_details">
+
+  {% include "common/v2/tool_base.html" %}
+
+  <div class="row">
+    <div class="col fullctl-inner-tabs">
+      <ul class="nav nav-tabs" id="memberStatusTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" id="member-overview-tab" data-bs-toggle="tab" href="#member-overview" role="tab" aria-controls="member-overview" aria-selected="true">Overview</a>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="memberStatusTabsContent" style="position:relative">
+        <!-- member Overview Tab -->
+        <div class="tab-pane fade show active" id="member-overview" role="tabpanel" aria-labelledby="member-overview-tab">
+          <div class="row">
+            <div class="col-6" data-element="member_container">
+              <!-- Member information -->
+            </div>
+            <div class="col-6">
+              <div data-element="graphs_container" id="member_port_traffic_graph">
+                <!-- Traffic graphs -->
+                <div class="graph-placeholder"><div class="loading-shim"></div></div>
+              </div>
+
+              <div class="row mb-3 legend marg-top-lg">
+                <div class="col-12 right">
+                  <button class="secondary col-md-auto btn ms-3" style="display:none" data-element="refresh_traffic_graph">
+                    <div class="row align-items-center">
+                      <div class="col label pe-0">Refresh</div>
+                      <div class="col-auto">
+                        <span class="icon icon-refresh"></span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="templates">
+
+    {% include "ixctl/v2/tool/member/menu.html" %}
+    {% include "ixctl/v2/tool/member/member.html" %}
+    <div data-template="graph_placeholder" class="graph-placeholder"><div class="loading-shim"></div></div>
+
+  </div>
+</div>
