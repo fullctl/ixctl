@@ -19,6 +19,31 @@
               <!-- Member information -->
             </div>
             <div class="col-6">
+              <div class="controls">
+                <div class="row mb-3">
+                  <div class="col-6"></div>
+                  <div class="col-6 right">
+                    <select class="form-control mb-3" id="date_range_select">
+                      <option value="1">1 hour</option>
+                      <option value="24" selected>24 hours</option>
+                      <option value="168">7 days</option>
+                      <option value="720">30 days</option>
+                      <option value="current_month">Current Month</option>
+                      <option value="last_month">Last Month</option>
+                      <option value="2160">90 days</option>
+                      <option value="8760">365 days</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <div id="custom_date_range" style="display: none;" class="right">
+                      <input placeholder="Select start date" type="text" id="custom_start_date" class="datepicker">
+                      <input placeholder="Select end date" type="text" id="custom_end_date" class="datepicker">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
               <div data-element="graphs_container" id="member_port_traffic_graph">
                 <!-- Traffic graphs -->
                 <div class="graph-placeholder"><div class="loading-shim"></div></div>

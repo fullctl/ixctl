@@ -647,6 +647,8 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
 
     init : function() {
 
+      var tool = this;
+
       // create member details widget that holds member information
       // such as ip addresses, speed and graphs
 
@@ -660,14 +662,82 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
         return form;
       });
 
+      // Refresh traffic graph when clicked
       this.$e.refresh_traffic_graph.click(() => {
         if(this.member) {
-          this.$e.graphs_container.empty().append(fullctl.template("graph_placeholder"));
-          this.show_graphs(this.member);
+          let selected_value = $('#date_range_select').val();
+          let { end_date, duration } = tool.calculate_end_date_and_duration(selected_value);
+          this.indicate_loading().show_graphs(this.member, end_date, duration);
+        }
+      });
+
+      // Initialize the datepicker
+      $('.datepicker').datepicker({
+        dateFormat: 'yy-mm-dd',
+        onSelect: function() {
+          // When a date is selected, check if both dates are selected
+          if ($('#custom_start_date').val() && $('#custom_end_date').val()) {
+            // If both dates are selected, calculate the end date and duration and show the graphs
+            let selected_value = $('#date_range_select').val();
+            let { end_date, duration } = tool.calculate_end_date_and_duration(selected_value);
+            tool.indicate_loading().show_graphs(tool.member, end_date, duration);
+          }
+        }
+      });
+
+      // Change event for date range select
+      $('#date_range_select').change(function() {
+        let selected_value = $(this).val();
+
+        if (selected_value === 'custom') {
+          // Show the date input fields
+          $('#custom_date_range').show();
+        } else {
+          // Hide the date input fields
+          $('#custom_date_range').hide();
+
+          // Calculate the end date and duration and show the graphs
+          let { end_date, duration } = tool.calculate_end_date_and_duration(selected_value);
+          tool.indicate_loading().show_graphs(tool.member, end_date, duration);
         }
       });
     },
 
+    // Function to calculate end date and duration based on selected value
+    calculate_end_date_and_duration : function(selected_value) {
+      let end_date = Math.floor(new Date().getTime() / 1000);
+      let duration;
+
+      if (selected_value === 'custom') {
+        let start_date = new Date($('#custom_start_date').val()).getTime() / 1000;
+        end_date = new Date($('#custom_end_date').val()).getTime() / 1000;
+        duration = end_date - start_date;
+      } else if (selected_value === 'current_month') {
+        let now = new Date();
+        let start_of_month = new Date(now.getFullYear(), now.getMonth(), 1);
+        duration = end_date - start_of_month.getTime() / 1000;
+      } else if (selected_value === 'last_month') {
+        let now = new Date();
+        let start_of_last_month = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        let end_of_last_month = new Date(now.getFullYear(), now.getMonth(), 0);
+        duration = end_of_last_month.getTime() / 1000 - start_of_last_month.getTime() / 1000;
+        end_date = end_of_last_month.getTime() / 1000;
+      } else {
+        duration = selected_value * 60 * 60;
+      }
+
+      return { end_date, duration };
+    },
+
+    // Function to indicate loading
+    indicate_loading : function() {
+      this.$e.graphs_container.empty().append(
+        fullctl.template("graph_placeholder")
+      );
+      return this;
+    },
+
+    // Function to show member details
     show_member : function(member_id) {
 
       this.member_id = member_id;
@@ -697,9 +767,9 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
 
     },
 
-    show_graphs : function(member) {
+    // Function to show graphs
+    show_graphs : function(member, end_date, duration) {
       let graph_container = $("[data-element=graphs_container]");
-
 
       if(!member.port) {
         // member does not have a port assigned
@@ -712,9 +782,20 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
         return;
       }
 
+      let url = this.$w.member.element.data('api-traffic-base').replace(/0/g, member.port.virtual_port);
+      let params = [];
+      if (end_date) {
+        params.push('start_time=' + end_date);
+      }
+      if (end_date && duration) {
+        params.push('duration=' + duration);
+      }
+      if (params.length > 0) {
+        url += '?' + params.join('&');
+      }
 
       fullctl.graphs.render_graph_from_file(
-        this.$w.member.element.data('api-traffic-base').replace(/0/g, member.port.virtual_port),
+        url,
         "#member_port_traffic_graph",
         member.port.virtual_port_name,
       ).then(() => {
@@ -733,6 +814,7 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
   },
   $ctl.application.Tool
 );
+
 
 $(document).ready(function() {
   $ctl.ixctl = new $ctl.application.Ixctl();
