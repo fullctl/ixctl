@@ -6,6 +6,7 @@ $ctl.application.Ixctl = $tc.extend(
     Ixctl : function() {
       this.Application("ixctl");
 
+      this.autoload_page();
       this.urlkeys = {}
       this.exchanges = {}
       this.ix_slugs = {}
