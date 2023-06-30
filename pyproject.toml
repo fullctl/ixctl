@@ -19,7 +19,7 @@ ixctl = "ixctl.cli:main"
 
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 fullctl = { git = "https://github.com/fullctl/fullctl.git", branch = "prep-release" }
 arouteserver = "^1.17"
 pydantic = "^1.10.2"
