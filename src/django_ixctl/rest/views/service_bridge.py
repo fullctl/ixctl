@@ -39,7 +39,9 @@ class InternetExchange(DataViewSet):
     autocomplete = "name"
     allow_unfiltered = True
 
-    queryset = models.InternetExchange.objects.filter(status="ok")
+    queryset = models.InternetExchange.objects.filter(status="ok").select_related(
+        "instance", "instance__org"
+    )
     serializer_class = Serializers.ix
 
 
@@ -48,6 +50,7 @@ class InternetExchangeMember(DataViewSet):
     path_prefix = "/data"
     allowed_http_methods = ["GET"]
     valid_filters = [
+        ("ids", "id__in"),
         ("ix", "ix_id"),
         ("ix_verified", "ix__verified"),
         ("asn", "asn"),
@@ -55,16 +58,31 @@ class InternetExchangeMember(DataViewSet):
         ("peers", MethodFilter("peers")),
         ("sot", MethodFilter("sot")),
         ("ip", MethodFilter("ip")),
+        ("mutual", MethodFilter("mutual")),
     ]
 
     join_xl = {"ix": ("ix",), "ix_name": ("ix",)}
 
-    queryset = models.InternetExchangeMember.objects.filter(status="ok")
+    queryset = models.InternetExchangeMember.objects.filter(status="ok").select_related(
+        "ix", "ix__instance", "ix__instance__org"
+    )
     serializer_class = Serializers.member
 
     def filter_peers(self, qset, value):
         member = self.get_queryset().filter(id=value).first()
         return qset.filter(ix_id=member.ix_id, status="ok").exclude(id=value)
+
+    def filter_mutual(self, qset, value):
+        asn = value
+        ix_ids = set()
+        ix_qset = self.get_queryset().filter(
+            asn=asn, status="ok", ix__source_of_truth=True
+        )
+
+        for member in ix_qset:
+            ix_ids.add(member.ix_id)
+
+        return qset.filter(ix_id__in=ix_ids).exclude(asn=asn)
 
     def filter_sot(self, qset, value):
         return qset.filter(ix__source_of_truth=True).exclude(
@@ -152,7 +170,9 @@ class RouteServer(DataViewSet):
 
     join_xl = {"ix": ("ix",)}
 
-    queryset = models.Routeserver.objects.filter(status="ok")
+    queryset = models.Routeserver.objects.filter(status="ok").select_related(
+        "ix", "ix__instance", "ix__instance__org"
+    )
     serializer_class = Serializers.routeserver
 
     def filter_sot(self, qset, value):

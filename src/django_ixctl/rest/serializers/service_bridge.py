@@ -55,8 +55,7 @@ class InternetExchangeMember(ModelSerializer):
         return None
 
     def get_ix_name(self, member):
-        if "ix_name" in self.context.get("joins", []):
-            return member.ix.name
+        return member.ix.name
 
     def get_pdb_ix_id(self, member):
         return member.ix.pdb_id
