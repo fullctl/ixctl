@@ -51,6 +51,11 @@ ctl = ">=1"
 jinja2 = ">=2"
 tmpl = ">=1"
 
+[tool.poetry.group.tasks]
+optional = true
+
+[tool.poetry.group.tasks.dependencies]
+
 [tool.isort]
 profile = "black"
 multi_line_output = 3
