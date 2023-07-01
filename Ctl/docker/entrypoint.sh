@@ -12,7 +12,7 @@ collect_static() {
 
 
 cd $SERVICE_HOME
-case "$@" in
+case "$1" in
   "uwsgi" )
     echo starting uwsgi
     if [ -z "$NO_MIGRATE" ]; then
@@ -43,7 +43,7 @@ case "$@" in
     echo dropping to shell
     exec sh
     ;;
-  "/bin/sh|bash" )
+  "/bin/sh"|"bash" )
     echo dropping to shell "$1" - "$@"
     exec $@
     ;;
