@@ -1,6 +1,7 @@
 ARG python_ver=3.11
-ARG base_repo=python
-ARG base_tag=${python_ver}-slim
+# current main base is alpine, but we need to use slim for this
+ARG _base_repo=python
+ARG _base_tag=${python_ver}-slim
 
 ARG install_to=/srv/service
 ARG poetry_pin="==1.5.1"
@@ -21,7 +22,7 @@ ARG debug_deps=" \
     vim \
     "
 
-FROM ${base_repo}:${base_tag} as base
+FROM ${_base_repo}:${_base_tag} as base
 
 ARG install_to
 ARG virtual_env
