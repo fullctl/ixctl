@@ -551,33 +551,35 @@ $ctl.application.Ixctl.Members = $tc.extend(
         clear_member_filter
       );
 
-      let filter_active = false;
-      const hide_non_active = (e, row, data) => {
-        if (data.port == null) {
-          row.addClass('filter-non-active-hidden')
-        } else {
-          row.removeClass('filter-non-active-hidden');
-        }
-      }
-      const toggle_non_active_filter = (active = null) => {
-        filter_active = active != null ? !filter_active : active;
 
-        if (filter_active) {
-          $(this.$w.list).on("insert:after", hide_non_active)
-        } else {
-          $(this.$w.list).off("insert:after", hide_non_active)
-        }
-
-        this.$w.list.load();
-      };
-
-
+      this.filter_active = false;
+      const toggle_non_active_filter = this.toggle_non_active_filter.bind(this);
       menu.find('[data-element="filter_non_active_members"]').click(function() {
         $(this).toggleClass("active");
         toggle_non_active_filter();
       });
 
       return menu;
+    },
+
+    toggle_non_active_filter : function(active = null) {
+      this.filter_active = active != null ? active : !this.filter_active;
+
+      const hide_non_active = (e, row, data) => {
+        if (data.port != null) {
+          row.addClass('filter-non-active-hidden')
+        } else {
+          row.removeClass('filter-non-active-hidden');
+        }
+      }
+
+      if (this.filter_active) {
+        $(this.$w.list).on("insert:after", hide_non_active)
+      } else {
+        $(this.$w.list).off("insert:after", hide_non_active)
+      }
+
+      this.$w.list.load();
     },
 
     update_counts : function() {
