@@ -499,20 +499,11 @@ $ctl.application.Ixctl.Members = $tc.extend(
         return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug());
       });
 
-      /**
-       * hides members in the UI based on whether the asn matches the
-       * `search_term` parameter and scrolls to the first match of the
-       * `search_term`
-       *
-       * @function member_filter
-       * @param {String} search_term
-       */
-      const member_filter = (search_term) => {
-        let first_match;
-        this.$w.list.load();
-
-        $(this.$w.list).on("load:after", () => {
+      // returns a function that will filter the list
+      const after_list_load_func = (search_term) => {
+        return () => {
           const members = this.$w.list.list_body.find("tr:not(.secondary)");
+          let first_match;
 
           members.each(function() {
             const primary_row = $(this);
@@ -524,7 +515,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
               secondary_row.removeClass("filter-hidden");
 
               if (!first_match) {
-                this.scrollIntoView();
+                primary_row[0].scrollIntoView();
                 first_match = this;
               }
             } else {
@@ -532,17 +523,30 @@ $ctl.application.Ixctl.Members = $tc.extend(
               secondary_row.addClass("filter-hidden");
             }
           });
-        });
+        }
       }
 
-      /**
-       * unhides all hidden members in the UI if they were expanded because of
-       * the `member_filter` function.
-       *
-       * @function clear_member_filter
-       */
+      let last_after_load_func;
+
+      const member_filter = (search_term) => {
+        if (last_after_load_func) {
+          $(this.$w.list).off("load:after", last_after_load_func);
+        }
+
+        last_after_load_func = after_list_load_func(search_term);
+
+        $(this.$w.list).on("load:after", last_after_load_func);
+
+        this.$w.list.load();
+      }
+
+
       const clear_member_filter = () => {
         this.$w.list.list_body.find(".filter-hidden").removeClass("filter-hidden");
+        if (last_after_load_func) {
+          $(this.$w.list).off("load:after", last_after_load_func);
+          last_after_load_func = null;
+        }
       }
 
       new fullctl.application.Searchbar(
