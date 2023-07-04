@@ -574,13 +574,13 @@ $ctl.application.Ixctl.Members = $tc.extend(
     /**
      * Add a class to rows that are not active. This is used to hide them.
      *
-     * @method hide_non_active_members
+     * @method hide_active_members
      * @param {Event} e
      * @param {jQuery} row
      * @param {Object} data
      */
-    hide_non_active_members : function(e, row, data) {
-      if (data.port != null) {
+    hide_active_members : function(e, row, data) {
+      if (this.is_member_active(data)) {
         row.addClass('filter-non-active-hidden')
       } else {
         row.removeClass('filter-non-active-hidden');
@@ -596,25 +596,39 @@ $ctl.application.Ixctl.Members = $tc.extend(
     toggle_non_active_filter : function(active = null) {
       this.filter_active = active != null ? active : !this.filter_active;
 
+      // make hide_active_members available to the list
+      this.$w.list.is_member_active = this.is_member_active;
+
       if (this.filter_active) {
-        $(this.$w.list).on("insert:after", this.hide_non_active_members)
+        $(this.$w.list).on("insert:after", this.hide_active_members)
       } else {
-        $(this.$w.list).off("insert:after", this.hide_non_active_members)
+        $(this.$w.list).off("insert:after", this.hide_active_members)
       }
 
       this.$w.list.load();
     },
 
     update_counts : function() {
-      let non_active_members = 0
+      let non_active_members = 0;
+      const tool = this;
       this.$w.list.list_body.find("tr:not(.secondary)").each(function() {
         const data = $(this).data("apiobject");
-        if (data.port == null) {
+        if (!tool.is_member_active(data)) {
           non_active_members += 1;
         }
       });
 
       this.$e.menu.find('[data-element="filter_non_active_members"] .value').text(non_active_members);
+    },
+
+    /**
+     * Returns true if the member is active.
+     *
+     * @method is_member_active
+     * @param {Object} apiobj
+     */
+    is_member_active : function(apiobj) {
+      return apiobj.ixf_state == "active" || apiobj.port != null;
     },
 
     sync : function() {
