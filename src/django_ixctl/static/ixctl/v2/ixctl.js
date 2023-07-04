@@ -562,21 +562,21 @@ $ctl.application.Ixctl.Members = $tc.extend(
       return menu;
     },
 
+    hide_non_active_members : function(e, row, data) {
+      if (data.port != null) {
+        row.addClass('filter-non-active-hidden')
+      } else {
+        row.removeClass('filter-non-active-hidden');
+      }
+    },
+
     toggle_non_active_filter : function(active = null) {
       this.filter_active = active != null ? active : !this.filter_active;
 
-      const hide_non_active = (e, row, data) => {
-        if (data.port != null) {
-          row.addClass('filter-non-active-hidden')
-        } else {
-          row.removeClass('filter-non-active-hidden');
-        }
-      }
-
       if (this.filter_active) {
-        $(this.$w.list).on("insert:after", hide_non_active)
+        $(this.$w.list).on("insert:after", this.hide_non_active_members)
       } else {
-        $(this.$w.list).off("insert:after", hide_non_active)
+        $(this.$w.list).off("insert:after", this.hide_non_active_members)
       }
 
       this.$w.list.load();
