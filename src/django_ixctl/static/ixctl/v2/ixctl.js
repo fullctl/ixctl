@@ -499,7 +499,10 @@ $ctl.application.Ixctl.Members = $tc.extend(
         return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug());
       });
 
-      // returns a function that will filter the list
+      // returns a function that will filter the list based on the search term.
+      // This structure is needed because the list is loaded asynchronously
+      // and we need to wait for it to load before we can filter it. and the
+      // event doesn't pass the search term.
       const after_list_load_func = (search_term) => {
         return () => {
           const members = this.$w.list.list_body.find("tr:not(.secondary)");
@@ -526,6 +529,8 @@ $ctl.application.Ixctl.Members = $tc.extend(
         }
       }
 
+      // used to store the last after_list_load_func so we can remove it
+      // when the filter is cleared.
       let last_after_load_func;
 
       const member_filter = (search_term) => {
