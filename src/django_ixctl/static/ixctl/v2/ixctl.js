@@ -573,11 +573,11 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
     /**
      * Add a class to rows that are not active. This is used to hide them.
-     * 
+     *
      * @method hide_non_active_members
-     * @param {Event} e 
-     * @param {jQuery} row 
-     * @param {Object} data 
+     * @param {Event} e
+     * @param {jQuery} row
+     * @param {Object} data
      */
     hide_non_active_members : function(e, row, data) {
       if (data.port != null) {
@@ -589,7 +589,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
     /**
      * hides or shows non active members in the list.
-     * 
+     *
      * @method toggle_non_active_filter
      * @param {Boolean} [active]
      */
