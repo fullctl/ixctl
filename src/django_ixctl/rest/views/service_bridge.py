@@ -1,3 +1,4 @@
+import fullctl.service_bridge.devicectl as devicectl
 from django.db.models import Q
 from fullctl.django.rest.decorators import grainy_endpoint
 from fullctl.django.rest.route.service_bridge import route
@@ -152,6 +153,25 @@ class InternetExchangeMember(DataViewSet):
                 continue
 
         return Response(Serializers.member(instance=members, many=True).data)
+
+    @action(detail=True, methods=["GET"])
+    @grainy_endpoint(namespace="service_bridge")
+    def traffic(self, request, pk=None, *args, **kwargs):
+        member = self.get_object()
+
+        if not member.port:
+            return Response({})
+
+        virtual_port_id = member.port.object.virtual_port
+
+        start_time = request.query_params.get("start_time")
+        duration = request.query_params.get("duration")
+
+        return Response(
+            devicectl.VirtualPort().traffic(
+                virtual_port_id, start_time=start_time, duration=duration
+            )
+        )
 
 
 @route
