@@ -762,6 +762,7 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
 
           this.$e.menu.find('.ip4').text(member.ipaddr4);
           this.$w.member.fill(member);
+          $('#date_range_select').val("24");
           this.show_graphs(member);
         }
       )
