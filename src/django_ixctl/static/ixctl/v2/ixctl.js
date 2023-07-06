@@ -499,20 +499,14 @@ $ctl.application.Ixctl.Members = $tc.extend(
         return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug());
       });
 
-      /**
-       * hides members in the UI based on whether the asn matches the
-       * `search_term` parameter and scrolls to the first match of the
-       * `search_term`
-       *
-       * @function member_filter
-       * @param {String} search_term
-       */
-      const member_filter = (search_term) => {
-        let first_match;
-        this.$w.list.load();
-
-        $(this.$w.list).on("load:after", () => {
+      // returns a function that will filter the list based on the search term.
+      // This structure is needed because the list is loaded asynchronously
+      // and we need to wait for it to load before we can filter it. and the
+      // event doesn't pass the search term.
+      const after_list_load_func = (search_term) => {
+        return () => {
           const members = this.$w.list.list_body.find("tr:not(.secondary)");
+          let first_match;
 
           members.each(function() {
             const primary_row = $(this);
@@ -524,7 +518,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
               secondary_row.removeClass("filter-hidden");
 
               if (!first_match) {
-                this.scrollIntoView();
+                primary_row[0].scrollIntoView();
                 first_match = this;
               }
             } else {
@@ -532,17 +526,32 @@ $ctl.application.Ixctl.Members = $tc.extend(
               secondary_row.addClass("filter-hidden");
             }
           });
-        });
+        }
       }
 
-      /**
-       * unhides all hidden members in the UI if they were expanded because of
-       * the `member_filter` function.
-       *
-       * @function clear_member_filter
-       */
+      // used to store the last after_list_load_func so we can remove it
+      // when the filter is cleared.
+      let last_after_load_func;
+
+      const member_filter = (search_term) => {
+        if (last_after_load_func) {
+          $(this.$w.list).off("load:after", last_after_load_func);
+        }
+
+        last_after_load_func = after_list_load_func(search_term);
+
+        $(this.$w.list).on("load:after", last_after_load_func);
+
+        this.$w.list.load();
+      }
+
+
       const clear_member_filter = () => {
         this.$w.list.list_body.find(".filter-hidden").removeClass("filter-hidden");
+        if (last_after_load_func) {
+          $(this.$w.list).off("load:after", last_after_load_func);
+          last_after_load_func = null;
+        }
       }
 
       new fullctl.application.Searchbar(
@@ -551,27 +560,9 @@ $ctl.application.Ixctl.Members = $tc.extend(
         clear_member_filter
       );
 
-      let filter_active = false;
-      const hide_non_active = (e, row, data) => {
-        if (data.port == null) {
-          row.addClass('filter-non-active-hidden')
-        } else {
-          row.removeClass('filter-non-active-hidden');
-        }
-      }
-      const toggle_non_active_filter = (active = null) => {
-        filter_active = active != null ? !filter_active : active;
 
-        if (filter_active) {
-          $(this.$w.list).on("insert:after", hide_non_active)
-        } else {
-          $(this.$w.list).off("insert:after", hide_non_active)
-        }
-
-        this.$w.list.load();
-      };
-
-
+      this.filter_active = false;
+      const toggle_non_active_filter = this.toggle_non_active_filter.bind(this);
       menu.find('[data-element="filter_non_active_members"]').click(function() {
         $(this).toggleClass("active");
         toggle_non_active_filter();
@@ -580,16 +571,64 @@ $ctl.application.Ixctl.Members = $tc.extend(
       return menu;
     },
 
+    /**
+     * Add a class to rows that are not active. This is used to hide them.
+     *
+     * @method hide_active_members
+     * @param {Event} e
+     * @param {jQuery} row
+     * @param {Object} data
+     */
+    hide_active_members : function(e, row, data) {
+      if (this.is_member_active(data)) {
+        row.addClass('filter-non-active-hidden')
+      } else {
+        row.removeClass('filter-non-active-hidden');
+      }
+    },
+
+    /**
+     * hides or shows non active members in the list.
+     *
+     * @method toggle_non_active_filter
+     * @param {Boolean} [active]
+     */
+    toggle_non_active_filter : function(active = null) {
+      this.filter_active = active != null ? active : !this.filter_active;
+
+      // make hide_active_members available to the list
+      this.$w.list.is_member_active = this.is_member_active;
+
+      if (this.filter_active) {
+        $(this.$w.list).on("insert:after", this.hide_active_members)
+      } else {
+        $(this.$w.list).off("insert:after", this.hide_active_members)
+      }
+
+      this.$w.list.load();
+    },
+
     update_counts : function() {
-      let non_active_members = 0
+      let non_active_members = 0;
+      const tool = this;
       this.$w.list.list_body.find("tr:not(.secondary)").each(function() {
         const data = $(this).data("apiobject");
-        if (data.port == null) {
+        if (!tool.is_member_active(data)) {
           non_active_members += 1;
         }
       });
 
       this.$e.menu.find('[data-element="filter_non_active_members"] .value').text(non_active_members);
+    },
+
+    /**
+     * Returns true if the member is active.
+     *
+     * @method is_member_active
+     * @param {Object} apiobj
+     */
+    is_member_active : function(apiobj) {
+      return apiobj.ixf_state == "active" || apiobj.port != null;
     },
 
     sync : function() {
