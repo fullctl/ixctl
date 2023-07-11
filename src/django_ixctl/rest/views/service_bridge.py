@@ -52,10 +52,12 @@ class InternetExchangeMember(DataViewSet):
     allowed_http_methods = ["GET"]
     valid_filters = [
         ("ids", "id__in"),
+        ("org", "ix__instance__org_id"),
         ("ix", "ix_id"),
         ("ix_verified", "ix__verified"),
         ("asn", "asn"),
         ("asns", "asn__in"),
+        ("ports", MethodFilter("ports")),
         ("peers", MethodFilter("peers")),
         ("sot", MethodFilter("sot")),
         ("ip", MethodFilter("ip")),
@@ -92,6 +94,17 @@ class InternetExchangeMember(DataViewSet):
 
     def filter_ip(self, qset, value):
         return qset.filter(Q(ipaddr4=value) | Q(ipaddr6=value))
+
+    def filter_ports(self, qset, value):
+        port_ids = list(map(int, value.split(",")))
+        ids = []
+        print("PORT IDS: ", port_ids)
+        for member in qset:
+            if member.port and int(member.port) in port_ids:
+                ids.append(member.id)
+
+        print("IDS: ", ids)
+        return qset.filter(id__in=ids)
 
     @action(
         detail=False,

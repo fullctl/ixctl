@@ -30,6 +30,11 @@ proxy.setup(
                 "virtual_port/<str:org_tag>/<int:pk>/traffic/",
                 "virtual-port-traffic",
             ),
+            (
+                "traffic/{org_tag}/ix/{ix_id}",
+                "traffic/<str:org_tag>/ix/<int:ix_id>/",
+                "ix-traffic",
+            ),
         ],
     ),
 )
