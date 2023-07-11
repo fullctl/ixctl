@@ -60,6 +60,14 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
       aria-selected="false"
       id="settings-tab"
       href="#settings">{% trans "Settings" %}</a>
+
+    <a class="nav-link"
+      data-bs-toggle="tab"
+      role="tab"
+      aria-controls="traffic"
+      aria-selected="false"
+      id="traffic-tab"
+      href="#traffic">{% trans "Traffic" %}</a>
 </div>
 {% endblock %}
 
@@ -192,6 +200,10 @@ $(fullctl.application).on("initialized", function(e, ixctl, id) {
 
   <div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="tab-settings">
     {% include "ixctl/v2/tool/settings/main.html" %}
+  </div>
+
+  <div class="tab-pane" id="traffic" role="tabpanel" aria-labelledby="tab-traffic">
+    {% include "ixctl/v2/tool/traffic/main.html" %}
   </div>
 </div>
 

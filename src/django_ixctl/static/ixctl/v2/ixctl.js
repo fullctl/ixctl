@@ -52,8 +52,6 @@ $ctl.application.Ixctl = $tc.extend(
           $('[data-toggled="multiple-exchanges"]').hide();
         }
 
-        this.$t.members.show_graph_controls().indicate_graph_loading().show_graph();
-
       });
 
       // wire `Set as default` button
@@ -102,6 +100,10 @@ $ctl.application.Ixctl = $tc.extend(
       this.tool("member_details", () => {
         return new $ctl.application.Ixctl.MemberDetails();
       })
+
+      this.tool("traffic", () => {
+        return new $ctl.application.Ixctl.Traffic();
+      });
 
       $($ctl).trigger("init_tools", [this]);
 
@@ -174,6 +176,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       this.sync();
       this.sync_url(id);
+      $ctl.ixctl.$t.traffic.sync();
     },
 
     sync_url: function(id) {
@@ -670,17 +673,39 @@ $ctl.application.Ixctl.Members = $tc.extend(
         // no exchange exists - hide members tool
         this.hide();
       }
+    }
+
+  },
+  $ctl.application.Tool
+);
+
+
+/**
+ * Traffic tool
+ */
+
+
+$ctl.application.Ixctl.Traffic = $tc.extend(
+  "Traffic",
+  {
+
+    Traffic : function() {
+      this.Tool("traffic");
+    },
+
+    sync : function() {
+      this.show_graph_controls().indicate_graph_loading().show_graph()
     },
 
     // Function to indicate loading
     indicate_graph_loading : function() {
-      let graph_container = this.$e.menu.find("[data-element=graph_container]");
+      let graph_container = this.$e.graph_container;
       graph_container.empty().append(fullctl.template("graph_placeholder"));
       return this;
     },
 
     show_graph_controls() {
-      let node = this.$e.menu;
+      let node = this.$e.graph_container.parents();
       fullctl.graphs.init_controls(node, this, (end_date, duration)=>{
         this.indicate_graph_loading().show_graph(end_date, duration);
       });
@@ -690,7 +715,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
     // Function to show graphs
     show_graph : function(end_date, duration) {
-      let graph_container = this.$e.menu.find("[data-element=graph_container]");
+      let graph_container = this.$e.graph_container;
       let url = graph_container.data("api-base").replace("/0/", "/"+$ctl.ixctl.ix()+"/")
       let params = [];
       if (end_date) {
@@ -719,11 +744,9 @@ $ctl.application.Ixctl.Members = $tc.extend(
         }
       })
     }
-
   },
   $ctl.application.Tool
-);
-
+)
 
 /**
  * Device details tool
@@ -866,6 +889,11 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
 
 $(document).ready(function() {
   $ctl.ixctl = new $ctl.application.Ixctl();
+
+
+  $('#tab-traffic').on('show.bs.tab', () => {
+    $ctl.ixctl.$t.traffic.sync();
+  });
 });
 
 
