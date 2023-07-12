@@ -891,7 +891,7 @@ $(document).ready(function() {
   $ctl.ixctl = new $ctl.application.Ixctl();
 
 
-  $('#tab-traffic').on('show.bs.tab', () => {
+  $('#traffic-tab').on('show.bs.tab', () => {
     $ctl.ixctl.$t.traffic.sync();
   });
 });
