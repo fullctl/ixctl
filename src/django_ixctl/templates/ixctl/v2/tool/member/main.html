@@ -18,7 +18,7 @@
             <div class="col-6" data-element="member_container">
               <!-- Member information -->
             </div>
-            <div class="col-6">
+            <div class="col-6  graph-controls" style="display:none">
               <div class="controls">
                 <div class="row mb-3">
                   <div class="col-6"></div>
@@ -36,9 +36,9 @@
                     </select>
                   </div>
                   <div class="col-12">
-                    <div id="custom_date_range" style="display: none;" class="right">
-                      <input placeholder="Select start date" type="text" id="custom_start_date" class="datepicker">
-                      <input placeholder="Select end date" type="text" id="custom_end_date" class="datepicker">
+                    <div id="member_graph_date_range" style="display: none;" class="right">
+                      <input placeholder="Select start date" type="text" id="member_graph_start_date" class="datepicker">
+                      <input placeholder="Select end date" type="text" id="member_graph_end_date" class="datepicker">
                     </div>
                   </div>
                 </div>
@@ -51,7 +51,7 @@
 
               <div class="row mb-3 legend marg-top-lg">
                 <div class="col-12 right">
-                  <button class="secondary col-md-auto btn ms-3" style="display:none" data-element="refresh_traffic_graph">
+                  <button class="secondary col-md-auto btn ms-3" data-element="refresh_traffic_graph">
                     <div class="row align-items-center">
                       <div class="col label pe-0">Refresh</div>
                       <div class="col-auto">

@@ -51,6 +51,7 @@ $ctl.application.Ixctl = $tc.extend(
         } else {
           $('[data-toggled="multiple-exchanges"]').hide();
         }
+
       });
 
       // wire `Set as default` button
@@ -99,6 +100,10 @@ $ctl.application.Ixctl = $tc.extend(
       this.tool("member_details", () => {
         return new $ctl.application.Ixctl.MemberDetails();
       })
+
+      this.tool("traffic", () => {
+        return new $ctl.application.Ixctl.Traffic();
+      });
 
       $($ctl).trigger("init_tools", [this]);
 
@@ -171,6 +176,7 @@ $ctl.application.Ixctl = $tc.extend(
 
       this.sync();
       this.sync_url(id);
+      $ctl.ixctl.$t.traffic.sync();
     },
 
     sync_url: function(id) {
@@ -568,6 +574,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
         toggle_non_active_filter();
       });
 
+
       return menu;
     },
 
@@ -666,11 +673,80 @@ $ctl.application.Ixctl.Members = $tc.extend(
         // no exchange exists - hide members tool
         this.hide();
       }
-    },
+    }
+
   },
   $ctl.application.Tool
 );
 
+
+/**
+ * Traffic tool
+ */
+
+
+$ctl.application.Ixctl.Traffic = $tc.extend(
+  "Traffic",
+  {
+
+    Traffic : function() {
+      this.Tool("traffic");
+    },
+
+    sync : function() {
+      this.show_graph_controls().indicate_graph_loading().show_graph()
+    },
+
+    // Function to indicate loading
+    indicate_graph_loading : function() {
+      let graph_container = this.$e.graph_container;
+      graph_container.empty().append(fullctl.template("graph_placeholder"));
+      return this;
+    },
+
+    show_graph_controls() {
+      let node = this.$e.graph_container.parents();
+      fullctl.graphs.init_controls(node, this, (end_date, duration)=>{
+        this.indicate_graph_loading().show_graph(end_date, duration);
+      });
+      node.find('.graph-controls').show();
+      return this;
+    },
+
+    // Function to show graphs
+    show_graph : function(end_date, duration) {
+      let graph_container = this.$e.graph_container;
+      let url = graph_container.data("api-base").replace("/0/", "/"+$ctl.ixctl.ix()+"/")
+      let params = [];
+      if (end_date) {
+        params.push('start_time=' + end_date);
+      }
+      if (end_date && duration) {
+        params.push('duration=' + duration);
+      }
+      if (params.length > 0) {
+        url += '?' + params.join('&');
+      }
+      fullctl.graphs.render_graph_from_file(
+        url,
+        ".graph_container",
+        fullctl.ixctl.ix_object().name + " Total Traffic",
+      ).then(() => {
+        // check if a svg has been added to the container, if not, graph data was empty
+        if(graph_container.find("svg").length == 0) {
+          graph_container.empty().append(
+            $('<div class="alert alert-info">').append(
+              $('<p>').text("No aggregated traffic data available for this exchange.")
+            )
+          )
+        } else {
+          this.$e.refresh_traffic_graph.show();
+        }
+      })
+    }
+  },
+  $ctl.application.Tool
+)
 
 /**
  * Device details tool
@@ -701,80 +777,6 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
         }
         return form;
       });
-
-      // Refresh traffic graph when clicked
-      this.$e.refresh_traffic_graph.click(() => {
-        if(this.member) {
-          let selected_value = $('#date_range_select').val();
-          let { end_date, duration } = tool.calculate_end_date_and_duration(selected_value);
-          this.indicate_loading().show_graphs(this.member, end_date, duration);
-        }
-      });
-
-      // Initialize the datepicker
-      $('.datepicker').datepicker({
-        dateFormat: 'yy-mm-dd',
-        onSelect: function() {
-          // When a date is selected, check if both dates are selected
-          if ($('#custom_start_date').val() && $('#custom_end_date').val()) {
-            // If both dates are selected, calculate the end date and duration and show the graphs
-            let selected_value = $('#date_range_select').val();
-            let { end_date, duration } = tool.calculate_end_date_and_duration(selected_value);
-            tool.indicate_loading().show_graphs(tool.member, end_date, duration);
-          }
-        }
-      });
-
-      // Change event for date range select
-      $('#date_range_select').change(function() {
-        let selected_value = $(this).val();
-
-        if (selected_value === 'custom') {
-          // Show the date input fields
-          $('#custom_date_range').show();
-        } else {
-          // Hide the date input fields
-          $('#custom_date_range').hide();
-
-          // Calculate the end date and duration and show the graphs
-          let { end_date, duration } = tool.calculate_end_date_and_duration(selected_value);
-          tool.indicate_loading().show_graphs(tool.member, end_date, duration);
-        }
-      });
-    },
-
-    // Function to calculate end date and duration based on selected value
-    calculate_end_date_and_duration : function(selected_value) {
-      let end_date = Math.floor(new Date().getTime() / 1000);
-      let duration;
-
-      if (selected_value === 'custom') {
-        let start_date = new Date($('#custom_start_date').val()).getTime() / 1000;
-        end_date = new Date($('#custom_end_date').val()).getTime() / 1000;
-        duration = end_date - start_date;
-      } else if (selected_value === 'current_month') {
-        let now = new Date();
-        let start_of_month = new Date(now.getFullYear(), now.getMonth(), 1);
-        duration = end_date - start_of_month.getTime() / 1000;
-      } else if (selected_value === 'last_month') {
-        let now = new Date();
-        let start_of_last_month = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        let end_of_last_month = new Date(now.getFullYear(), now.getMonth(), 0);
-        duration = end_of_last_month.getTime() / 1000 - start_of_last_month.getTime() / 1000;
-        end_date = end_of_last_month.getTime() / 1000;
-      } else {
-        duration = selected_value * 60 * 60;
-      }
-
-      return { end_date, duration };
-    },
-
-    // Function to indicate loading
-    indicate_loading : function() {
-      this.$e.graphs_container.empty().append(
-        fullctl.template("graph_placeholder")
-      );
-      return this;
     },
 
     // Function to show member details
@@ -801,16 +803,44 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
 
           this.$e.menu.find('.ip4').text(member.ipaddr4);
           this.$w.member.fill(member);
-          $('#date_range_select').val("24");
-          this.show_graphs(member);
+          this.$e.body.parents(".tool").find('#date_range_select').val("24");
+          this.show_graph_controls(member).indicate_graph_loading().show_graphs(member);
         }
       )
 
     },
 
+    // Function to indicate loading
+    indicate_graph_loading : function() {
+      let graph_container = this.$e.body.parents(".tool").find("[data-element=graphs_container]");
+      graph_container.empty().append(fullctl.template("graph_placeholder"));
+      return this;
+    },
+
+    show_graph_controls : function(member) {
+      let node = this.$e.body.parents(".tool");
+
+      node.data("graph-member", member);
+
+      if(!this.graph_controls_initialized) {
+        fullctl.graphs.init_controls(node, this, (end_date, duration)=>{
+
+          this.indicate_graph_loading().show_graphs(node.data("graph-member"), end_date, duration);
+        }, "member_graph_");
+        this.graph_controls_initialized = true;
+      }
+      node.find('.graph-controls').show();
+      return this;
+    },
+
+    hide_graph_controls : function() {
+      let node = this.$e.body.parents(".tool");
+      node.find('.graph-controls').hide();
+    },
+
     // Function to show graphs
     show_graphs : function(member, end_date, duration) {
-      let graph_container = $("[data-element=graphs_container]");
+      let graph_container = this.$e.body.parents(".tool").find("[data-element=graphs_container]");
 
       if(!member.port) {
         // member does not have a port assigned
@@ -859,6 +889,11 @@ $ctl.application.Ixctl.MemberDetails = $tc.extend(
 
 $(document).ready(function() {
   $ctl.ixctl = new $ctl.application.Ixctl();
+
+
+  $('#traffic-tab').on('show.bs.tab', () => {
+    $ctl.ixctl.$t.traffic.sync();
+  });
 });
 
 
