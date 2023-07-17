@@ -98,12 +98,10 @@ class InternetExchangeMember(DataViewSet):
     def filter_ports(self, qset, value):
         port_ids = list(map(int, value.split(",")))
         ids = []
-        print("PORT IDS: ", port_ids)
         for member in qset:
             if member.port and int(member.port) in port_ids:
                 ids.append(member.id)
 
-        print("IDS: ", ids)
         return qset.filter(id__in=ids)
 
     @action(
