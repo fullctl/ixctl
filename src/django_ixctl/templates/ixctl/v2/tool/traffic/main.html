@@ -6,14 +6,14 @@
   <div class="ix-total-traffic" data-element="ix_total_traffic">
     <div class="row">
       <div class="col-12">
-  
+
         <div class="row">
           <!-- graph controls -->
           <div class="graph_container col-12 col-sm-9 mb-3" data-element="graph_container" id="ix_traffic_graph" style="height:350px" data-api-base="{% url "proxies-api-devicectl-ix-traffic" org_tag=request.org.slug ix_id="0" %}"></div>
           <div class="controls graph-controls col-12 col-sm-3" style="display:none">
             <div class="row mb-3">
               <div class="col-12">
-  
+
                   <select class="form-select form-control mb-3" id="date_range_select">
                       <option value="1">1 hour</option>
                       <option value="24" selected>24 hours</option>
@@ -27,9 +27,9 @@
                   </select>
               </div>
             </div>
-  
-  
-  
+
+
+
             <div class="row">
               <div class="col-12">
                   <div id="custom_date_range" style="display: none;" class="right row">
@@ -42,8 +42,8 @@
                   </div>
               </div>
             </div>
-  
-  
+
+
             <div class="row">
               <div class="col-12">
                 <button class="secondary btn btn-sm" data-element="refresh_traffic_graph">
