@@ -705,7 +705,7 @@ $ctl.application.Ixctl.Traffic = $tc.extend(
     },
 
     show_graph_controls() {
-      let node = this.$e.graph_container.parents();
+      let node = this.$e.graph_container.parents(".ix-total-traffic");
       fullctl.graphs.init_controls(node, this, (end_date, duration)=>{
         this.indicate_graph_loading().show_graph(end_date, duration);
       });
