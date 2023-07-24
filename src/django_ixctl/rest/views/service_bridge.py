@@ -31,7 +31,7 @@ class InternetExchange(DataViewSet):
     allowed_http_methods = ["GET"]
     valid_filters = [
         ("ids", "id__in"),
-        ("org", "org_id"),
+        ("org", "org__permission_id"),
         ("q", "name__icontains"),
         ("sot", "source_of_truth"),
         ("verified", "verified"),
@@ -52,7 +52,7 @@ class InternetExchangeMember(DataViewSet):
     allowed_http_methods = ["GET"]
     valid_filters = [
         ("ids", "id__in"),
-        ("org", "ix__instance__org_id"),
+        ("org", "ix__instance__org__permission_id"),
         ("ix", "ix_id"),
         ("ix_verified", "ix__verified"),
         ("asn", "asn"),
