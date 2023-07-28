@@ -175,7 +175,13 @@ class InternetExchange(PdbRefModel):
 
     @classmethod
     def default_slug(cls, name):
-        return name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
+        return (
+            name.replace("/", "_")
+            .replace(" ", "_")
+            .replace(".", "_")
+            .replace("-", "_")
+            .lower()
+        )
 
     @classmethod
     def get_default_exchange_for_org(cls, org):
