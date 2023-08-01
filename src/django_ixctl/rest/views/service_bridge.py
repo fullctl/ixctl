@@ -31,7 +31,7 @@ class InternetExchange(DataViewSet):
     allowed_http_methods = ["GET"]
     valid_filters = [
         ("ids", "id__in"),
-        ("org", "org__remote_id"),
+        ("org", "instance__org__remote_id"),
         ("q", "name__icontains"),
         ("sot", "source_of_truth"),
         ("verified", "verified"),
