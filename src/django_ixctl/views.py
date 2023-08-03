@@ -6,6 +6,8 @@ from fullctl.django.decorators import load_instance, require_auth
 import django_ixctl.exporters.ixf
 from django_ixctl.models import InternetExchange
 
+from django_ixctl.context_processors import check_trial_available
+
 # Create your views here.
 
 
@@ -21,6 +23,7 @@ def view_instance(request, instance, **kwargs):
     env = make_env(request, instance=instance, org=instance.org)
 
     env["select_ix"] = InternetExchange.get_default_exchange_for_org(instance.org)
+    env.update(check_trial_available(request.org.slug, env["select_ix"].slug))
 
     return render(request, "theme-select.html", env)
 
@@ -35,6 +38,9 @@ def view_instance_load_ix(request, instance, ix_tag, **kwargs):
 
     env = make_env(request, instance=instance, org=instance.org)
     env["select_ix"] = ix
+    env.update(check_trial_available(request.org.slug, ix.slug))
+
+    print(env)
 
     return render(request, "theme-select.html", env)
 

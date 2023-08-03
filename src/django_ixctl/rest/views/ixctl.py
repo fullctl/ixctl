@@ -223,8 +223,6 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
             "ixctl", org.slug, "members", component_object_id=ix.id
         )
 
-        print("max_members", max_members)
-
         num_members = ix.member_set.all().count()
 
         if num_members + 1 > max_members:
