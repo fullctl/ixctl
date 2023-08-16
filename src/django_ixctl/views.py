@@ -4,9 +4,8 @@ from django.shortcuts import redirect, render
 from fullctl.django.decorators import load_instance, require_auth
 
 import django_ixctl.exporters.ixf
-from django_ixctl.models import InternetExchange
-
 from django_ixctl.context_processors import check_trial_available
+from django_ixctl.models import InternetExchange
 
 # Create your views here.
 

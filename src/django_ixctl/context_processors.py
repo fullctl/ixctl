@@ -1,14 +1,14 @@
-from django.conf import settings
 import fullctl.service_bridge.aaactl as aaactl
+from django.conf import settings
+
 from django_ixctl.models.ixctl import InternetExchange
+
 
 def check_trial_available(org_slug, ix_slug):
     try:
         ix = InternetExchange.objects.get(instance__org__slug=org_slug, slug=ix_slug)
     except InternetExchange.DoesNotExist:
-        return {
-            "trial_available": False
-        }
+        return {"trial_available": False}
 
     service = aaactl.ServiceApplication()
 
@@ -18,6 +18,7 @@ def check_trial_available(org_slug, ix_slug):
         ),
         "trial_object": ix,
     }
+
 
 def trial_available(request):
     """
@@ -30,8 +31,6 @@ def trial_available(request):
     ix_tag = request.resolver_match.kwargs.get("ix_tag")
 
     if ix_tag is None:
-        return {
-            "trial_available": False
-        }
-    
+        return {"trial_available": False}
+
     return check_trial_available(request.org.slug, ix_tag)
