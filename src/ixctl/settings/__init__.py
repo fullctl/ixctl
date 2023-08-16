@@ -46,6 +46,7 @@ TEMPLATES[0]["OPTIONS"]["context_processors"] += [
     "fullctl.django.context_processors.account_service",
     "fullctl.django.context_processors.permissions",
     "fullctl.django.context_processors.conf",
+    "django_ixctl.context_processors.trial_available",
 ]
 
 # Fullctl service integration

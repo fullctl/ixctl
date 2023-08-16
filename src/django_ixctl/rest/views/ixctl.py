@@ -220,7 +220,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         # to active ixctl plan for org
 
         max_members = aaactl.OrganizationProduct().get_product_property(
-            "ixctl", org.slug, "members"
+            "ixctl", org.slug, "members", component_object_id=ix.id
         )
 
         num_members = ix.member_set.all().count()
