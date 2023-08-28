@@ -40,8 +40,6 @@ def view_instance_load_ix(request, instance, ix_tag, **kwargs):
     env["select_ix"] = ix
     env.update(check_trial_available(request.org.slug, ix.slug))
 
-    print(env)
-
     return render(request, "theme-select.html", env)
 
 
