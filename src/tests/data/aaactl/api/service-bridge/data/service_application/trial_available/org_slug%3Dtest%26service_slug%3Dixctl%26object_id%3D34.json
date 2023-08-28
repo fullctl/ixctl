@@ -1,0 +1,14 @@
+{
+    "data": [
+      {
+        "org_slug": "test",
+        "service_slug": "ixctl",
+        "object_id": null,
+        "can_trial": false
+      }
+    ],
+    "errors": {},
+    "profiling": {
+      "queries": 10
+    }
+}
