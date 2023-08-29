@@ -4,7 +4,7 @@ ARG _base_repo=python
 ARG _base_tag=${python_ver}-slim
 
 ARG install_to=/srv/service
-ARG poetry_pin="==1.5.1"
+ARG poetry_pin="==1.6.1"
 ARG virtual_env=/venv
 ARG uid=6300
 ARG user=fullctl
@@ -13,6 +13,7 @@ ARG build_deps=" \
     gcc \
     git \
     bgpq4 \
+    python3-dev \
     "
 ARG run_deps=" \
     libpq5 \
