@@ -73,9 +73,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
         // config is queued up for generation or has been generated - init badge widget
 
-        const badge = new $ctl.widget.StatusBadge(
-          this.$w.list.base_url, $('<span>').data('row-id', data.id).data('name','routeserver_config_status'),
-          ["ok","error","cancelled", "generated"]
+        const badge = new $ctl.application.Ixctl.RouteserverConfigStatusBadge(
+          this.$w.list.base_url,
+          $('<span>').data('row-id', data.id).data('name','routeserver_config_status')
         );
 
         // need to self reference badge widget so that it can be accessed
@@ -259,6 +259,47 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
   },
   $ctl.application.Tool
 );
+
+$ctl.application.Ixctl.RouteserverConfigStatusBadge = $tc.extend(
+  "RouteserverConfigStatusBadge",
+  {
+    RouteserverConfigStatusBadge : function(base_url, jq) {
+      console.log(this)
+      this.StatusBadge(
+        base_url,
+        jq,
+        ["ok","error","cancelled", "generated"]
+      );
+    },
+    render: function(value, data) {
+      this.StatusBadge_render(value, data);
+      if(value == "error") {
+        this.element.append($('<span class="icon-view icon ms-1"></span>'))
+        this.element.attr('role', 'button');
+
+        this.element.off('click').on('click', () => {
+          let text = data.routeserver_config_error;
+          text = text.split("raise ")[1];
+          if (text)
+            text = text.substring(text.indexOf("\n") + 1);
+
+          text = text ? text : data.routeserver_config_error;
+
+          const elem = $('<textarea class="form-control p-1 py-2" disabled="true"></textarea>').text(text);
+          const controls = $('<div class="controls"></div>');
+          controls.append(elem)
+
+          new $ctl.application.Modal("no_button_lg", 'Config Error Details', controls);
+          elem.height(elem.prop('scrollHeight'));
+
+        });
+      }
+    }
+  },
+  $ctl.widget.StatusBadge
+);
+
+
 
 $($ctl).on("init_tools", (e, app) => {
   app.tool("routeservers", () => {
