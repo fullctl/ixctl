@@ -1,3 +1,9 @@
 .filter-non-active-hidden {
   display: none;
 }
+
+.status-badge.error {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
