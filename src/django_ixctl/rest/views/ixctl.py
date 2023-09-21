@@ -225,7 +225,7 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
 
         num_members = ix.member_set.all().count()
 
-        if num_members + 1 > max_members:
+        if max_members is not None and num_members + 1 > max_members:
             return BadRequest(
                 {
                     "non_field_errors": [
