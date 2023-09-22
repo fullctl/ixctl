@@ -17,7 +17,7 @@ def handle_login(sender, **kwargs):
 @receiver(post_save, sender=InternetExchangeMember)
 def update_routeserver(sender, instance, **kwargs):
     internet_exchange = instance.ix
-    routeservers = Routeserver.objects.filter(ix=internet_exchange).all()
+    routeservers = Routeserver.objects.filter(ix=internet_exchange)
     for routeserver in routeservers:
         try:
             routeserver.routeserver_config.queue_generate()
