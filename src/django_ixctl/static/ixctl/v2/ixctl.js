@@ -73,12 +73,15 @@ $ctl.application.Ixctl = $tc.extend(
         alert("Default IX set successfully");
       });
 
-      // wire import exchange button that is shown when the organization
+      // wire import and create ix buttons that are shown when the organization
       // has no exchanges
-
-      var button_import_ix = $("#no-ix-notify [data-element='button_import_exchange']");
+      const button_import_ix = $("#no-ix-notify [data-element='button_import_exchange']");
       button_import_ix.click(() => {
         this.prompt_import();
+      });
+      const button_create_ix = $("#no-ix-notify [data-element='button_create_ix']");
+      button_create_ix.click(() => {
+        this.prompt_create_exchange();
       });
 
       // load exchanges
