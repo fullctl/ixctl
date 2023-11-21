@@ -1,6 +1,7 @@
 import fullctl.service_bridge.aaactl as aaactl
 import fullctl.service_bridge.pdbctl as pdbctl
 from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from fullctl.django.auditlog import auditlog
 from fullctl.django.rest.api_schema import PeeringDBImportSchema
 from fullctl.django.rest.core import BadRequest
@@ -13,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 import django_ixctl.models as models
+import django_ixctl.rest.filters as filters
 from django_ixctl.rest.decorators import grainy_endpoint
 from django_ixctl.rest.route.ixctl import route
 from django_ixctl.rest.serializers.ixctl import Serializers
@@ -185,6 +187,8 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     lookup_url_kwarg = "member_id"
     lookup_field = "id"
     ix_tag_needed = True
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = filters.InternetExchangeMemberFilter
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
@@ -199,6 +203,10 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         queryset = self.get_queryset().select_related("ix", "ix__instance")
 
         queryset = ordering_filter.filter_queryset(request, queryset, self)
+
+        queryset = filters.InternetExchangeMemberFilter(
+            request.GET, queryset=queryset
+        ).qs
 
         members = models.InternetExchangeMember.preload_networks(queryset)
 

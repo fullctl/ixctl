@@ -36,6 +36,7 @@ INSTALLED_APPS += (
     "rest_framework",
     "social_django",
     "reversion",
+    "django_filters",
     "fullctl.django.apps.DjangoFullctlConfig",
     "django_ixctl.apps.DjangoIxctlConfig",
 )
