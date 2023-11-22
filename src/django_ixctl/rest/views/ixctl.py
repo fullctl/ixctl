@@ -1,7 +1,7 @@
 import fullctl.service_bridge.aaactl as aaactl
 import fullctl.service_bridge.pdbctl as pdbctl
 from django.conf import settings
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
 from fullctl.django.auditlog import auditlog
 from fullctl.django.rest.api_schema import PeeringDBImportSchema
 from fullctl.django.rest.core import BadRequest
