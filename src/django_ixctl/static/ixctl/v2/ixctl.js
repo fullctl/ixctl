@@ -696,6 +696,12 @@ $ctl.application.Ixctl.MemberList = $tc.extend(
       return apiobj.ixf_state == "active" || apiobj.port != null;
     },
 
+    /**
+     * hides or shows members with md5 activated in the list.
+     *
+     * @method toggle_md5_filter
+     * @param {Boolean} [active]
+     */
     toggle_md5_filter : function(active = null) {
       const filter_status =  active != null ? active : !this.filter_status.md5_members;
       this.filter_status.md5_members = filter_status;
@@ -713,7 +719,7 @@ $ctl.application.Ixctl.MemberList = $tc.extend(
     /**
      * Add a class to rows that do not have md5. This is used to hide them.
      *
-     * @method hide_active_members
+     * @method hide_non_md5_members
      * @param {Event} e
      * @param {jQuery} row
      * @param {Object} data
@@ -727,7 +733,7 @@ $ctl.application.Ixctl.MemberList = $tc.extend(
     /**
      * Returns true if the member has md5.
      *
-     * @method is_member_active
+     * @method is_member_md5
      * @param {Object} apiobj
      */
     is_member_md5 : function(apiobj) {
