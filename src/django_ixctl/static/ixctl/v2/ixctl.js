@@ -460,10 +460,10 @@ $ctl.application.Ixctl.Members = $tc.extend(
     },
     init : function() {
       this.widget("list", ($e) => {
-        return new twentyc.rest.List(
+        return new $ctl.application.Ixctl.MemberList(
           this.template("list", this.$e.body)
         );
-      })
+      });
       this.$w.list.formatters.row = (row, data) => {
         row.find('a[data-action="edit_member"]').click(() => {
           var member = row.data("apiobject");
@@ -500,7 +500,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
     },
 
     menu : function() {
-      var menu = this.Tool_menu();
+      const menu = this.Tool_menu();
       menu.find('[data-element="button_add_member"]').click(() => {
         return new $ctl.application.Ixctl.ModalMember($ctl.ixctl.ix_slug());
       });
@@ -566,76 +566,36 @@ $ctl.application.Ixctl.Members = $tc.extend(
         clear_member_filter
       );
 
-
-      this.filter_active = false;
-      const toggle_non_active_filter = this.toggle_non_active_filter.bind(this);
-      menu.find('[data-element="filter_non_active_members"]').click(function() {
+      const member_list = this.$w.list;
+      menu.find("[data-element=filter_non_active_members]").click(function() {
         $(this).toggleClass("active");
-        toggle_non_active_filter();
+        member_list.toggle_non_active_filter();
       });
 
+      menu.find("[data-element=filter_md5_members]").click(function() {
+        $(this).toggleClass("active");
+        member_list.toggle_md5_filter();
+      });
 
       return menu;
     },
 
-    /**
-     * Add a class to rows that are not active. This is used to hide them.
-     *
-     * @method hide_active_members
-     * @param {Event} e
-     * @param {jQuery} row
-     * @param {Object} data
-     */
-    hide_active_members : function(e, row, data) {
-      if (this.is_member_active(data)) {
-        row.addClass('filter-non-active-hidden')
-      } else {
-        row.removeClass('filter-non-active-hidden');
-      }
-    },
-
-    /**
-     * hides or shows non active members in the list.
-     *
-     * @method toggle_non_active_filter
-     * @param {Boolean} [active]
-     */
-    toggle_non_active_filter : function(active = null) {
-      this.filter_active = active != null ? active : !this.filter_active;
-
-      // make hide_active_members available to the list
-      this.$w.list.is_member_active = this.is_member_active;
-
-      if (this.filter_active) {
-        $(this.$w.list).on("insert:after", this.hide_active_members)
-      } else {
-        $(this.$w.list).off("insert:after", this.hide_active_members)
-      }
-
-      this.$w.list.load();
-    },
-
     update_counts : function() {
-      let non_active_members = 0;
       const tool = this;
+      let non_active_members = 0;
+      let non_md5_members = 0;
       this.$w.list.list_body.find("tr:not(.secondary)").each(function() {
         const data = $(this).data("apiobject");
-        if (!tool.is_member_active(data)) {
+        if (!tool.$w.list.is_member_active(data)) {
           non_active_members += 1;
+        }
+        if (tool.$w.list.is_member_md5(data)) {
+          non_md5_members += 1;
         }
       });
 
       this.$e.menu.find('[data-element="filter_non_active_members"] .value').text(non_active_members);
-    },
-
-    /**
-     * Returns true if the member is active.
-     *
-     * @method is_member_active
-     * @param {Object} apiobj
-     */
-    is_member_active : function(apiobj) {
-      return apiobj.ixf_state == "active" || apiobj.port != null;
+      this.$e.menu.find('[data-element="filter_md5_members"] .value').text(non_md5_members);
     },
 
     sync : function() {
@@ -677,6 +637,105 @@ $ctl.application.Ixctl.Members = $tc.extend(
 
   },
   $ctl.application.Tool
+);
+
+
+$ctl.application.Ixctl.MemberList = $tc.extend(
+  "MemberList",
+  {
+    MemberList : function(jq, filters) {
+      this.List(jq);
+
+      this.filter_status = {
+        non_active_members : false,
+        md5_members : false
+      }
+
+    },
+
+    /**
+     * hides or shows non active members in the list.
+     *
+     * @method toggle_non_active_filter
+     * @param {Boolean} [active]
+     */
+    toggle_non_active_filter : function(active = null) {
+      const filter_status =  active != null ? active : !this.filter_status.non_active_members;
+      this.filter_status.non_active_members = filter_status;
+
+      if (filter_status) {
+        $(this).on("insert:after", this.hide_active_members)
+      } else {
+        $(this).off("insert:after", this.hide_active_members)
+      }
+
+      this.load();
+    },
+
+    /**
+     * Add a class to rows that are not active. This is used to hide them.
+     *
+     * @method hide_active_members
+     * @param {Event} e
+     * @param {jQuery} row
+     * @param {Object} data
+     */
+    hide_active_members : function(e, row, data) {
+      if (this.is_member_active(data)) {
+        row.addClass('filter-non-active-hidden')
+      }
+    },
+
+    /**
+     * Returns true if the member is active.
+     *
+     * @method is_member_active
+     * @param {Object} apiobj
+     */
+    is_member_active : function(apiobj) {
+      return apiobj.ixf_state == "active" || apiobj.port != null;
+    },
+
+    toggle_md5_filter : function(active = null) {
+      const filter_status =  active != null ? active : !this.filter_status.md5_members;
+      this.filter_status.md5_members = filter_status;
+
+      if (filter_status) {
+        $(this).on("insert:after", this.hide_non_md5_members)
+      } else {
+        $(this).off("insert:after", this.hide_non_md5_members)
+      }
+
+      this.load();
+    },
+
+
+    /**
+     * Add a class to rows that do not have md5. This is used to hide them.
+     *
+     * @method hide_active_members
+     * @param {Event} e
+     * @param {jQuery} row
+     * @param {Object} data
+     */
+    hide_non_md5_members : function(e, row, data) {
+      if (!this.is_member_md5(data)) {
+        row.addClass('filter-non-md5-hidden')
+      }
+    },
+
+    /**
+     * Returns true if the member has md5.
+     *
+     * @method is_member_active
+     * @param {Object} apiobj
+     */
+    is_member_md5 : function(apiobj) {
+      return apiobj.md5 != null;
+    },
+
+  },
+  twentyc.rest.List
 );
 
 
