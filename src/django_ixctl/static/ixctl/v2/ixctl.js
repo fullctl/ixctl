@@ -203,14 +203,6 @@ $ctl.application.Ixctl = $tc.extend(
       return new $ctl.application.Ixctl.ModalCreateIX();
     },
 
-    prompt_update_exchange : function() {
-      return new $ctl.application.Ixctl.ModalUpdateIX();
-    },
-
-    prompt_delete_exchange : function() {
-      return new $ctl.application.Ixctl.ModalDeleteIX();
-    }
-
   },
   $ctl.application.Application
 );
@@ -280,62 +272,6 @@ $ctl.application.Ixctl.ModalCreateIX = $tc.extend(
   $ctl.application.Modal
 );
 
-$ctl.application.Ixctl.ModalUpdateIX = $tc.extend(
-  "ModalUpdateIX",
-  {
-    ModalUpdateIX : function() {
-      let ix = $ctl.ixctl.ix_object();
-
-      var form = this.form = new twentyc.rest.Form(
-        $ctl.template("form_update_ix")
-      );
-      form.base_url = form.base_url.replace("/default", "/"+ $ctl.ixctl.ix_slug());
-
-      var modal = this;
-
-      form.fill(ix)
-
-      $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
-        $ctl.ixctl.refresh().then(
-          () => { $ctl.ixctl.select_ix(response.content.data[0].id) }
-        );
-        modal.hide();
-      });
-      this.Modal("continue", "Edit exchange", form.element);
-      form.wire_submit(this.$e.button_submit);
-    }
-  },
-  $ctl.application.Modal
-);
-
-$ctl.application.Ixctl.ModalDeleteIX = $tc.extend(
-  "ModalDeleteIX",
-  {
-    ModalDeleteIX : function() {
-      let ix = $ctl.ixctl.ix_object();
-
-      var form = this.form = new twentyc.rest.Form(
-        $ctl.template("form_delete_ix")
-      );
-      form.base_url = form.base_url.replace("/default", "/"+ $ctl.ixctl.ix_slug());
-
-      var modal = this;
-
-      $(this.form).on("api-write:success", function(event, endpoint, payload, response) {
-        $ctl.ixctl.refresh().then(
-          () => {
-            $ctl.ixctl.unload_ix(ix.id);
-            $ctl.ixctl.select_ix()
-          }
-        );
-        modal.hide();
-      });
-      this.Modal("continue", `Delete ${ix.name}`, form.element);
-      form.wire_submit(this.$e.button_submit);
-    }
-  },
-  $ctl.application.Modal
-);
 
 /**
  * Displays modal for editing and creating new InternetExchangeMember
