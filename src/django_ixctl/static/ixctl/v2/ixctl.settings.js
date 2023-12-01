@@ -90,11 +90,15 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 $($ctl).on("init_tools", (e, app) => {
   app.tool("settings", () => {
     return new $ctl.application.Ixctl.Settings();
-  })
+  });
 
   $('#settings-tab').on('show.bs.tab', () => {
     app.$t.settings.sync();
   });
+
+  if (window.location.hash == "#settings") {
+    app.$t.settings.sync();
+  }
 });
 
 

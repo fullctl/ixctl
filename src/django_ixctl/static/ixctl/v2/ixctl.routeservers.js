@@ -7,6 +7,14 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       this.Tool("routeservers");
       this.activate();
       this.view_list();
+      const tool = this;
+      $('[data-bs-toggle="tab"]').on('show.bs.tab', function() {
+        if ($(this).attr('id') == 'tab-routeservers') {
+          return
+        }
+        tool._remove_edit_routeserver_parameters();
+      });
+      this._render_edit_routeserver_parameters();
     },
 
     view_list : function() {
@@ -73,8 +81,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
         // config is queued up for generation or has been generated - init badge widget
 
+        const formatted_url = this.$w.list.format_request_url(this.$w.list.base_url);
         const badge = new $ctl.application.Ixctl.RouteserverConfigStatusBadge(
-          this.$w.list.base_url,
+          formatted_url,
           $('<span>').data('row-id', data.id).data('name','routeserver_config_status')
         );
 
@@ -95,11 +104,9 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
 
-      $(this.$w.list).on("api-read:before",function()  {
-        let url = this.base_url.split("/").slice(0,-1);
-        url.push($ctl.ixctl.ix_slug());
-        this.base_url = url.join("/");
-      })
+      this.$w.list.format_request_url = (url) => {
+        return url.replace("/default_ix", "/"+$ctl.ixctl.ix_slug()+"/");
+      }
 
       this.initialize_sortable_headers();
 
@@ -110,9 +117,11 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       const menu = this.Tool_menu();
       menu.find('[data-element="button_add_routeserver"]').click(() => {
         this.create_routeserver();
+        this._remove_edit_routeserver_parameters();
       });
       menu.find('[data-element="button_list_view"]').click(() => {
         this.view_list();
+        this._remove_edit_routeserver_parameters();
       });
 
       return menu;
@@ -241,19 +250,53 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
 
       $(form).on("api-write:success", (ev, e, payload) => {
         this.sync();
-        this.view_list()
+        this.view_list();
+        this._remove_edit_routeserver_parameters();
       });
 
       $(button_delete).on("api-write:success", (ev, e, payload) => {
         fullctl.ixctl.page('routeservers');
         this.sync();
-        this.view_list()
+        this.view_list();
+        this._remove_edit_routeserver_parameters();
       });
 
       form.fill(rs);
+      this._add_edit_routeserver_parameters(rs);
       form.element.find('[data-field="routeserver_config_generated_time"]').text(
         form.formatters.routeserver_config_generated_time(rs.routeserver_config_generated_time)
       )
+    },
+
+    _add_edit_routeserver_parameters : function(rs) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("edit-routeserver", rs.id);
+
+      window.history.replaceState({}, '', url);
+    },
+
+    _remove_edit_routeserver_parameters : function() {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("edit-routeserver");
+
+      window.history.replaceState({}, '', url);
+    },
+
+    _render_edit_routeserver_parameters : function() {
+      const url = new URL(window.location.href);
+      const rs_id = url.searchParams.get("edit-routeserver");
+      if (!rs_id) {
+        return
+      }
+
+      this.$w.list.load().then(() => {
+        const rs_row = this.$w.list.find_row(rs_id);
+        if (rs_row.length == 0) {
+          return;
+        }
+        const rs = rs_row.data("apiobject");
+        this.edit_routeserver(rs);
+      });
     }
 
   },
@@ -304,7 +347,7 @@ $ctl.application.Ixctl.RouteserverConfigStatusBadge = $tc.extend(
 $($ctl).on("init_tools", (e, app) => {
   app.tool("routeservers", () => {
     return new $ctl.application.Ixctl.Routeservers();
-  })
+  });
 
   $('#tab-routeservers').on('show.bs.tab', () => {
     app.$t.routeservers.sync();
