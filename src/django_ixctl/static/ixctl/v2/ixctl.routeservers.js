@@ -307,7 +307,6 @@ $ctl.application.Ixctl.RouteserverConfigStatusBadge = $tc.extend(
   "RouteserverConfigStatusBadge",
   {
     RouteserverConfigStatusBadge : function(base_url, jq) {
-      console.log(this)
       this.StatusBadge(
         base_url,
         jq,
