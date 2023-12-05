@@ -37,22 +37,6 @@ $ctl.application.Ixctl = $tc.extend(
         return w;
       });
 
-      // wire event handler for when list of exchanges has been loaded
-
-      $(this.$c.header.$w.ix_dropdown).one("load:after", (ev, response)=> {
-        this.select_ix(this.preselect_ix);
-        var num_exchanges = response.content.data.length;
-
-        // if theree are multiple exchanges, toggle elements with
-        // data-toggled="multiple-exchanges" visible, otherwise hide them
-
-        if(num_exchanges > 1) {
-          $('[data-toggled="multiple-exchanges"]').show();
-        } else {
-          $('[data-toggled="multiple-exchanges"]').hide();
-        }
-
-      });
 
       // wire `Set as default` button
 
@@ -82,6 +66,22 @@ $ctl.application.Ixctl = $tc.extend(
       });
 
       // load exchanges
+      $(this.$c.header.$w.ix_dropdown).one("load:after", (ev, response)=> {
+        this.select_ix(this.preselect_ix);
+        const num_exchanges = response.content.data.length;
+
+        // if theree are multiple exchanges, toggle elements with
+        // data-toggled="multiple-exchanges" visible, otherwise hide them
+
+        if(num_exchanges > 1) {
+          $('[data-toggled="multiple-exchanges"]').show();
+        } else {
+          $('[data-toggled="multiple-exchanges"]').hide();
+        }
+
+        // trigger init_tools after ix selected
+        $($ctl).trigger("init_tools", [this]);
+      });
 
       this.$c.header.$w.ix_dropdown.load();
 
@@ -105,7 +105,6 @@ $ctl.application.Ixctl = $tc.extend(
         return new $ctl.application.Ixctl.Traffic();
       });
 
-      $($ctl).trigger("init_tools", [this]);
 
       this.$t.members.activate();
     },
