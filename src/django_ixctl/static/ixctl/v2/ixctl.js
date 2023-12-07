@@ -57,12 +57,15 @@ $ctl.application.Ixctl = $tc.extend(
         alert("Default IX set successfully");
       });
 
-      // wire import exchange button that is shown when the organization
+      // wire import and create ix buttons that are shown when the organization
       // has no exchanges
-
-      var button_import_ix = $("#no-ix-notify [data-element='button_import_exchange']");
+      const button_import_ix = $("#no-ix-notify [data-element='button_import_exchange']");
       button_import_ix.click(() => {
         this.prompt_import();
+      });
+      const button_create_ix = $("#no-ix-notify [data-element='button_create_ix']");
+      button_create_ix.click(() => {
+        this.prompt_create_exchange();
       });
 
       // load exchanges
@@ -446,6 +449,7 @@ $ctl.application.Ixctl.Members = $tc.extend(
       // event doesn't pass the search term.
       const after_list_load_func = (search_term) => {
         return () => {
+          const lowercase_search_term = search_term.toLowerCase();
           const members = this.$w.list.list_body.find("tr:not(.secondary)");
           let first_match;
 
@@ -454,7 +458,8 @@ $ctl.application.Ixctl.Members = $tc.extend(
             const secondary_row = $(this).next();
 
             const asn = $(this).find('[data-field="asn"]').text().toLowerCase();
-            if (asn.startsWith(search_term)) {
+            const name = $(this).find('[data-field="display_name"]').text().toLowerCase();
+            if (asn.startsWith(lowercase_search_term) || name.indexOf(lowercase_search_term) !== -1) {
               primary_row.removeClass("filter-hidden");
               secondary_row.removeClass("filter-hidden");
 
