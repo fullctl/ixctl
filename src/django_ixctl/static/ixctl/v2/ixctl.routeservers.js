@@ -105,7 +105,7 @@ $ctl.application.Ixctl.Routeservers = $tc.extend(
       this.$w.list.formatters.speed = $ctl.formatters.pretty_speed;
 
       this.$w.list.format_request_url = (url) => {
-        return url.replace("/default_ix", "/"+$ctl.ixctl.ix_slug()+"/");
+        return url.replace("/default_ix", "/"+$ctl.ixctl.ix_slug());
       }
 
       this.initialize_sortable_headers();
