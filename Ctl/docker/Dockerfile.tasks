@@ -1,27 +1,29 @@
+ARG python_ver=3.11
+# current main base is alpine, but we need to use slim for this
+ARG _base_repo=python
+ARG _base_tag=${python_ver}-slim
 
-ARG bgpq4_version=1.4
-ARG poetry_pin="==1.2.2"
-
+ARG install_to=/srv/service
+ARG poetry_pin="==1.6.1"
+ARG virtual_env=/venv
 ARG uid=6300
 ARG user=fullctl
 
-ARG virtual_env=/venv
-ARG install_to=/srv/service
 ARG build_deps=" \
     gcc \
     git \
-    python39-devel \
     bgpq4 \
+    python3-dev \
     "
 ARG run_deps=" \
-    libpq \
-    python39 \
+    libpq5 \
     "
 ARG debug_deps=" \
+    tar \
     vim \
     "
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.7 as base
+FROM ${_base_repo}:${_base_tag} as base
 
 ARG install_to
 ARG virtual_env
@@ -32,25 +34,35 @@ ENV VIRTUAL_ENV=$virtual_env
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # build container
-FROM ghcr.io/fullctl/fullctl-builder-ubi8:prep-release as builder
+FROM base as builder
+
+ARG build_deps
+ARG poetry_pin
 
 # TODO pin bgpq4
-ARG build_deps
 ARG bgpq4_version
-ARG virtual_env
-ARG poetry_version
 
-ENV VIRTUAL_ENV=$virtual_env
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install --no-install-recommends -y ${build_deps} \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Use Pip to install Poetry
+RUN python3 -m pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir "poetry$poetry_pin"
+
+# Create a VENV
+RUN python3 -m venv "$VIRTUAL_ENV"
 
 WORKDIR /build
-#RUN dnf --disableplugin=subscription-manager install -by --nodocs gcc gcc-c++ make cmake patch bzip2 zlib-devel openssl-devel curl-devel pcre2-devel libicu-devel libffi-devel \
 
 # poetry install
 COPY pyproject.toml poetry.lock ./
-RUN poetry run pip install --upgrade pip wheel
-RUN poetry install --no-root
 
+RUN poetry run python -m pip install --no-cache-dir --upgrade pip \
+    && poetry install --no-root --only main,tasks
 
 #### final image
 
@@ -65,10 +77,12 @@ ARG user
 ARG COPY_SETTINGS_FILE=src/ixctl/settings/dev.py
 
 # add dependencies
-RUN microdnf -y install --nodocs $run_deps \
-    && microdnf clean all
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y ${run_deps} \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# XXX RUN useradd -m -u $uid $user
+RUN useradd -lu $uid $user
 
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
 COPY --from=builder /usr/bin/bgpq4 /usr/bin/bgpq4
@@ -77,11 +91,6 @@ WORKDIR $SERVICE_HOME
 RUN mkdir -p etc locale media static
 COPY Ctl/VERSION etc/
 COPY docs/ docs
-
-# XXX
-# COPY ars_config/ /root/arouteserver
-
-#RUN Ctl/docker/manage.sh collectstatic --no-input
 
 RUN chown -R $uid:$uid locale media
 
@@ -97,13 +106,17 @@ ARG ars_home=/arouteserver
 
 WORKDIR $SERVICE_HOME
 
-RUN microdnf -y install --nodocs $debug_deps \
-    && microdnf clean all
+# add dependencies
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y ${debug_deps} \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY src/ main/
 COPY Ctl/docker/entrypoint.sh .
 
-RUN ln -s $SERVICE_HOME/entrypoint.sh /entrypoint
-RUN ln -s /venv $SERVICE_HOME/venv
+RUN ln -s "$SERVICE_HOME/entrypoint.sh" /entrypoint \
+    && ln -s /venv "$SERVICE_HOME/venv"
 
 COPY Ctl/docker/django-uwsgi.ini etc/
 COPY Ctl/docker/manage.sh /usr/bin/manage

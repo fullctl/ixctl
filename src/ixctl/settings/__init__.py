@@ -36,6 +36,7 @@ INSTALLED_APPS += (
     "rest_framework",
     "social_django",
     "reversion",
+    "django_filters",
     "fullctl.django.apps.DjangoFullctlConfig",
     "django_ixctl.apps.DjangoIxctlConfig",
 )
@@ -46,6 +47,7 @@ TEMPLATES[0]["OPTIONS"]["context_processors"] += [
     "fullctl.django.context_processors.account_service",
     "fullctl.django.context_processors.permissions",
     "fullctl.django.context_processors.conf",
+    "django_ixctl.context_processors.trial_available",
 ]
 
 # Fullctl service integration

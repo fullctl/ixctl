@@ -3,6 +3,7 @@ try:
 except ImportError:
     from yaml import Loader
 
+import fullctl.service_bridge.devicectl as devicectl
 import fullctl.service_bridge.pdbctl as pdbctl
 import yaml
 from django.core.validators import RegexValidator
@@ -183,6 +184,7 @@ class InternetExchangeMember(ModelSerializer):
             "md5",
             "prefix4",
             "prefix6",
+            "port",
         ]
         validators = [
             SoftRequiredValidator(
@@ -221,6 +223,46 @@ class InternetExchangeMember(ModelSerializer):
             return None
         return md5
 
+    def validate_port(self, port):
+        """
+        Validates the port to make sure it exists and belongs to the requesting
+        organization
+        """
+        org_instance = self.context.get("instance")
+
+        if not port:
+            return port
+
+        # check that port exists and belongs to the requesting organization
+
+        port_object = devicectl.Port().first(
+            id=int(port), org_slug=org_instance.org.slug
+        )
+
+        if not port_object:
+            raise ValidationError(_("Port not found"))
+
+        return port_object.id
+
+
+@register
+class InternetExchangeMemberDetail(ModelSerializer):
+    ref_tag = "member_detail"
+    port = serializers.SerializerMethodField()
+
+    class Meta(InternetExchangeMember.Meta):
+        fields = InternetExchangeMember.Meta.fields + ["port"]
+
+    def get_port(self, member):
+        if not member.port:
+            return None
+        try:
+            port = member.port.object.__dict__
+            port["device"] = port["device"].__dict__
+            return port
+        except AttributeError:
+            return None
+
 
 @register
 class Routeserver(ModelSerializer):
@@ -244,6 +286,7 @@ class Routeserver(ModelSerializer):
             "graceful_shutdown",
             "extra_config",
             "routeserver_config_status",
+            "routeserver_config_generated_time",
             "routeserver_config_response",
             "routeserver_config_error",
         ]
@@ -276,6 +319,21 @@ class RouteserverConfig(ModelSerializer):
             "generated",
             "body",
         ]
+
+
+@register
+class DefaultExchange(ModelSerializer):
+    ref_tag = "default_ix"
+
+    class Meta:
+        model = models.OrganizationDefaultExchange
+        fields = ["org", "ix"]
+
+    def save(self):
+        org = self.validated_data["org"]
+        ix = self.validated_data["ix"]
+
+        models.InternetExchange.set_default_exchange_for_org(org, ix)
 
 
 @register

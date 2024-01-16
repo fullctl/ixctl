@@ -1,6 +1,7 @@
 import fullctl.service_bridge.aaactl as aaactl
 import fullctl.service_bridge.pdbctl as pdbctl
 from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend
 from fullctl.django.auditlog import auditlog
 from fullctl.django.rest.api_schema import PeeringDBImportSchema
 from fullctl.django.rest.core import BadRequest
@@ -13,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 import django_ixctl.models as models
+import django_ixctl.rest.filters as filters
 from django_ixctl.rest.decorators import grainy_endpoint
 from django_ixctl.rest.route.ixctl import route
 from django_ixctl.rest.serializers.ixctl import Serializers
@@ -141,6 +143,27 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
 
         return Response(Serializers.ix(instance=ix).data)
 
+    @action(detail=True, methods=["POST"], serializer_class=Serializers.default_ix)
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @auditlog()
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}")
+    def set_as_default(self, request, org, instance, ix, *args, **kwargs):
+        """
+        Set the exchange as the default exchange for the organization
+        """
+
+        serializer = Serializers.default_ix(
+            instance=models.OrganizationDefaultExchange.objects.filter(org=org).first(),
+            data={"ix": ix.id, "org": org.id},
+            context={"instance": instance},
+        )
+
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+
+        serializer.save()
+        return Response(serializer.data)
+
 
 @route
 class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
@@ -164,6 +187,8 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
     lookup_url_kwarg = "member_id"
     lookup_field = "id"
     ix_tag_needed = True
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = filters.InternetExchangeMemberFilter
 
     @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
     @grainy_endpoint(
@@ -178,6 +203,10 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         queryset = self.get_queryset().select_related("ix", "ix__instance")
 
         queryset = ordering_filter.filter_queryset(request, queryset, self)
+
+        queryset = filters.InternetExchangeMemberFilter(
+            request.GET, queryset=queryset
+        ).qs
 
         members = models.InternetExchangeMember.preload_networks(queryset)
 
@@ -199,12 +228,12 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         # to active ixctl plan for org
 
         max_members = aaactl.OrganizationProduct().get_product_property(
-            "ixctl", org.slug, "members"
+            "ixctl", org.slug, "members", component_object_id=ix.id
         )
 
         num_members = ix.member_set.all().count()
 
-        if num_members + 1 > max_members:
+        if max_members is not None and num_members + 1 > max_members:
             return BadRequest(
                 {
                     "non_field_errors": [
@@ -253,6 +282,38 @@ class Member(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         r = Response(Serializers.member(instance=member).data)
         member.delete()
         return r
+
+    @action(detail=False, methods=["GET"])
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="member.{request.org.permission_id}.{ix.pk}",
+    )
+    def details(self, request, org, instance, ix, *args, **kwargs):
+        queryset = self.get_queryset().select_related("ix", "ix__instance")
+        members = list(models.InternetExchangeMember.preload_networks(queryset))
+
+        models.InternetExchangeMember.preload_ports(org, members)
+
+        serializer = Serializers.member_detail(
+            instance=members,
+            many=True,
+        )
+
+        return Response(serializer.data)
+
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @load_object("member", models.InternetExchangeMember, ix="ix", id="member_id")
+    @grainy_endpoint(
+        namespace="member.{request.org.permission_id}.{ix.pk}",
+    )
+    def retrieve(self, request, org, instance, ix, member_id, member, *args, **kwargs):
+        serializer = Serializers.member_detail(
+            instance=member,
+        )
+
+        models.InternetExchangeMember.preload_ports(org, [member])
+
+        return Response(serializer.data)
 
 
 @route
@@ -423,6 +484,20 @@ class RouteserverConfig(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericV
             "%a, %d %b %Y %H:%M:%S GMT"
         )
         return response
+
+    @action(detail=True, methods=["POST"])
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(
+        namespace="config.routeserver.{request.org.permission_id}",
+    )
+    def generate(self, request, org, instance, ix, name, *args, **kwargs):
+        rs_config = self.get_object()
+        rs_config.queue_generate()
+        serializer = Serializers.config__routeserver(
+            instance=rs_config,
+            many=False,
+        )
+        return Response(serializer.data)
 
 
 @route

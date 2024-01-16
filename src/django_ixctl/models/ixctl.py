@@ -5,12 +5,15 @@ import tempfile
 from datetime import datetime
 from secrets import token_urlsafe
 
+from pydantic.utils import deep_update
+
 try:
     from yaml import CDumper as Dumper
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader, Dumper
 
+import fullctl.service_bridge.devicectl as devicectl
 import fullctl.service_bridge.pdbctl as pdbctl
 import fullctl.service_bridge.sot as sot
 import reversion
@@ -23,6 +26,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_grainy.decorators import grainy_model
 from django_inet.models import ASNField
+from fullctl.django.fields.service_bridge import ReferencedObjectField
 from fullctl.django.inet.validators import validate_as_set
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
@@ -108,6 +112,17 @@ class InternetExchange(PdbRefModel):
         ),
     )
 
+    # TODO: use service-bridge reference field?
+    # this field is already defined through PdbRefModel, however we need to
+    # override it here to give it a help-text
+    pdb_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_(
+            "PeeringDB id of the equivalent exchange (`ix`) object on their end. Its important to set this when the exchange has the source of truth in fullctl so we know which peeringdb object to override. This is set automatically if the ix was imported from peeringdb."
+        ),
+    )
+
     class PdbRef(PdbRefModel.PdbRef):
         pdbctl = pdbctl.InternetExchange
 
@@ -158,6 +173,54 @@ class InternetExchange(PdbRefModel):
 
         return ix
 
+    @classmethod
+    def default_slug(cls, name):
+        return (
+            name.replace("/", "_")
+            .replace(" ", "_")
+            .replace(".", "_")
+            .replace("-", "_")
+            .lower()
+        )
+
+    @classmethod
+    def get_default_exchange_for_org(cls, org):
+        """
+        Returns the default exchange for an organization
+
+        Will return the default exchange for the organization if
+        specified, otherwise will return the first exchange in the
+        organization's instance.
+
+        If the organization has no exchanges in its instance, will
+        return None
+        """
+
+        try:
+            return OrganizationDefaultExchange.objects.get(org=org).ix
+        except OrganizationDefaultExchange.DoesNotExist:
+            return cls.objects.filter(instance__org=org).first()
+
+    @classmethod
+    def set_default_exchange_for_org(cls, org, ix):
+        """
+        Will take an Organization object and make the specified
+        InternetExchange the default exchange for that organization
+        """
+
+        # check that ix belongs to org
+
+        if ix.org != org:
+            raise ValueError("InternetExchange does not belong to Organization")
+
+        try:
+            default = OrganizationDefaultExchange.objects.get(org=org)
+        except OrganizationDefaultExchange.DoesNotExist:
+            default = OrganizationDefaultExchange(org=org)
+
+        default.ix = ix
+        default.save()
+
     @property
     def display_name(self):
         """
@@ -195,12 +258,37 @@ class InternetExchange(PdbRefModel):
     def org(self):
         return self.instance.org
 
-    @classmethod
-    def default_slug(cls, name):
-        return name.replace("/", "_").replace(" ", "_").replace("-", "_").lower()
-
     def __str__(self):
         return f"{self.name} ({self.id})"
+
+
+class OrganizationDefaultExchange(models.Model):
+    """
+    Describes the default exchange for an organization
+
+    This is used to determine which exchange to use when
+    no exchange is specified in the url.
+    """
+
+    org = models.OneToOneField(
+        Organization,
+        related_name="default_ix",
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    ix = models.OneToOneField(
+        InternetExchange,
+        related_name="default_for_org",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        db_table = "ixctl_default_ix"
+        verbose_name = _("Organization Default Exchange")
+        verbose_name_plural = _("Organization Default Exchanges")
+
+    def __str__(self):
+        return f"{self.org.name} -> {self.ix.name}"
 
 
 @reversion.register()
@@ -241,6 +329,13 @@ class InternetExchangeMember(PdbRefModel):
     )
     ixf_member_type = models.CharField(
         max_length=255, choices=django_ixctl.enum.IXF_MEMBER_TYPE, default="peering"
+    )
+
+    port = ReferencedObjectField(
+        bridge=devicectl.Port,
+        null=True,
+        blank=True,
+        help_text=_("deviceCtl port reference"),
     )
 
     class PdbRef(PdbRefModel.PdbRef):
@@ -287,15 +382,69 @@ class InternetExchangeMember(PdbRefModel):
 
     @classmethod
     def preload_networks(cls, queryset):
+        """
+        Preloads network information from peerctl and pdbctl
+        """
+
         asns = {member.asn for member in queryset}
         if not asns:
             return queryset
         asn_map = {}
         for net in sot.Network().objects(asns=list(asns)):
             asn_map[net.asn] = net
+
         for member in queryset:
             member._net = asn_map.get(member.asn)
             yield member
+
+    @classmethod
+    def preload_ports(cls, org, members):
+        """
+        Preloads devicectl port information
+
+        Argument(s):
+
+        - org (`Organization`): organization to load ports for
+        - members (`list` of `InternetExchangeMember`): members to load ports for
+        """
+
+        if len(members) > 1:
+            # we got multiple members, so we batch load all ports for the org
+            ports = list(
+                devicectl.Port().objects(
+                    org_slug=org.slug, join=["device", "physical_ports"]
+                )
+            )
+        else:
+            # we got a single member, so we load only the port for that member
+            member = members[0]
+            if not member.port:
+                return
+            ports = list(
+                devicectl.Port().objects(
+                    org_slug=org.slug,
+                    id=int(member.port),
+                    join=["device", "physical_ports"],
+                )
+            )
+
+        if not ports:
+            return
+
+        # restructure ports into dict keyed by port id
+
+        ports = {port.id: port for port in ports}
+
+        for member in members:
+            if not member.port:
+                continue
+
+            port = ports.get(int(member.port))
+
+            if not port:
+                continue
+
+            member.port._object = port
 
     @property
     def display_name(self):
@@ -491,6 +640,10 @@ class Routeserver(HandleRefModel):
         return self.routeserver_config_status_dict.get("status")
 
     @property
+    def routeserver_config_generated_time(self):
+        return self.routeserver_config.generated
+
+    @property
     def routeserver_config_response(self):
         return self.routeserver_config.rs_response
 
@@ -529,10 +682,13 @@ class Routeserver(HandleRefModel):
             #
             # support both approaches for now
 
+            # use deep_update instead of update to prevent overriding of nested dicts
             if "cfg" in extra_config:
-                ars_general["cfg"].update(extra_config["cfg"])
+                ars_general["cfg"] = deep_update(
+                    ars_general["cfg"], extra_config["cfg"]
+                )
             else:
-                ars_general.update(extra_config)
+                ars_general = deep_update(ars_general, extra_config)
 
         return ars_general
 

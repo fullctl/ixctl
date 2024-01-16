@@ -18,12 +18,15 @@
   </tbody>
   <tbody class="templates">
     <tr data-template="row">
-      <td data-field="asn"></td>
+      <td data-field="asn" rowspan="2"></td>
       <td data-field="display_name" class="highlight"></td>
       <td data-field="ipaddr4"></td>
       <td data-field="ipaddr6"></td>
       <td data-field="speed"></td>
       <td data-field="controls" class="right">
+        <a class="button btn" data-hover="show" data-action="view_member_details">
+          <span class="icon ixctl icon-view"></span>
+        </a>
         <a class="button btn" data-hover="show" data-action="edit_member">
           <span class="icon ixctl icon-edit"></span>
         </a>
@@ -42,7 +45,6 @@
       </td>
     </tr>
     <tr data-template="row" class="secondary">
-      <td class="indent"></td>
       <td class="property" colspan="5">
         <div class="row">
           <div class="col-12 col-sm-4 col-lg-3 col-xl-2 field">

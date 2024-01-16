@@ -1,7 +1,7 @@
 {% load static i18n %}
 <table
   class="table table-borderless list-table"
-  data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="default" %}"
+  data-api-base="{% url "ixctl_api:routeserver-list" org_tag=request.org.slug ix_tag="default_ix" %}"
   data-api-action=""
   data-template="list">
   <thead>
@@ -15,17 +15,38 @@
   <tbody class="list-body">
   </tbody>
   <tbody class="templates">
-    <tr data-template="row" data-routeserver_config_url="{% url "ixctl_api:config/routeserver-plain" org_tag=request.org.slug ix_tag="default" name="__replace__me__" %}">
-      <td data-field="asn"></td>
+    <tr data-template="row" data-routeserver_config_url="{% url "ixctl_api:config/routeserver-plain" org_tag=request.org.slug ix_tag="__ix_slug__" name="__rs_name__" %}">
+      <td rowspan="2" data-field="asn"></td>
       <td data-field="display_name" class="highlight"></td>
       <td data-field="router_id"></td>
       <td data-field="controls" class="options | right">
-        <span data-field="routeserver_config_status" data-hover="show"></span>
+        <span data-field="routeserver_config_status"></span>
+
+        <!-- View config button -->
+
         <a class="button btn" data-btn-type="secondary" data-action="view_routeserver_config" data-hover="show">
           <span class="label ixctl">{% trans "Download Config" %}</span><span class="icon ixctl icon-download ms-1 "></span>
         </a>
+
+        <!-- Generate config button -->
+
+        <a
+          class="button btn"
+          data-element="button_generate"
+          data-btn-type="secondary"
+          data-api-base="{% url "ixctl_api:config/routeserver-generate" org_tag=request.org.slug ix_tag="__ix_slug__" name="__rs_name__" %}"
+          data-hover="show">
+          <span class="label ixctl">{% trans "Generate" %}</span><span class="icon ixctl icon-refresh ms-1 "></span>
+        </a>
+
+        <!-- Edit button -->
+
         <a class="button btn" data-action="edit_routeserver" data-hover="show">
           <span class="icon ixctl icon-edit"></span>
+        </a>
+
+        <!-- Delete button -->
+
         <a
           class="button btn"
           data-hover="show"
@@ -36,13 +57,16 @@
         >
           <span class="icon ixctl icon-delete"></span>
         </a>
+
+        <!-- Options toggle -->
+
         <button class="btn">
           <span class="icon icon-options"></span>
         </button>
+
       </td>
     </tr>
     <tr data-template="row" class="secondary">
-      <td class="indent"></td>
       <td class="property" colspan="4">
         <div class="row">
           <div class="col-12 col-sm-3 col-lg-3 col-xl-3 field">
@@ -73,6 +97,16 @@
               <img data-true src="{% static "common/icons/Indicator/Check-Ind/Check.svg" %}" class="icon filled">
             </span>
             </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-auto field">
+            {% trans "Config generated at" %}:
+            <span class="highlight" data-field="routeserver_config_generated_time"></span>
+          </div>
+          <div class="col-auto field">
+            {% trans "Config Status" %}:
+            <span class="highlight" data-field="routeserver_config_generated_time"></span>
           </div>
         </div>
       </td>

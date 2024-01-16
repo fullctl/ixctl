@@ -45,8 +45,10 @@ class RouteserverInline(BaseTabularAdmin):
 
 @admin.register(InternetExchange)
 class InternetInternetExchangeAdmin(BaseAdmin):
-    list_display = ("name", "id", "org")
+    list_display = ("name", "id", "org", "source_of_truth")
+    list_filter = ("source_of_truth",)
     readonly_fields = ("org",)
+    search_fields = ("name", "instance__org__slug", "instance__org__name")
 
     def org(self, obj):
         return obj.instance.org
@@ -54,7 +56,7 @@ class InternetInternetExchangeAdmin(BaseAdmin):
 
 @admin.register(InternetExchangeMember)
 class MemberAdmin(BaseAdmin):
-    list_display = ("ix", "org", "asn", "ipaddr4", "ipaddr6")
+    list_display = ("ix", "org", "asn", "ipaddr4", "ipaddr6", "port")
     readonly_fields = ("org",)
     search_fields = (
         "ix__name",
