@@ -22,8 +22,7 @@ ixctl = "ixctl.cli:main"
 python = "^3.9"
 fullctl = { git = "https://github.com/fullctl/fullctl.git", branch = "prep-release" }
 arouteserver = ">=1.17"
-# needed for deep_update
-pydantic = "^1.10.2"
+pydantic = ">=1.10.2"
 
 [tool.poetry.dev-dependencies]
 django = ">=2.2"

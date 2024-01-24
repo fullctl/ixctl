@@ -5,7 +5,11 @@ import tempfile
 from datetime import datetime
 from secrets import token_urlsafe
 
-from pydantic.utils import deep_update
+try:
+    from pydantic.utils import deep_update
+except ImportError:
+    from pydantic.v1.utils import deep_update
+
 
 try:
     from yaml import CDumper as Dumper
