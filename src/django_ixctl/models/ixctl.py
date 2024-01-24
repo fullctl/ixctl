@@ -15,7 +15,7 @@ try:
     from yaml import CDumper as Dumper
     from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Dumper, Loader
 
 import fullctl.service_bridge.devicectl as devicectl
 import fullctl.service_bridge.pdbctl as pdbctl

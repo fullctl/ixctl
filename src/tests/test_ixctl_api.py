@@ -1,8 +1,7 @@
 import json
 
-from django.urls import reverse
-
 import django_ixctl.models as models
+from django.urls import reverse
 
 
 def test_ix_import_peeringdb(db, pdb_data, account_objects):

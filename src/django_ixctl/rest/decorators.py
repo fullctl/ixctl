@@ -9,7 +9,7 @@ class grainy_endpoint(_grainy_endpoint):
             instance_class=models.Instance,
             explicit=kwargs.pop("explicit", False),
             *args,
-            **kwargs
+            **kwargs,
         )
         if "namespace" not in kwargs:
             self.namespace += ["ixctl"]
