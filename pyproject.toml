@@ -21,30 +21,34 @@ ixctl = "ixctl.cli:main"
 [tool.poetry.dependencies]
 python = "^3.9"
 fullctl = { git = "https://github.com/fullctl/fullctl.git", branch = "prep-release" }
-arouteserver = "^1.17"
+arouteserver = ">=1.17"
+# needed for deep_update
 pydantic = "^1.10.2"
 
-
 [tool.poetry.dev-dependencies]
+django = ">=2.2"
+django-handleref = ">=0.5"
+djangorestframework = ">=3.11"
+
 # testing
 coverage = ">=5"
 pytest = ">=6"
 pytest-django = ">=3.8"
 pytest-cov = "*"
+requests-mock = ">=1.11"
+tox = ">=3.23"
 
 # linting
-# bandit = ">=1.6.2"
-black = ">=20"
-isort = ">=5.7"
-flake8 = ">=3.8"
+bandit = ">=1.6.2"
 mypy = ">=0.950"
 pre-commit = ">=2.13"
 pyupgrade = ">=2.19"
+ruff = ">=0.1"
 
 # docs
 markdown = "*"
 markdown-include = ">=0.5,<1"
-mkdocs = "^1.2.3"
+mkdocs = ">=1.2.3"
 
 # ctl
 ctl = ">=1"
@@ -53,13 +57,15 @@ tmpl = ">=1"
 
 [tool.poetry.group.tasks]
 optional = true
-
 [tool.poetry.group.tasks.dependencies]
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
+[tool.poetry.plugins."markdown.extensions"]
+pymdgen = "pymdgen.md:Extension"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+# Enable the isort rules.
+extend-select = ["I"]

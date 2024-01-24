@@ -1,3 +1,0 @@
-django>=2.2
-django-handleref>=0.5
-djangorestframework>=3.11,<4
