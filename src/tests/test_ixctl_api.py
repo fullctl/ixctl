@@ -491,7 +491,7 @@ def test_update_routeserver(db, pdb_data, account_objects):
 
 def test_retrieve_routeserverconfig(db, pdb_data, account_objects):
     rs = account_objects.routeserver
-    routeserver_config = rs.routeserver_config
+    rs.routeserver_config
     # routeserver_config.generate()
     ix = account_objects.ix
     client = account_objects.api_client

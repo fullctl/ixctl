@@ -28,7 +28,10 @@ def trial_available(request):
 
     # retrieve ix_tag from request url parse information
 
-    ix_tag = request.resolver_match.kwargs.get("ix_tag")
+    try:
+        ix_tag = request.resolver_match.kwargs.get("ix_tag")
+    except AttributeError:
+        ix_tag = None
 
     if ix_tag is None:
         return {"trial_available": False}
