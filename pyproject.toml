@@ -61,6 +61,19 @@ optional = true
 [tool.poetry.plugins."markdown.extensions"]
 pymdgen = "pymdgen.md:Extension"
 
+[tool.ruff]
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint.per-file-ignores]
+# E402 = module import not at top level
+"src/ixctl/wsgi.py" = ["E402"]
+
+# F821 = undefined variable
+"src/ixctl/settings/__init__.py" = ["F821"]
+"src/ixctl/settings/dev.py" = ["F821"]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
