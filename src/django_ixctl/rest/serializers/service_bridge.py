@@ -16,6 +16,7 @@ class InternetExchange(ModelSerializer):
         fields = [
             "org_id",
             "id",
+            "slug",
             "pdb_id",
             "name",
             "verified",
