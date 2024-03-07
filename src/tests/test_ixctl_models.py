@@ -1,13 +1,11 @@
-import ipaddress
 import json
 import os
 
+import django_ixctl.models as models
 import pytest
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from fullctl.service_bridge.pdbctl import NetworkIXLan
-
-import django_ixctl.models as models
 
 
 def test_instance(db, pdb_data, account_objects):

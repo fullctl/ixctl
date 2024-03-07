@@ -5,13 +5,17 @@ import tempfile
 from datetime import datetime
 from secrets import token_urlsafe
 
-from pydantic.utils import deep_update
+try:
+    from pydantic.utils import deep_update
+except ImportError:
+    from pydantic.v1.utils import deep_update
+
 
 try:
     from yaml import CDumper as Dumper
     from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Dumper, Loader
 
 import fullctl.service_bridge.devicectl as devicectl
 import fullctl.service_bridge.pdbctl as pdbctl

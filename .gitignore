@@ -7,7 +7,9 @@
 *.sqlite3
 *.sql
 *.egg-info
+.coverage
 .pytest-cache
+coverage.xml
 Ctl/.state/
 Ctl/dev/.env
 build/

@@ -1,8 +1,6 @@
-import pytest
-from django.conf import settings
-from django.core.management import call_command
-
 import django_ixctl.models as models
+import pytest
+from django.core.management import call_command
 
 
 @pytest.mark.skip

@@ -11,7 +11,6 @@ _ = lambda s: s  # noqa: E731
 def reset_auto_fields():
     from django.core.management.color import no_style
     from django.db import connection
-
     from django_ixctl.models import Organization
 
     sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Organization])
@@ -23,11 +22,10 @@ def reset_auto_fields():
 class AccountObjects:
     def __init__(self, handle):
         from django.contrib.auth import get_user_model
+        from django_ixctl.models import Organization
         from fullctl.django.auth import permissions
         from fullctl.django.models.concrete import OrganizationUser
         from rest_framework.test import APIClient
-
-        from django_ixctl.models import Organization
 
         reset_auto_fields()
 
