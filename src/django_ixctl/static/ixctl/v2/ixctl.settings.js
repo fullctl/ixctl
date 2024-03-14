@@ -120,6 +120,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
 
       $(add_prefix).on("api-write:success", () => {
         prefix_list.load();
+        add_prefix.reset();
       });
 
       $(form).on("api-write:success", ()=>{
