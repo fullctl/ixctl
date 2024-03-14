@@ -7,6 +7,7 @@ import django_ixctl.models.ixctl as models
 Serializers, register = serializer_registry()
 
 
+@register
 class Prefix(ModelSerializer):
     class Meta:
         model = models.InternetExchangePrefix

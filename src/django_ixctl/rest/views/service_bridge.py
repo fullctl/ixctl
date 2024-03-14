@@ -47,6 +47,24 @@ class InternetExchange(DataViewSet):
 
 
 @route
+class InternetExchangePrefix(DataViewSet):
+    path_prefix = "/data"
+    allowed_http_methods = ["GET"]
+    valid_filters = [
+        ("ix", "ix_id"),
+        ("ix_verified", "ix__verified"),
+        ("prefix", "prefix"),
+    ]
+
+    join_xl = {"ix": ("ix",)}
+
+    queryset = models.InternetExchangePrefix.objects.filter(status="ok").select_related(
+        "ix", "ix__instance", "ix__instance__org"
+    )
+    serializer_class = Serializers.prefix
+
+
+@route
 class InternetExchangeMember(DataViewSet):
     path_prefix = "/data"
     allowed_http_methods = ["GET"]
