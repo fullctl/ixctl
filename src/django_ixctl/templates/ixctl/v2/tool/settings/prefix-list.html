@@ -1,0 +1,33 @@
+{% load static i18n %}
+<table
+  class="table table-borderless marg-top-lg" 
+  data-api-base="{% url "ixctl_api:prefix-list" org_tag=request.org.slug ix_tag="ix_tag" %}"
+  data-api-action=""
+  data-template="prefix_list">
+  <thead>
+    <tr>
+      <th>{% trans "Prefix" %}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody class="list-body">
+  </tbody>
+  <tbody class="templates">
+    <tr data-template="row">
+      <td data-field="prefix"></td>
+      <td data-field="controls" class="right">
+        <div class="row">
+          <div class="col-xs-12">
+            <a
+                data-confirm="Delete prefix?"
+                data-api-action="{id}"
+                data-api-callback="remove"
+                data-api-method="DELETE">
+                <span class="icon ixctl icon-delete"></span>
+            </a>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

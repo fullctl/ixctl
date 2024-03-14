@@ -1,0 +1,51 @@
+{% load static i18n %}
+<form
+  class="controls"
+  data-template="form_lan_settings"
+  data-api-base="{% url "ixctl_api:ix-update-lan" org_tag=request.org.slug ix_tag="ix_tag" %}"
+  data-api-method="PUT">
+
+  <div class="row controls">
+    <div class="col-6">
+      <div class="mb-3">
+        <div data-api-submit="yes">
+          <label class="form-label" for="edit_ix_mtu">{% trans "MTU" %}</label>
+          <input
+            type="text"
+            class="form-control mb-3"
+            name="mtu"
+            id="edit_ix_mtu">
+          </input>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="mb-3">
+        <div data-api-submit="yes">
+          <label class="form-label" for="edit_ix_vlan_id">{% trans "VLAN Id" %}</label>
+          <input
+            type="text"
+            class="form-control mb-3"
+            name="vlan_id"
+            id="edit_ix_vlan_id">
+          </input>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row controls marg-top-lg">
+    <div class="col-6 left">
+    </div>
+    <div class="col-6 right">
+      <button class="submit primary btn">
+        <div class="row align-items-center">
+          <div class="col label pe-0">{% trans "Save" %}</div>
+          <div class="col-auto">
+            <span class="icon icon-edit"></span>
+          </div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+</form>

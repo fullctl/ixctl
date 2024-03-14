@@ -1,0 +1,23 @@
+{% load static i18n %}
+<div class="control-panel container-fluid" 
+    data-template="form_add_prefix"
+    data-api-base="{% url "ixctl_api:prefix-list" org_tag=request.org.slug ix_tag="ix_tag" %}" 
+    data-api-method="POST"
+    >
+    <div class="row">
+        <div class="controls">
+            <div class="row justify-content-end">
+                <div class="col-2 me-sm-2 p-0">
+                    <div class="input-group" data-api-submit="yes">
+                        <input type="text" placeholder="Prefix" class="form-control" id="prefix" name="prefix">
+                    </div>
+                </div>
+                <div class="col-md-auto">
+                    <div class="row h-100">
+                        <button type="button" class="submit secondary btn mx-1 small">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

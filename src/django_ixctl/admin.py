@@ -5,6 +5,7 @@ from fullctl.django.admin import BaseAdmin, BaseTabularAdmin
 from django_ixctl.models import (
     InternetExchange,
     InternetExchangeMember,
+    InternetExchangePrefix,
     Network,
     PermissionRequest,
     Routeserver,
@@ -43,12 +44,19 @@ class RouteserverInline(BaseTabularAdmin):
     model = Routeserver
 
 
+class PrefixInline(admin.TabularInline):
+    model = InternetExchangePrefix
+    extra = 0
+
+
 @admin.register(InternetExchange)
 class InternetInternetExchangeAdmin(BaseAdmin):
     list_display = ("name", "id", "org", "source_of_truth")
     list_filter = ("source_of_truth",)
     readonly_fields = ("org",)
     search_fields = ("name", "instance__org__slug", "instance__org__name")
+
+    inlines = (PrefixInline,)
 
     def org(self, obj):
         return obj.instance.org

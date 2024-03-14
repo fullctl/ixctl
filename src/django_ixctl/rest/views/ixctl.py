@@ -125,6 +125,28 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
         ix.id = request.data.get("id")
         return Response(Serializers.ix(instance=ix).data)
 
+    @action(detail=True, methods=["PUT"], serializer_class=Serializers.update_lan)
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @auditlog()
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}")
+    def update_lan(self, request, org, instance, ix, *args, **kwargs):
+        """
+        Updates the LAN properties of the ix
+
+        - mtu
+        - vlan id
+        """
+
+        serializer = Serializers.update_lan(
+            instance=ix,
+            data=request.data,
+        )
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+
+        serializer.save()
+        return Response(serializer.data)
+
     @action(detail=False, methods=["POST"], schema=PeeringDBImportSchema())
     @auditlog()
     @grainy_endpoint(namespace="ix.{request.org.permission_id}")
@@ -163,6 +185,49 @@ class InternetExchange(CachedObjectMixin, OrgQuerysetMixin, viewsets.GenericView
 
         serializer.save()
         return Response(serializer.data)
+
+
+@route
+class Prefix(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
+    serializer_class = Serializers.prefix
+    queryset = models.InternetExchangePrefix.objects.all()
+    ref_tag = "prefix"
+    ix_tag_needed = True
+    lookup_url_kwarg = "prefix_id"
+    lookup_field = "id"
+
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}.prefix")
+    def list(self, request, org, instance, ix, *args, **kwargs):
+        queryset = self.get_queryset().select_related("ix")
+        serializer = Serializers.prefix(
+            instance=queryset,
+            many=True,
+        )
+        return Response(serializer.data)
+
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @auditlog()
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}.prefix")
+    def create(self, request, org, instance, ix, *args, **kwargs):
+        data = request.data
+        data["ix"] = ix.id
+        serializer = Serializers.prefix(data=data, context={"instance": instance})
+        if not serializer.is_valid():
+            return BadRequest(serializer.errors)
+
+        prefix = serializer.save()
+
+        return Response(Serializers.prefix(instance=prefix).data)
+
+    @load_object("ix", models.InternetExchange, instance="instance", slug="ix_tag")
+    @load_object("prefix", models.InternetExchangePrefix, ix="ix", id="prefix_id")
+    @auditlog()
+    @grainy_endpoint(namespace="ix.{request.org.permission_id}.{ix.pk}.prefix")
+    def destroy(self, request, org, instance, ix, prefix, *args, **kwargs):
+        r = Response(Serializers.prefix(instance=prefix).data)
+        prefix.delete()
+        return r
 
 
 @route

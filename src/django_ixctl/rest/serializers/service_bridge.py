@@ -7,6 +7,12 @@ import django_ixctl.models.ixctl as models
 Serializers, register = serializer_registry()
 
 
+class Prefix(ModelSerializer):
+    class Meta:
+        model = models.InternetExchangePrefix
+        fields = ["id", "prefix"]
+
+
 @register
 class InternetExchange(ModelSerializer):
     org_id = serializers.SerializerMethodField()
@@ -19,7 +25,10 @@ class InternetExchange(ModelSerializer):
             "slug",
             "pdb_id",
             "name",
+            "slug",
             "verified",
+            "mtu",
+            "vlan_id",
         ]
 
     def get_org_id(self, ix):

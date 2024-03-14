@@ -34,7 +34,7 @@ from fullctl.django.fields.service_bridge import ReferencedObjectField
 from fullctl.django.inet.validators import validate_as_set
 from fullctl.django.models.abstract.base import HandleRefModel, PdbRefModel
 from fullctl.django.models.concrete import Instance, Organization
-from netfields import InetAddressField, MACAddressField
+from netfields import CidrAddressField, InetAddressField, MACAddressField
 
 import django_ixctl.enum
 import django_ixctl.models.tasks
@@ -116,6 +116,18 @@ class InternetExchange(PdbRefModel):
         ),
     )
 
+    mtu = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("MTU for the exchange"),
+    )
+
+    vlan_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("VLAN ID for the exchange"),
+    )
+
     # TODO: use service-bridge reference field?
     # this field is already defined through PdbRefModel, however we need to
     # override it here to give it a help-text
@@ -168,12 +180,22 @@ class InternetExchange(PdbRefModel):
 
         ix.name = pdb_object.name
         ix.slug = cls.default_slug(ix.name)
+        ix.mtu = pdb_object.mtu
 
         if save:
             ix.save()
 
+        # create members from pdb
+
         for netixlan in pdbctl.NetworkIXLan().objects(ix=pdb_object.id, join="net"):
             InternetExchangeMember.create_from_pdb(netixlan, ix=ix)
+
+        # create prefixes from pdb
+
+        pdb_prefixes = pdbctl.IXLanPrefix().objects(ix=pdb_object.id)
+
+        for prefix in pdb_prefixes:
+            InternetExchangePrefix.objects.create(ix=ix, prefix=prefix.prefix)
 
         return ix
 
@@ -264,6 +286,39 @@ class InternetExchange(PdbRefModel):
 
     def __str__(self):
         return f"{self.name} ({self.id})"
+
+
+@grainy_model(
+    namespace="ix",
+    namespace_instance="ix.{instance.org.permission_id}.{instance.ix_id}.prefix",
+)
+class InternetExchangePrefix(HandleRefModel):
+    """
+    Describes a CIDR prefix for an internet exchange
+    """
+
+    ix = models.ForeignKey(
+        InternetExchange,
+        related_name="prefixes",
+        on_delete=models.CASCADE,
+    )
+
+    prefix = CidrAddressField()
+
+    class Meta:
+        db_table = "ixctl_prefix"
+        verbose_name = _("Internet Exchange Prefix")
+        verbose_name_plural = _("Internet Exchange Prefixes")
+
+    class HandleRef:
+        tag = "prefix"
+
+    @property
+    def org(self):
+        return self.ix.instance.org
+
+    def __str__(self):
+        return f"{self.prefix} - {self.ix.name}"
 
 
 class OrganizationDefaultExchange(models.Model):

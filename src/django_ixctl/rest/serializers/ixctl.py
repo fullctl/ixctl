@@ -109,6 +109,26 @@ class PermissionRequest(ModelSerializer):
 
 
 @register
+class Prefix(ModelSerializer):
+    class Meta:
+        model = models.InternetExchangePrefix
+        fields = ["id", "ix", "prefix"]
+
+
+@register
+class UpdateLAN(ModelSerializer):
+    ref_tag = "update_lan"
+
+    class Meta:
+        model = models.InternetExchange
+        fields = [
+            "id",
+            "vlan_id",
+            "mtu",
+        ]
+
+
+@register
 class InternetExchange(ModelSerializer):
     slug = serializers.SlugField(required=False)
 
@@ -123,6 +143,8 @@ class InternetExchange(ModelSerializer):
             "slug",
             "source_of_truth",
             "verified",
+            "mtu",
+            "vlan_id",
         ]
 
         read_only_fields = [
@@ -135,7 +157,6 @@ class InternetExchange(ModelSerializer):
         slug = cleaned_data.get("slug")
         if not slug:
             slug = models.InternetExchange.default_slug(cleaned_data["name"])
-        print("checking", instance, slug)
         qset = models.InternetExchange.objects.filter(instance=instance, slug=slug)
         if qset.exists():
             raise ValidationError(

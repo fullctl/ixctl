@@ -5,6 +5,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
     Settings : function() {
       this.urlparam = "edit-rs"
       this.Tool("nets");
+      this.active_view = null;
       this.activate();
     },
 
@@ -23,6 +24,9 @@ $ctl.application.Ixctl.Settings = $tc.extend(
         this.general_settings();
       });
 
+      menu.find('[data-element="button_lan_settings"]').click(()=>{
+        this.lan_settings();
+      });
 
       return menu;
     },
@@ -32,11 +36,19 @@ $ctl.application.Ixctl.Settings = $tc.extend(
       if(exchange) {
         this.$e.menu.find('[data-element="button_delete_ix"]').grainy_toggle(exchange.grainy, "d");
         this.$e.menu.find('[data-element="button_general_settings"]').grainy_toggle(exchange.grainy, "u");
+        this.$e.menu.find('[data-element="button_lan_settings"]').grainy_toggle(exchange.grainy, "u");
+
       } else {
         this.$e.menu.find('[data-element="button_delete_exchange"]').hide();
         this.$e.menu.find('[data-element="button_general_settings"]').hide();
+        this.$e.menu.find('[data-element="button_lan_settings"]').hide();
+
       }
-      this.general_settings();
+      if(this.active_view == "lan_settings") {
+        this.lan_settings();
+      } else {
+        this.general_settings();
+      }
     },
 
     unload_dialog : function() {
@@ -44,6 +56,7 @@ $ctl.application.Ixctl.Settings = $tc.extend(
     },
 
     general_settings : function() {
+      this.active_view = "general_settings";
       var ix = $ctl.ixctl.ix_object();
       var dialog = this.custom_dialog("General settings for "+ix.name);
       const form = this.widget("form_general_settings", ($e) => {
@@ -61,6 +74,60 @@ $ctl.application.Ixctl.Settings = $tc.extend(
       });
     },
 
+    lan_settings : function() {
+      this.active_view = "lan_settings";
+      var ix = $ctl.ixctl.ix_object();
+      var dialog = this.custom_dialog("LAN settings for "+ix.name);
+
+
+      // LAN settings
+
+      const form = this.widget("form_lan_settings", ($e) => {
+        return new twentyc.rest.Form(
+          this.template("form_lan_settings", dialog)
+        );
+      })
+      form.format_request_url = this.format_request_url;
+      $(form).on("payload:after", (ev, payload) => {
+        // sanitize vlan_id and mtu to null if they are ""
+        if (payload.vlan_id == "") {
+          payload.vlan_id = null;
+        }
+        if (payload.mtu == "") {
+          payload.mtu = null;
+        }
+      });
+      form.fill(ix);
+
+      // Prefix list
+
+      const prefix_list = this.widget("prefix_list", ($e) => {
+        return new twentyc.rest.List(
+          this.template("prefix_list", dialog)
+        )
+      });
+      prefix_list.format_request_url = this.format_request_url;
+      prefix_list.load();
+
+      // Add Prefix form
+
+      const add_prefix = this.widget("form_add_prefix", ($e) => {
+        return new twentyc.rest.Form(
+          this.template("form_add_prefix", dialog)
+        )
+      });
+      add_prefix.format_request_url = this.format_request_url;
+
+      $(add_prefix).on("api-write:success", () => {
+        prefix_list.load();
+      });
+
+      $(form).on("api-write:success", ()=>{
+        $ctl.ixctl.refresh().then(()=>{
+          $ctl.ixctl.select_ix(ix.id);
+        });
+      });
+    },
 
     delete_exchange : function() {
       var ix = $ctl.ixctl.ix_object();
