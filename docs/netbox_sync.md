@@ -1,6 +1,6 @@
 ## Usage
 
-Once the organization has set up service federation for their netbox instance
+Once the organization has set up service federation for their NetBox instance
 the following command can be used to run the netbox sync job.
 
 ```python
@@ -10,7 +10,7 @@ Ctl/dev/run.sh ixctl_netbox_sync $ORG_SLUG $IX_SLUG
 - `$ORG_SLUG` is the organization slug
 - `$IX_SLUG` is the IXP slug (optional, if not provided all IXPs will be synced)
 
-## Data pushed to netbox
+## Data pushed to NetBox
 
 IxCtl Source of Truth:
 
