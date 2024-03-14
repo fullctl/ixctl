@@ -8,6 +8,7 @@
       "aka": "",
       "city": "Chicago",
       "country": "US",
+      "mtu": 9000,
       "region_continent": "North America",
       "tech_email": "neteng@unitedix.net",
       "tech_phone": "",

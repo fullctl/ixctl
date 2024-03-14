@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "id": 556,
+      "ixlan_id": 239,
+      "prefix": "206.41.110.0/24",
+      "protocol": "IPv4",
+      "grainy": null,
+      "status": "ok",
+      "created": "2014-10-18T00:00:00Z",
+      "updated": "2020-08-26T05:23:09Z"
+    },
+    {
+      "id": 605,
+      "ixlan_id": 239,
+      "prefix": "2001:504:41:110::/64",
+      "protocol": "IPv6",
+      "grainy": null,
+      "status": "ok",
+      "created": "2015-01-29T00:00:00Z",
+      "updated": "2020-08-26T05:23:09Z"
+    }
+  ],
+  "errors": {},
+  "profiling": {
+    "queries": 22
+  }
+}
