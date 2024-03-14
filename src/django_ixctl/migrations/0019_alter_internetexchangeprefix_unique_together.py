@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("django_ixctl", "0018_internetexchange_mtu_internetexchange_vlan_id_and_more"),
     ]

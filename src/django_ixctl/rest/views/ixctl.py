@@ -214,9 +214,10 @@ class Prefix(CachedObjectMixin, IxOrgQuerysetMixin, viewsets.GenericViewSet):
         data["ix"] = ix.id
         serializer = Serializers.prefix(data=data, context={"instance": instance})
         if not serializer.is_valid():
-            return BadRequest(serializer.errors, error_map={
-                "unique": "This prefix already exists in this exchange."
-            })
+            return BadRequest(
+                serializer.errors,
+                error_map={"unique": "This prefix already exists in this exchange."},
+            )
 
         prefix = serializer.save()
 
