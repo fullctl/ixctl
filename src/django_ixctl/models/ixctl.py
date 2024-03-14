@@ -309,6 +309,7 @@ class InternetExchangePrefix(HandleRefModel):
         db_table = "ixctl_prefix"
         verbose_name = _("Internet Exchange Prefix")
         verbose_name_plural = _("Internet Exchange Prefixes")
+        unique_together = (("prefix", "ix"),)
 
     class HandleRef:
         tag = "prefix"
