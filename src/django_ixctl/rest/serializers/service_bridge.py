@@ -11,7 +11,7 @@ Serializers, register = serializer_registry()
 class Prefix(ModelSerializer):
     class Meta:
         model = models.InternetExchangePrefix
-        fields = ["id", "prefix"]
+        fields = ["id", "ix", "prefix"]
 
 
 @register
