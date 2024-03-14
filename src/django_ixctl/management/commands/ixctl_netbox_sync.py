@@ -24,6 +24,6 @@ class Command(CommandInterface):
 
             netbox.push(org, ix_slug=ix_slug)
 
-            #self.log_info(f"Pulling netbox data for {org_slug}")
-            #netbox.pull(org)
-            #self.log_info(f"Pulled netbox data for {org_slug}")
+            # self.log_info(f"Pulling netbox data for {org_slug}")
+            # netbox.pull(org)
+            # self.log_info(f"Pulled netbox data for {org_slug}")
